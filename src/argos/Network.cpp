@@ -9,9 +9,6 @@ Network::Network(const std::string& path)
     const std::string symbolPath = path + "-symbol.json";
     const std::string paramPath = path + "-0000.params";
 
-    std::cout << symbolPath << std::endl;
-    std::cout << paramPath << std::endl;
-
     _net = Symbol::Load(symbolPath);
 
     Context global_ctx(static_cast<DeviceType>(config::defaultDevice), 0);
