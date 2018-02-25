@@ -6,8 +6,11 @@ using namespace mxnet::cpp;
 
 Network::Network(const std::string& path)
 {
-    const std::string symbolPath = path + ".json-symbol.json";
-    const std::string paramPath = path + ".json-0000.params";
+    const std::string symbolPath = path + "-symbol.json";
+    const std::string paramPath = path + "-0000.params";
+
+    std::cout << symbolPath << std::endl;
+    std::cout << paramPath << std::endl;
 
     _net = Symbol::Load(symbolPath);
 
