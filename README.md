@@ -1,6 +1,6 @@
 # Argos Zero
 
-This is an attempt to replicate [Mastering the game of Go without human knowledge](https://www.nature.com/articles/nature24270). The board representation is based on the 'library of efficient go routines'(https://github.com/lukaszlew/libego) by Łukasz Lew.
+This is an attempt to replicate [Mastering the game of Go without human knowledge](https://www.nature.com/articles/nature24270). The board representation is based on the [library of efficient go routines](https://github.com/lukaszlew/libego) by Łukasz Lew.
 
 ## Build instructions
 
