@@ -53,6 +53,5 @@ private:
     void visitNode(Node* node);
     void updateStatistics(NodeTrace& trace, float score) const;
     void setRootNode(Vertex const& vertex);
-    void resetEvaluationQueue();
     void purgeTranspositionTable();
 };

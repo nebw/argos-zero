@@ -126,11 +126,10 @@ const std::shared_ptr<Node>& Node::getMostVisitsChild() {
 float Node::winrate(const Player& player) const {
     const auto& p = _position.get()->statistics();
 
-    auto value = ((static_cast<float>(p.sum_value_evaluations.load()) /
-                   std::max(1.f, static_cast<float>(p.num_evaluations.load()))) +
-                  1.) /
-                 2.;
+    float value = ((static_cast<float>(p.sum_value_evaluations.load()) /
+        std::max(1.f, static_cast<float>(p.num_evaluations.load()))) + 1.f) / 2.f;
     if (player == Player::White()) { value = 1.f - value; }
+
     return value;
 }
 
