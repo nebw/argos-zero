@@ -26,57 +26,9 @@ int RowOfGtpInt(int r);
 int ColumnOfGtpChar(char c);
 }  // namespace Coord
 
-class Distance : public Nat<Distance> {
-public:
-    explicit Distance() {}
 
-    static Distance OfMinMax(int min, int max);
 
-    static const uint hBoardSize = ceil(board_size / 2) + 1;
-    static const uint kBound = hBoardSize * hBoardSize + 1;
 
-    int GetMin() const { return GetRaw() / hBoardSize; }
-    int GetMax() const { return GetRaw() % hBoardSize; }
-
-private:
-    friend class Nat<Distance>;
-    explicit Distance(uint raw);
-};
-
-class PowerOfTwo : public Nat<PowerOfTwo> {
-public:
-    explicit PowerOfTwo() {}
-
-    static PowerOfTwo OfValue(uint val);
-
-    static inline uint32_t log2(uint32_t x) {
-        x += 1;
-        uint32_t y;
-        asm("\tbsr %1, %0\n" : "=r"(y) : "r"(x));
-        return y;
-    }
-
-    // TODO: this is bigger than probably necessary
-    static const uint kBound = 16;
-
-private:
-    friend class Nat<PowerOfTwo>;
-    explicit PowerOfTwo(uint raw);
-};
-
-class DistXPow2 : public Nat<DistXPow2> {
-public:
-    explicit DistXPow2() {}
-
-    static DistXPow2 OfValues(uint val, int min, int max);
-    static DistXPow2 OfValues(uint val, Distance dist);
-
-    static const uint kBound = PowerOfTwo::kBound * Distance::kBound;
-
-private:
-    friend class Nat<DistXPow2>;
-    explicit DistXPow2(uint raw);
-};
 
 class Vertex : public Nat<Vertex> {
 public:
@@ -100,7 +52,6 @@ public:
     int GetRow() const;
     int GetColumn() const;
 
-    Distance GetWallDist() const;
 
     // This can be achieved quicker by color_at lookup.
     bool IsOnBoard() const;
