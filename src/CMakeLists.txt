@@ -11,3 +11,6 @@ target_link_libraries(rollout argos mxnet)
 
 add_executable(gtp gtp.cpp)
 target_link_libraries(gtp argos mxnet)
+
+add_executable(test test.cpp)
+target_link_libraries(test argos mxnet)
