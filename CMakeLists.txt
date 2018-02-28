@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.7 FATAL_ERROR)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(argos-zero)
@@ -9,6 +9,7 @@ find_package(Threads)
 #set(Python_ADDITIONAL_VERSIONS 3.6)
 find_package(PythonLibs REQUIRED)
 find_package(Boost COMPONENTS system filesystem python REQUIRED)
+find_package(CapnProto REQUIRED)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -fPIC -fpermissive")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og -ggdb3 -fno-omit-frame-pointer")# -fsanitize=address")
@@ -24,9 +25,19 @@ include_directories(SYSTEM "${MXNET_PATH}/cpp-package/include/")
 include_directories(${PROJECT_SOURCE_DIR}/src/ego/goboard)
 include_directories(${PROJECT_SOURCE_DIR}/src/ego/utils)
 include_directories(${PROJECT_SOURCE_DIR}/src/ego/gtp)
+include_directories(${CAPNP_INCLUDE_DIRS})
 
 link_directories("${MXNET_PATH}/lib")
 
 set(BOARDSIZE 19)
 
 add_subdirectory(src)
+
+
+
+# for capnp
+add_definitions(${CAPNP_DEFINITIONS})
+capnp_generate_cpp(CAPNP_SRCS CAPNP_HDRS MinHash.capnp)
+
+add_executable(test_capnp test_capnp.cpp)
+target_link_libraries(test_capnp ${CAPNP_LIBRARIES})
