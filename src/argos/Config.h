@@ -51,9 +51,13 @@ public:
         boost::filesystem::path boostLogFilePath(logFilePath);
         _logFilePath = boostLogFilePath;
     }
+    void networkRollouts(bool const& networkRollouts) {
+      _networkRollouts = networkRollouts;
+    }
     /* getters */
     boost::filesystem::path const& networkPath() const { return _networkPath; }
     boost::filesystem::path const& logFilePath() const { return _logFilePath; }
+    bool const& networkRollouts() const { return _networkRollouts; }
 private:
     ArgosConfig(){};
     ArgosConfig(const ArgosConfig&);
@@ -61,4 +65,5 @@ private:
 
     boost::filesystem::path _networkPath;
     boost::filesystem::path _logFilePath;
+    bool _networkRollouts;
 };
