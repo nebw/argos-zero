@@ -40,9 +40,9 @@ bool Node::expand(Tree& tree, Board const& board, Network& network) {
 
             size_t posIdx;
             if (vertex == Vertex::Pass()) {
-                posIdx = 19 * 19;
+                posIdx = config::boardSize * config::boardSize;
             } else {
-                posIdx = vertex.GetRow() * 19 + vertex.GetColumn();
+                posIdx = vertex.GetRow() * config::boardSize + vertex.GetColumn();
             }
             child->addPrior(result.candidates[posIdx].prior);
 

@@ -11,6 +11,8 @@ static const MXNET_DEVICE_TYPE defaultDevice = CPU;
 static const boost::filesystem::path networkPath("/home/ben/tmp/expertnet_small");
 static const boost::filesystem::path logFilePath("/home/ben/tmp/argos-dbg.log");
 
+static const size_t boardSize = BOARDSIZE;
+
 namespace tree {
     static const size_t numThreads = std::thread::hardware_concurrency() == 0 ? 4 : std::thread::hardware_concurrency();
     static const size_t randomizeFirstNMoves = 2;
