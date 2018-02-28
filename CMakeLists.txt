@@ -27,6 +27,6 @@ include_directories(${PROJECT_SOURCE_DIR}/src/ego/gtp)
 
 link_directories("${MXNET_PATH}/lib")
 
-add_definitions(-DBOARDSIZE=9)
+add_definitions(-DBOARDSIZE=19)
 
 add_subdirectory(src)
