@@ -45,8 +45,12 @@ void Engine::Cgenmove(Gtp::Io &io) {
     _dbg << "Evaluating in " << format_duration(timeForMove) << std::endl;
 
     _tc.timedAction([&]() {
-        io.Read<Player>();
+#ifndef NDEBUG
+        const Player player = io.Read<Player>();
         assert(player == _tree->rootBoard().ActPlayer());
+#else
+        io.Read<Player>();
+#endif
         io.CheckEmpty();
 
         _tree->evaluate(timeForMove);

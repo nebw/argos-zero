@@ -252,13 +252,13 @@ void Tree::setRootNode(const Vertex& vertex)
     }
 
     Node::NodeStack const& children = _rootNode->children().value();
-#ifdef DEBUG
+#ifndef NDEBUG
     bool found = false;
 #endif
     for (size_t i = 0; i < children.size(); ++i) {
         if (children[i]->parentMove() == vertex) {
             _rootNode = children[i];
-#ifdef DEBUG
+#ifndef NDEBUG
             found = true;
 #endif
             break;
