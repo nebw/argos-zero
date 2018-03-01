@@ -18,7 +18,7 @@
 #include "ego.hpp"
 
 typedef cuckoohash_map<Hash, std::weak_ptr<Position>, Hasher> TranspositionTable;
-typedef FastStack<Node*, 19 * 19 * 3> NodeTrace;
+typedef FastStack<Node*, config::boardSize * config::boardSize * 3> NodeTrace;
 
 class Tree {
 public:
@@ -53,6 +53,5 @@ private:
     void visitNode(Node* node);
     void updateStatistics(NodeTrace& trace, float score) const;
     void setRootNode(Vertex const& vertex);
-    void resetEvaluationQueue();
     void purgeTranspositionTable();
 };

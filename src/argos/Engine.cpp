@@ -34,12 +34,9 @@ void Engine::RegisterParams() {
 void Engine::Cclear_board(Gtp::Io &io) {
     io.CheckEmpty();
 
-    //std::cerr.setstate(std::ios_base::failbit);
     _tree = std::make_unique<Tree>();
     _tree->setKomi(_komi);
     _tc.setRemainingTime(config::engine::totalTime);
-    //std::cerr.clear();
-    //setbuf(stderr, nullptr);
 }
 
 void Engine::Cgenmove(Gtp::Io &io) {
@@ -48,8 +45,12 @@ void Engine::Cgenmove(Gtp::Io &io) {
     _dbg << "Evaluating in " << format_duration(timeForMove) << std::endl;
 
     _tc.timedAction([&]() {
-        io.Read<Player>();
+#ifndef NDEBUG
+        const Player player = io.Read<Player>();
         assert(player == _tree->rootBoard().ActPlayer());
+#else
+        io.Read<Player>();
+#endif
         io.CheckEmpty();
 
         _tree->evaluate(timeForMove);

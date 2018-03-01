@@ -29,7 +29,9 @@ Network::Network(const std::string& path)
     }
     NDArray::WaitAll();
 
-    _args_map["data"] = NDArray(Shape(1, NetworkFeatures::NUM_FEATURES, 19, 19), global_ctx);
+    _args_map["data"] = NDArray(
+        Shape(1, NetworkFeatures::NUM_FEATURES, config::boardSize, config::boardSize),
+        global_ctx);
 
     _executor = std::unique_ptr<mxnet::cpp::Executor>(
         _net.SimpleBind(global_ctx,
@@ -44,8 +46,8 @@ Network::Result Network::apply(const Board& board)
 {
     static const size_t inputs = 1;
     static const size_t channels = NetworkFeatures::NUM_FEATURES;
-    static const size_t width = 19;
-    static const size_t height = 19;
+    static const size_t width = config::boardSize;
+    static const size_t height = config::boardSize;
 
     const auto planes = board.getFeatures().getPlanes();
 
@@ -62,13 +64,13 @@ Network::Result Network::apply(const Board& board)
     NDArray::WaitAll();
 
     Network::Result::Candidates candidates;
-    for (size_t row = 0; row < 19; ++row) {
-        for (size_t col = 0; col < 19; ++col) {
-            const size_t posIdx = row * 19 + col;
+    for (size_t row = 0; row < width; ++row) {
+        for (size_t col = 0; col < height; ++col) {
+            const size_t posIdx = row * width + col;
             candidates.emplace_back(policyOutput[posIdx], Vertex::OfCoords(row, col));
         }
     }
-    candidates.emplace_back(policyOutput[19*19], Vertex::Pass());
+    candidates.emplace_back(policyOutput[width*height], Vertex::Pass());
 
     return Network::Result(std::move(candidates), valueOutput[0] * 2 - 1);
 }

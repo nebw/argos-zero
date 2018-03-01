@@ -166,9 +166,9 @@ Player Tree::rollout(Board playoutBoard, Network* net)
             if (playoutBoard.IsLegal(pl, v) && !playoutBoard.IsEyelike(pl, v)) {
                 size_t posIdx;
                 if (v == Vertex::Pass()) {
-                    posIdx = 19 * 19;
+                    posIdx = config::boardSize * config::boardSize;
                 } else {
-                    posIdx = v.GetRow() * 19 + v.GetColumn();
+                    posIdx = v.GetRow() * config::boardSize + v.GetColumn();
                 }
                 probabilites.push_back(result.candidates[posIdx].prior);
                 moves.push_back(v);
@@ -252,13 +252,13 @@ void Tree::setRootNode(const Vertex& vertex)
     }
 
     Node::NodeStack const& children = _rootNode->children().value();
-#ifdef DEBUG
+#ifndef NDEBUG
     bool found = false;
 #endif
     for (size_t i = 0; i < children.size(); ++i) {
         if (children[i]->parentMove() == vertex) {
             _rootNode = children[i];
-#ifdef DEBUG
+#ifndef NDEBUG
             found = true;
 #endif
             break;

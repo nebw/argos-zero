@@ -78,11 +78,6 @@ int Vertex::GetRow() const { return int(GetRaw() / dNS - 1); }
 
 int Vertex::GetColumn() const { return int(GetRaw() % dNS - 1); }
 
-Distance Vertex::GetWallDist() const {
-    int first = std::min<int>(GetRow(), board_size - GetRow() - 1);
-    int second = std::min<int>(GetColumn(), board_size - GetColumn() - 1);
-    return Distance::OfMinMax(std::min(first, second), std::max(first, second));
-}
 
 bool Vertex::IsOnBoard() const { return Coord::IsOk(GetRow()) & Coord::IsOk(GetColumn()); }
 
@@ -103,26 +98,3 @@ string Vertex::ToGtpString() const {
 
     return Coord::ColumnToGtpString(GetColumn()) + Coord::RowToGtpString(GetRow());
 }
-
-Distance Distance::OfMinMax(int min, int max) {
-    ASSERT(min < static_cast<int>(hBoardSize));
-    ASSERT(max < static_cast<int>(hBoardSize));
-    return Distance::OfRaw(min * hBoardSize + max);
-}
-
-Distance::Distance(uint raw) : Nat<Distance>(raw) {}
-
-PowerOfTwo PowerOfTwo::OfValue(uint val) { return PowerOfTwo::OfRaw(PowerOfTwo::log2(val)); }
-
-PowerOfTwo::PowerOfTwo(uint raw) : Nat<PowerOfTwo>(raw) {}
-
-DistXPow2 DistXPow2::OfValues(uint val, int min, int max) {
-    return DistXPow2::OfRaw(PowerOfTwo::kBound * Distance::hBoardSize * PowerOfTwo::log2(val) +
-                            Distance::hBoardSize * min + max);
-}
-
-DistXPow2 DistXPow2::OfValues(uint val, Distance dist) {
-    return DistXPow2::OfValues(val, dist.GetMin(), dist.GetMax());
-}
-
-DistXPow2::DistXPow2(uint raw) : Nat<DistXPow2>(raw) {}

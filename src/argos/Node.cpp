@@ -40,9 +40,9 @@ bool Node::expand(Tree& tree, Board const& board, Network& network) {
 
             size_t posIdx;
             if (vertex == Vertex::Pass()) {
-                posIdx = 19 * 19;
+                posIdx = config::boardSize * config::boardSize;
             } else {
-                posIdx = vertex.GetRow() * 19 + vertex.GetColumn();
+                posIdx = vertex.GetRow() * config::boardSize + vertex.GetColumn();
             }
             child->addPrior(result.candidates[posIdx].prior);
 
@@ -126,11 +126,10 @@ const std::shared_ptr<Node>& Node::getMostVisitsChild() {
 float Node::winrate(const Player& player) const {
     const auto& p = _position.get()->statistics();
 
-    auto value = ((static_cast<float>(p.sum_value_evaluations.load()) /
-                   std::max(1.f, static_cast<float>(p.num_evaluations.load()))) +
-                  1.) /
-                 2.;
+    float value = ((static_cast<float>(p.sum_value_evaluations.load()) /
+        std::max(1.f, static_cast<float>(p.num_evaluations.load()))) + 1.f) / 2.f;
     if (player == Player::White()) { value = 1.f - value; }
+
     return value;
 }
 
