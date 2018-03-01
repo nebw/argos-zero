@@ -18,6 +18,8 @@ int main() {
     tc[Player::Black()] = BasicTimeControl(config::engine::totalTime);
     tc[Player::White()] = BasicTimeControl(config::engine::totalTime);
 
+    float resignationThreshold = 0.1f;
+
     while ((!tree.rootBoard().BothPlayerPass())) {
         const Player actPl = tree.rootBoard().ActPlayer();
         const auto time = tc[actPl].getTimeForMove(tree.rootBoard());
@@ -30,12 +32,7 @@ int main() {
         std::cout << "Best move: " << tree.bestMove().ToGtpString() << std::endl;
         const auto winrate = tree.rootNode()->winrate(tree.rootBoard().ActPlayer());
 
-        //TODO: Implement dynamic threshold
-
-        if (winrate < .1f) {
-
-            //TODO: Implement Dynamic Threshhold (?)
-
+        if ((winrate < resignationThreshold) && !(noResignMode)){
             std::cout << tree.rootBoard().ActPlayer().ToGtpString() << " resigns." << std::endl;
             break;
         }
@@ -47,6 +44,7 @@ int main() {
         tree.playMove(move);
 
         std::cout << tree.rootBoard().ToAsciiArt(move) << std::endl;
+
 
         // TODO: Append new board state and predictions to Game list
 
