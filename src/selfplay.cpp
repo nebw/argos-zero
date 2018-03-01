@@ -29,10 +29,15 @@ int main() {
 
         std::cout << "Best move: " << tree.bestMove().ToGtpString() << std::endl;
         const auto winrate = tree.rootNode()->winrate(tree.rootBoard().ActPlayer());
+
         if (winrate < .1f) {
+
+            //TODO: Implement Dynamic Threshhold (?)
+
             std::cout << tree.rootBoard().ActPlayer().ToGtpString() << " resigns." << std::endl;
             break;
         }
+
         const Vertex move = tree.bestMove();
 
         printTree(tree.rootNode().get(), tree.rootBoard().ActPlayer());
@@ -40,5 +45,10 @@ int main() {
         tree.playMove(move);
 
         std::cout << tree.rootBoard().ToAsciiArt(move) << std::endl;
+
+        //Append new board State, and predictions to Game list
+
     }
+
+    //TODO: Export game
 }

@@ -8,8 +8,8 @@ enum MXNET_DEVICE_TYPE { CPU = 1, GPU = 2, CPU_PINNED = 3 };
 
 static const MXNET_DEVICE_TYPE defaultDevice = CPU;
 
-static const boost::filesystem::path networkPath("/home/ben/tmp/expertnet_small");
-static const boost::filesystem::path logFilePath("/home/ben/tmp/argos-dbg.log");
+static const boost::filesystem::path networkPath("/Users/valentinwolf/Documents/Studium/Machine_Learning/SoftwareProjekt/pretrain/expertnet_small"); //expertnet_small.json
+static const boost::filesystem::path logFilePath("/Users/valentinwolf/Documents/Studium/Machine_Learning/SoftwareProjekt/pretrain/argos-dbg.log");
 
 namespace tree {
     static const size_t numThreads = std::thread::hardware_concurrency() == 0 ? 4 : std::thread::hardware_concurrency();

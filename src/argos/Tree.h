@@ -55,4 +55,5 @@ private:
     void setRootNode(Vertex const& vertex);
     void resetEvaluationQueue();
     void purgeTranspositionTable();
+    void addDirichletNoise(const float amount, const float distribution);
 };
