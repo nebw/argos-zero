@@ -3,6 +3,48 @@
 #include <boost/filesystem.hpp>
 #include <thread>
 
+namespace argosConfig {
+    enum MXNET_DEVICE_TYPE
+    {
+        CPU         = 1,
+        GPU         = 2,
+        CPU_PINNED  = 3
+    };
+
+    struct Config {
+        struct Tree {
+            size_t numThreads = std::thread::hardware_concurrency() == 0 ? 4 : std::thread::hardware_concurrency();
+            size_t randomizeFirstNMoves = 2;
+            size_t numLastRootNodes = 3;
+            size_t virtualPlayouts = 5;
+            size_t expandAt = virtualPlayouts + 1;
+            float priorC = 5;
+            bool networkRollouts = true;
+        };
+        struct Time {
+            int C = 80;
+            int maxPly = 80;
+            std::chrono::milliseconds delay = std::chrono::milliseconds(10);
+        };
+        struct Engine {
+            std::chrono::milliseconds totalTime = std::chrono::milliseconds(1000 * 60 * 10);
+            float resignThreshold = 0.1f;
+        };
+        boost::filesystem::path networkPath;
+        boost::filesystem::path logFilePath;
+        MXNET_DEVICE_TYPE deviceType = CPU;
+        size_t boardSize = BOARDSIZE;
+        Tree tree;
+        Time time;
+        Engine engine;
+    };
+
+    static Config& globalConfig() {
+        static Config global;
+        return global;
+    }
+}
+
 namespace config {
 enum MXNET_DEVICE_TYPE { CPU = 1, GPU = 2, CPU_PINNED = 3 };
 

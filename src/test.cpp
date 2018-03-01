@@ -18,7 +18,7 @@ int main(int argc, char** argv)
   {
     std::string networkPath;
     std::string logFilePath;
-    bool networkRollouts = false;
+    bool networkRollouts = argosConfig::globalConfig().tree.networkRollouts;
 
     /** Define and parse the program options
      */
@@ -66,13 +66,15 @@ int main(int argc, char** argv)
     networkPath = vm["networkPath"].as<std::string>();
     logFilePath = vm["logFilePath"].as<std::string>();
 
-    ArgosConfig::get().networkPath(networkPath);
-    ArgosConfig::get().logFilePath(logFilePath);
-    ArgosConfig::get().networkRollouts(networkRollouts);
+      argosConfig::globalConfig().networkPath = networkPath;
+      argosConfig::globalConfig().logFilePath = logFilePath;
+      argosConfig::globalConfig().tree.networkRollouts = networkRollouts;
 
-    std::cout << ArgosConfig::get().networkPath() << std::endl;
-    std::cout << ArgosConfig::get().logFilePath() << std::endl;
-    std::cout << ArgosConfig::get().networkRollouts() << std::endl;
+    std::cout << argosConfig::globalConfig().networkPath << std::endl;
+    std::cout << argosConfig::globalConfig().logFilePath << std::endl;
+    std::cout << argosConfig::globalConfig().tree.networkRollouts << std::endl;
+    std::cout << argosConfig::globalConfig().time.delay.count() << std::endl;
+
   }
   catch(std::exception& e)
   {
