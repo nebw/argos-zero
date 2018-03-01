@@ -54,4 +54,5 @@ private:
     void updateStatistics(NodeTrace& trace, float score) const;
     void setRootNode(Vertex const& vertex);
     void purgeTranspositionTable();
+    void addDirichletNoise(const float amount, const float distribution);
 };

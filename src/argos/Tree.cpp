@@ -5,6 +5,7 @@
 #include "Position.h"
 #include "Util.h"
 
+#include <random>
 #include <algorithm>
 #include <chrono>
 #include <fstream>
@@ -225,6 +226,7 @@ void Tree::playMove(const Vertex& vertex)
     _rootBoard.PlayLegal(_rootBoard.ActPlayer(), vertex);
 
     setRootNode(vertex);
+
     purgeTranspositionTable();
 }
 
@@ -236,6 +238,42 @@ void Tree::beginEvaluation()
         NodeTrace traceCpy;
         traceCpy.Push(_rootNode.get());
         updateStatistics(traceCpy, _rootNode->position()->statistics().value.load());
+
+    }
+
+    //Add dirichlet noise
+    if (config::tree::trainingMode) {
+        addDirichletNoise(0.25f, 0.03f);
+    }
+}
+
+void Tree::addDirichletNoise(const float amount, const float distribution)
+{
+
+    auto children = _rootNode -> children().get();
+    size_t child_cnt = children.size();
+
+    auto dirichlet_vector = std::vector<float>{};
+
+    std::gamma_distribution<float> gamma(distribution, 1.0f);
+
+    for (size_t i = 0; i < child_cnt; i++) {
+        dirichlet_vector.emplace_back(gamma(_gen));
+    }
+
+    auto sample_sum = std::accumulate(begin(dirichlet_vector),
+                                      end(dirichlet_vector), 0.0f);
+    //std::cout << "new vector" << endl;
+    //std::cout << child_cnt << endl;
+    for (auto& v: dirichlet_vector) {
+        v /= sample_sum;
+        //std::cout << v << std::endl;
+    }
+
+    for (size_t i=0; i != child_cnt; i++) {
+        //Add dirichlet distribution to each prior probability
+        float prior = children[i] -> getPrior();
+        children[i] -> setPrior(((1-amount)*prior) + (amount * dirichlet_vector[i]));
     }
 }
 

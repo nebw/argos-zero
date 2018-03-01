@@ -34,9 +34,13 @@ int main() {
         //TODO: Implement dynamic threshold
 
         if (winrate < .1f) {
+
+            //TODO: Implement Dynamic Threshhold (?)
+
             std::cout << tree.rootBoard().ActPlayer().ToGtpString() << " resigns." << std::endl;
             break;
         }
+
         const Vertex move = tree.bestMove();
 
         printTree(tree.rootNode().get(), tree.rootBoard().ActPlayer());
@@ -46,7 +50,10 @@ int main() {
         std::cout << tree.rootBoard().ToAsciiArt(move) << std::endl;
 
         // TODO: Append new board state and predictions to Game list
+
     }
+
+    //TODO: Export game
 }
 
 // TODO: Export Game
