@@ -70,8 +70,6 @@ int main() {
         printTree(tree.rootNode().get(), tree.rootBoard().ActPlayer());
 
         // fill capnp struct statprob for the move
-        // TODO
-
         if (collect_data){
 
             std::array<double, 362> node_probs; // an allen Stellen mit 0 initialisieren
@@ -125,10 +123,7 @@ int main() {
     }
 
     // convert what we collected to capnp messages
-    // TODO
-
     // only possible here and not before because we do not know the number of moves in advance
-
     if (collect_data){
 
         std::uint16_t a, b, i, j, k;
@@ -166,7 +161,6 @@ int main() {
         }
 
         // now fill the game
-
         boost::uuids::uuid id(boost::uuids::random_generator());
         game.setId(boost::lexical_cast<std::string>(id));
 
@@ -179,11 +173,14 @@ int main() {
         game.setNetwork2(0);
 
 
-//        game.setResult();
+
+        int result = tree.rootBoard().PlayoutWinner().ToScore(); // ToScore (Black()) == 1, ToScore (White()) == -1
+        int binarized_result = (result + 1)/2;
+        bool res = binarized_result;
+        game.setResult(res);
 
 
 
-        // fill the game struct with all information collected
         // open TCP socket
 //        sockfd = socket(AF_INET, SOCK_STREAM, 0);
 //        if (sockfd < 0)
