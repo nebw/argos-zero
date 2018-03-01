@@ -29,6 +29,9 @@ int main() {
 
         std::cout << "Best move: " << tree.bestMove().ToGtpString() << std::endl;
         const auto winrate = tree.rootNode()->winrate(tree.rootBoard().ActPlayer());
+
+        //TODO: Implement dynamic threshold
+
         if (winrate < .1f) {
             std::cout << tree.rootBoard().ActPlayer().ToGtpString() << " resigns." << std::endl;
             break;
@@ -40,5 +43,9 @@ int main() {
         tree.playMove(move);
 
         std::cout << tree.rootBoard().ToAsciiArt(move) << std::endl;
+
+        // TODO: Append new board state and predictions to Game list
     }
 }
+
+// TODO: Export Game

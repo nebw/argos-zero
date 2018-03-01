@@ -225,7 +225,9 @@ Vertex Tree::bestMove2()
             probabilites.push_back(NumEvaluations);
             totalEvaluations += NumEvaluations;
         }
-
+        for (size_t i=0; i < probabilites.size(); ++i) {
+            probabilites[i]
+        }
         std::discrete_distribution<size_t> d(probabilites.begin(), probabilites.end());
 
         return _rootNode->children().get()[d(_gen)]->parentMove();
