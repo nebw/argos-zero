@@ -73,7 +73,7 @@ public:
   inline  ::uint16_t getIdx() const;
 
   inline bool hasState() const;
-  inline  ::capnp::List< ::capnp::List< ::capnp::List<bool>>>::Reader getState() const;
+  inline  ::capnp::List<float>::Reader getState() const;
 
   inline bool hasProbs() const;
   inline  ::capnp::List<float>::Reader getProbs() const;
@@ -110,12 +110,12 @@ public:
   inline void setIdx( ::uint16_t value);
 
   inline bool hasState();
-  inline  ::capnp::List< ::capnp::List< ::capnp::List<bool>>>::Builder getState();
-  inline void setState( ::capnp::List< ::capnp::List< ::capnp::List<bool>>>::Reader value);
-  inline void setState(::kj::ArrayPtr<const  ::capnp::List< ::capnp::List<bool>>::Reader> value);
-  inline  ::capnp::List< ::capnp::List< ::capnp::List<bool>>>::Builder initState(unsigned int size);
-  inline void adoptState(::capnp::Orphan< ::capnp::List< ::capnp::List< ::capnp::List<bool>>>>&& value);
-  inline ::capnp::Orphan< ::capnp::List< ::capnp::List< ::capnp::List<bool>>>> disownState();
+  inline  ::capnp::List<float>::Builder getState();
+  inline void setState( ::capnp::List<float>::Reader value);
+  inline void setState(::kj::ArrayPtr<const float> value);
+  inline  ::capnp::List<float>::Builder initState(unsigned int size);
+  inline void adoptState(::capnp::Orphan< ::capnp::List<float>>&& value);
+  inline ::capnp::Orphan< ::capnp::List<float>> disownState();
 
   inline bool hasProbs();
   inline  ::capnp::List<float>::Builder getProbs();
@@ -284,33 +284,33 @@ inline bool StateProb::Reader::hasState() const {
 inline bool StateProb::Builder::hasState() {
   return !_builder.getPointerField(0 * ::capnp::POINTERS).isNull();
 }
-inline  ::capnp::List< ::capnp::List< ::capnp::List<bool>>>::Reader StateProb::Reader::getState() const {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::capnp::List< ::capnp::List<bool>>>>::get(
+inline  ::capnp::List<float>::Reader StateProb::Reader::getState() const {
+  return ::capnp::_::PointerHelpers< ::capnp::List<float>>::get(
       _reader.getPointerField(0 * ::capnp::POINTERS));
 }
-inline  ::capnp::List< ::capnp::List< ::capnp::List<bool>>>::Builder StateProb::Builder::getState() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::capnp::List< ::capnp::List<bool>>>>::get(
+inline  ::capnp::List<float>::Builder StateProb::Builder::getState() {
+  return ::capnp::_::PointerHelpers< ::capnp::List<float>>::get(
       _builder.getPointerField(0 * ::capnp::POINTERS));
 }
-inline void StateProb::Builder::setState( ::capnp::List< ::capnp::List< ::capnp::List<bool>>>::Reader value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::capnp::List< ::capnp::List<bool>>>>::set(
+inline void StateProb::Builder::setState( ::capnp::List<float>::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::List<float>>::set(
       _builder.getPointerField(0 * ::capnp::POINTERS), value);
 }
-inline void StateProb::Builder::setState(::kj::ArrayPtr<const  ::capnp::List< ::capnp::List<bool>>::Reader> value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::capnp::List< ::capnp::List<bool>>>>::set(
+inline void StateProb::Builder::setState(::kj::ArrayPtr<const float> value) {
+  ::capnp::_::PointerHelpers< ::capnp::List<float>>::set(
       _builder.getPointerField(0 * ::capnp::POINTERS), value);
 }
-inline  ::capnp::List< ::capnp::List< ::capnp::List<bool>>>::Builder StateProb::Builder::initState(unsigned int size) {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::capnp::List< ::capnp::List<bool>>>>::init(
+inline  ::capnp::List<float>::Builder StateProb::Builder::initState(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::List<float>>::init(
       _builder.getPointerField(0 * ::capnp::POINTERS), size);
 }
 inline void StateProb::Builder::adoptState(
-    ::capnp::Orphan< ::capnp::List< ::capnp::List< ::capnp::List<bool>>>>&& value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::capnp::List< ::capnp::List<bool>>>>::adopt(
+    ::capnp::Orphan< ::capnp::List<float>>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::List<float>>::adopt(
       _builder.getPointerField(0 * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::capnp::List< ::capnp::List< ::capnp::List<bool>>>> StateProb::Builder::disownState() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::capnp::List< ::capnp::List<bool>>>>::disown(
+inline ::capnp::Orphan< ::capnp::List<float>> StateProb::Builder::disownState() {
+  return ::capnp::_::PointerHelpers< ::capnp::List<float>>::disown(
       _builder.getPointerField(0 * ::capnp::POINTERS));
 }
 
