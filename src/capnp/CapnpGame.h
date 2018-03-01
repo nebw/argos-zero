@@ -44,7 +44,7 @@ struct Game {
   class Pipeline;
 
   struct _capnpPrivate {
-    CAPNP_DECLARE_STRUCT_HEADER(a260f669aa063aa8, 5, 1)
+    CAPNP_DECLARE_STRUCT_HEADER(a260f669aa063aa8, 4, 2)
     #if !CAPNP_LITE
     static constexpr ::capnp::_::RawBrandedSchema const* brand = &schema->defaultBrand;
     #endif  // !CAPNP_LITE
@@ -168,7 +168,8 @@ public:
   }
 #endif  // !CAPNP_LITE
 
-  inline  ::uint64_t getId() const;
+  inline bool hasId() const;
+  inline  ::capnp::Text::Reader getId() const;
 
   inline bool hasStateprobs() const;
   inline  ::capnp::List< ::StateProb>::Reader getStateprobs() const;
@@ -211,8 +212,12 @@ public:
   inline ::kj::StringTree toString() const { return asReader().toString(); }
 #endif  // !CAPNP_LITE
 
-  inline  ::uint64_t getId();
-  inline void setId( ::uint64_t value);
+  inline bool hasId();
+  inline  ::capnp::Text::Builder getId();
+  inline void setId( ::capnp::Text::Reader value);
+  inline  ::capnp::Text::Builder initId(unsigned int size);
+  inline void adoptId(::capnp::Orphan< ::capnp::Text>&& value);
+  inline ::capnp::Orphan< ::capnp::Text> disownId();
 
   inline bool hasStateprobs();
   inline  ::capnp::List< ::StateProb>::Builder getStateprobs();
@@ -350,120 +355,138 @@ inline ::capnp::Orphan< ::capnp::List<float>> StateProb::Builder::disownProbs() 
       _builder.getPointerField(1 * ::capnp::POINTERS));
 }
 
-inline  ::uint64_t Game::Reader::getId() const {
-  return _reader.getDataField< ::uint64_t>(
-      0 * ::capnp::ELEMENTS);
+inline bool Game::Reader::hasId() const {
+  return !_reader.getPointerField(0 * ::capnp::POINTERS).isNull();
 }
-
-inline  ::uint64_t Game::Builder::getId() {
-  return _builder.getDataField< ::uint64_t>(
-      0 * ::capnp::ELEMENTS);
+inline bool Game::Builder::hasId() {
+  return !_builder.getPointerField(0 * ::capnp::POINTERS).isNull();
 }
-inline void Game::Builder::setId( ::uint64_t value) {
-  _builder.setDataField< ::uint64_t>(
-      0 * ::capnp::ELEMENTS, value);
+inline  ::capnp::Text::Reader Game::Reader::getId() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(
+      _reader.getPointerField(0 * ::capnp::POINTERS));
+}
+inline  ::capnp::Text::Builder Game::Builder::getId() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(
+      _builder.getPointerField(0 * ::capnp::POINTERS));
+}
+inline void Game::Builder::setId( ::capnp::Text::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::set(
+      _builder.getPointerField(0 * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Text::Builder Game::Builder::initId(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(
+      _builder.getPointerField(0 * ::capnp::POINTERS), size);
+}
+inline void Game::Builder::adoptId(
+    ::capnp::Orphan< ::capnp::Text>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(
+      _builder.getPointerField(0 * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Text> Game::Builder::disownId() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(
+      _builder.getPointerField(0 * ::capnp::POINTERS));
 }
 
 inline bool Game::Reader::hasStateprobs() const {
-  return !_reader.getPointerField(0 * ::capnp::POINTERS).isNull();
+  return !_reader.getPointerField(1 * ::capnp::POINTERS).isNull();
 }
 inline bool Game::Builder::hasStateprobs() {
-  return !_builder.getPointerField(0 * ::capnp::POINTERS).isNull();
+  return !_builder.getPointerField(1 * ::capnp::POINTERS).isNull();
 }
 inline  ::capnp::List< ::StateProb>::Reader Game::Reader::getStateprobs() const {
   return ::capnp::_::PointerHelpers< ::capnp::List< ::StateProb>>::get(
-      _reader.getPointerField(0 * ::capnp::POINTERS));
+      _reader.getPointerField(1 * ::capnp::POINTERS));
 }
 inline  ::capnp::List< ::StateProb>::Builder Game::Builder::getStateprobs() {
   return ::capnp::_::PointerHelpers< ::capnp::List< ::StateProb>>::get(
-      _builder.getPointerField(0 * ::capnp::POINTERS));
+      _builder.getPointerField(1 * ::capnp::POINTERS));
 }
 inline void Game::Builder::setStateprobs( ::capnp::List< ::StateProb>::Reader value) {
   ::capnp::_::PointerHelpers< ::capnp::List< ::StateProb>>::set(
-      _builder.getPointerField(0 * ::capnp::POINTERS), value);
+      _builder.getPointerField(1 * ::capnp::POINTERS), value);
 }
 inline  ::capnp::List< ::StateProb>::Builder Game::Builder::initStateprobs(unsigned int size) {
   return ::capnp::_::PointerHelpers< ::capnp::List< ::StateProb>>::init(
-      _builder.getPointerField(0 * ::capnp::POINTERS), size);
+      _builder.getPointerField(1 * ::capnp::POINTERS), size);
 }
 inline void Game::Builder::adoptStateprobs(
     ::capnp::Orphan< ::capnp::List< ::StateProb>>&& value) {
   ::capnp::_::PointerHelpers< ::capnp::List< ::StateProb>>::adopt(
-      _builder.getPointerField(0 * ::capnp::POINTERS), kj::mv(value));
+      _builder.getPointerField(1 * ::capnp::POINTERS), kj::mv(value));
 }
 inline ::capnp::Orphan< ::capnp::List< ::StateProb>> Game::Builder::disownStateprobs() {
   return ::capnp::_::PointerHelpers< ::capnp::List< ::StateProb>>::disown(
-      _builder.getPointerField(0 * ::capnp::POINTERS));
+      _builder.getPointerField(1 * ::capnp::POINTERS));
 }
 
 inline double Game::Reader::getTimestamp() const {
   return _reader.getDataField<double>(
-      1 * ::capnp::ELEMENTS);
+      0 * ::capnp::ELEMENTS);
 }
 
 inline double Game::Builder::getTimestamp() {
   return _builder.getDataField<double>(
-      1 * ::capnp::ELEMENTS);
+      0 * ::capnp::ELEMENTS);
 }
 inline void Game::Builder::setTimestamp(double value) {
   _builder.setDataField<double>(
-      1 * ::capnp::ELEMENTS, value);
+      0 * ::capnp::ELEMENTS, value);
 }
 
 inline bool Game::Reader::getResult() const {
   return _reader.getDataField<bool>(
-      128 * ::capnp::ELEMENTS);
+      64 * ::capnp::ELEMENTS);
 }
 
 inline bool Game::Builder::getResult() {
   return _builder.getDataField<bool>(
-      128 * ::capnp::ELEMENTS);
+      64 * ::capnp::ELEMENTS);
 }
 inline void Game::Builder::setResult(bool value) {
   _builder.setDataField<bool>(
-      128 * ::capnp::ELEMENTS, value);
+      64 * ::capnp::ELEMENTS, value);
 }
 
 inline  ::uint64_t Game::Reader::getNetwork1() const {
   return _reader.getDataField< ::uint64_t>(
-      3 * ::capnp::ELEMENTS);
+      2 * ::capnp::ELEMENTS);
 }
 
 inline  ::uint64_t Game::Builder::getNetwork1() {
   return _builder.getDataField< ::uint64_t>(
-      3 * ::capnp::ELEMENTS);
+      2 * ::capnp::ELEMENTS);
 }
 inline void Game::Builder::setNetwork1( ::uint64_t value) {
   _builder.setDataField< ::uint64_t>(
-      3 * ::capnp::ELEMENTS, value);
+      2 * ::capnp::ELEMENTS, value);
 }
 
 inline  ::uint64_t Game::Reader::getNetwork2() const {
   return _reader.getDataField< ::uint64_t>(
-      4 * ::capnp::ELEMENTS);
+      3 * ::capnp::ELEMENTS);
 }
 
 inline  ::uint64_t Game::Builder::getNetwork2() {
   return _builder.getDataField< ::uint64_t>(
-      4 * ::capnp::ELEMENTS);
+      3 * ::capnp::ELEMENTS);
 }
 inline void Game::Builder::setNetwork2( ::uint64_t value) {
   _builder.setDataField< ::uint64_t>(
-      4 * ::capnp::ELEMENTS, value);
+      3 * ::capnp::ELEMENTS, value);
 }
 
 inline  ::uint8_t Game::Reader::getBoardsize() const {
   return _reader.getDataField< ::uint8_t>(
-      17 * ::capnp::ELEMENTS);
+      9 * ::capnp::ELEMENTS);
 }
 
 inline  ::uint8_t Game::Builder::getBoardsize() {
   return _builder.getDataField< ::uint8_t>(
-      17 * ::capnp::ELEMENTS);
+      9 * ::capnp::ELEMENTS);
 }
 inline void Game::Builder::setBoardsize( ::uint8_t value) {
   _builder.setDataField< ::uint8_t>(
-      17 * ::capnp::ELEMENTS, value);
+      9 * ::capnp::ELEMENTS, value);
 }
 
 

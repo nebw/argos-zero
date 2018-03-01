@@ -10,7 +10,7 @@ struct StateProb {
 
 struct Game {
 
-    id @0 :UInt64;                          # global unique id of the game
+    id @0 :Text;                            # global unique id of the game in text format
     stateprobs @1 :List(StateProb);         # states and probabilities of the game
     timestamp @2 :Float64;                  # unix time stamp of the game
     result @3 :Bool;                        # 1 white wins, 0 black wins
