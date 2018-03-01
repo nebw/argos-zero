@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(argos-zero)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} /opt/capnproto/cmake)
+
 find_package(Threads)
 #set(Python_ADDITIONAL_VERSIONS 3.6)
 find_package(PythonLibs REQUIRED)
@@ -37,7 +39,3 @@ add_subdirectory(src)
 
 # for capnp
 add_definitions(${CAPNP_DEFINITIONS})
-capnp_generate_cpp(CAPNP_SRCS CAPNP_HDRS MinHash.capnp)
-
-add_executable(test_capnp test_capnp.cpp)
-target_link_libraries(test_capnp ${CAPNP_LIBRARIES})
