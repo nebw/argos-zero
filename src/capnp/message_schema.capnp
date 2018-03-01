@@ -3,8 +3,8 @@
 struct StateProb {
 
     idx @0 :UInt16;                         # sequential index of game move starting at 0
-    state @1 :List(List(List(Bool)));      # the current state representing the board position
-    probs @2 :List(Float32);               # probabilities for each legal move at the given state
+    state @1 :List(Float32);                # the current state representing the board position, flattended array
+    probs @2 :List(Float32);                # probabilities for each legal move at the given state
 
 }
 
