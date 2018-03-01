@@ -1,4 +1,5 @@
 #include "Tree.h"
+#include "BatchProcessor.h"
 #include "Config.h"
 #include "Network.h"
 #include "Node.h"
@@ -11,21 +12,31 @@
 #include <thread>
 
 Tree::Tree()
-    : _gen(_rd())
-{
+    : _evaluationQueue(
+          ConcurrentNodeQueue(config::tree::batchSize * 4, config::tree::numThreads, 0)),
+      _evaluationThreadKeepRunning(true),
+      _evaluationThread(evaluationQueueConsumer, &_evaluationQueue, &_evaluationThreadKeepRunning),
+      _gen(_rd()) {
     const auto position = maybeAddPosition(_rootBoard);
     _rootNode = std::make_shared<Node>(position, Vertex::Invalid());
 
     purgeTranspositionTable();
 
+    moodycamel::ProducerToken token(_evaluationQueue);
     for (size_t i = 0; i < config::tree::numThreads; ++i) {
-        _networks.emplace_back(config::networkPath.string());
-        _networks[i].apply(_rootBoard);
+        EvaluationJob job(_rootBoard.getFeatures().getPlanes());
+        auto future = job.result.get_future();
+        _evaluationQueue.enqueue(token, std::move(job));
+        future.wait();
     }
 }
 
-std::shared_ptr<Position> Tree::maybeAddPosition(const RawBoard& board)
-{
+Tree::~Tree() {
+    _evaluationThreadKeepRunning = {false};
+    _evaluationThread.join();
+}
+
+std::shared_ptr<Position> Tree::maybeAddPosition(const RawBoard& board) {
     const auto hash = board.TranspositionHash();
 
     std::shared_ptr<Position> pos;
@@ -43,17 +54,15 @@ std::shared_ptr<Position> Tree::maybeAddPosition(const RawBoard& board)
     return position;
 }
 
-void Tree::evaluate(const std::chrono::milliseconds duration)
-{
+void Tree::evaluate(const std::chrono::milliseconds duration) {
     const auto start = std::chrono::system_clock::now();
     beginEvaluation();
 
-    std::atomic<bool> keepRunning = { true };
+    std::atomic<bool> keepRunning = {true};
 
     std::vector<std::future<void>> threads;
     for (size_t i = 0; i < config::tree::numThreads; ++i) {
-        Network* net = &_networks[i];
-        auto f = std::async(std::launch::async, &Tree::playout, this, &keepRunning, net);
+        auto f = std::async(std::launch::async, &Tree::playout, this, &keepRunning);
         threads.push_back(std::move(f));
     }
 
@@ -73,16 +82,14 @@ void Tree::evaluate(const std::chrono::milliseconds duration)
     }
 }
 
-void Tree::evaluate(const size_t evaluations)
-{
+void Tree::evaluate(const size_t evaluations) {
     beginEvaluation();
 
-    std::atomic<bool> keepRunning = { true };
+    std::atomic<bool> keepRunning = {true};
 
     std::vector<std::future<void>> threads;
     for (size_t i = 0; i < config::tree::numThreads; ++i) {
-        Network* net = &_networks[i];
-        auto f = std::async(std::launch::async, &Tree::playout, this, &keepRunning, net);
+        auto f = std::async(std::launch::async, &Tree::playout, this, &keepRunning);
         threads.push_back(std::move(f));
     }
 
@@ -110,8 +117,9 @@ void Tree::visitNode(Node* node)
     node->position()->statistics().num_evaluations += 1;
 }
 
-void Tree::playout(std::atomic<bool>* keepRunning, Network* net)
-{
+void Tree::playout(std::atomic<bool>* keepRunning) {
+    moodycamel::ProducerToken token(_evaluationQueue);
+
     do {
         NodeTrace trace;
         Board playoutBoard;
@@ -152,12 +160,15 @@ void Tree::playout(std::atomic<bool>* keepRunning, Network* net)
     } while (keepRunning->load());
 }
 
-Player Tree::rollout(Board playoutBoard, Network* net)
-{
+Player Tree::rollout(Board playoutBoard, ConcurrentNodeQueue& queue,
+                     moodycamel::ProducerToken const& token) {
     while (!playoutBoard.BothPlayerPass()) {
         Player pl = playoutBoard.ActPlayer();
 
-        const Network::Result result = net->apply(playoutBoard);
+        EvaluationJob job(playoutBoard.getFeatures().getPlanes());
+        auto future = job.result.get_future();
+        queue.enqueue(token, std::move(job));
+        const Network::Result result = future.get();
 
         std::vector<float> probabilites;
         std::vector<Vertex> moves;
@@ -217,6 +228,10 @@ void Tree::playMove(const Vertex& vertex)
     if (!_rootNode->isExpanded()) {
         _rootNode->expand(*this, _rootBoard, _networks[0]);
     }
+void Tree::playMove(const Vertex& vertex) {
+    moodycamel::ProducerToken token(_evaluationQueue);
+
+    if (!_rootNode->isExpanded()) { _rootNode->expand(*this, _rootBoard, _evaluationQueue, token); }
     assert(_rootBoard.IsLegal(_rootBoard.ActPlayer(), vertex));
     _rootBoard.PlayLegal(_rootBoard.ActPlayer(), vertex);
 
@@ -224,11 +239,13 @@ void Tree::playMove(const Vertex& vertex)
     purgeTranspositionTable();
 }
 
-void Tree::beginEvaluation()
-{
+void Tree::beginEvaluation() {
+    // one shared token for tree
+    moodycamel::ProducerToken token(_evaluationQueue);
+
     if (!_rootNode->isExpanded()) {
         visitNode(_rootNode.get());
-        _rootNode->expand(*this, _rootBoard, _networks[0]);
+        _rootNode->expand(*this, _rootBoard, _evaluationQueue, token);
         NodeTrace traceCpy;
         traceCpy.Push(_rootNode.get());
         updateStatistics(traceCpy, _rootNode->position()->statistics().value.load());

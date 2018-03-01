@@ -1,5 +1,6 @@
-#include "Config.h"
 #include "Node.h"
+#include "BatchProcessor.h"
+#include "Config.h"
 #include "Position.h"
 #include "Tree.h"
 #include "Util.h"
@@ -7,7 +8,8 @@
 #include <algorithm>
 #include <cassert>
 
-bool Node::expand(Tree& tree, Board const& board, Network& network) {
+bool Node::expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
+                  moodycamel::ProducerToken const& token) {
     std::unique_lock<SpinLock> lock(_expandLock, std::try_to_lock);
     if (!lock.owns_lock()) {
         // if another thread is already expanding the node, don't bother waiting
@@ -17,10 +19,13 @@ bool Node::expand(Tree& tree, Board const& board, Network& network) {
 
     NodeStack children;
     if (!board.BothPlayerPass()) {
-        const Network::Result result = network.apply(board);
+        EvaluationJob job(board.getFeatures().getPlanes());
+        auto future = job.result.get_future();
+        queue.enqueue(token, std::move(job));
+        const Network::Result result = future.get();
 
         if (config::tree::networkRollouts) {
-            const float rolloutValue = tree.rollout(board, &network).ToScore();
+            const float rolloutValue = tree.rollout(board, queue, token).ToScore();
             _position->statistics().value = rolloutValue;
         } else {
             _position->statistics().value = result.value;

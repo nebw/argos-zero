@@ -3,8 +3,11 @@
 #include <boost/optional.hpp>
 #include <memory>
 #include <mutex>
+
 #include <vector>
 
+#include "BatchProcessor.h"
+#include "Network.h"
 #include "SpinLock.h"
 #include "Statistics.h"
 #include "Network.h"
@@ -22,7 +25,8 @@ public:
         : _position(position), _parentMove(parentMove), _isEvaluated(false) {}
 
     inline bool isExpanded() const { return _children.is_initialized(); }
-    bool expand(Tree& tree, Board const& board, Network& network);
+    bool expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
+                moodycamel::ProducerToken const& token);
 
     inline NodeStatistics& statistics() { return _statistics; }
     inline boost::optional<NodeStack> const& children() const { return _children; }

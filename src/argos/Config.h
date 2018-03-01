@@ -14,8 +14,11 @@ static const boost::filesystem::path logFilePath("/home/ben/tmp/argos-dbg.log");
 static const size_t boardSize = BOARDSIZE;
 
 namespace tree {
-    static const size_t numThreads = std::thread::hardware_concurrency() == 0 ? 4 : std::thread::hardware_concurrency();
-    static const size_t randomizeFirstNMoves = 2;
+    static const size_t batchSize = 16;
+    static const size_t numThreads = std::max<size_t>(
+        batchSize,
+        std::thread::hardware_concurrency() == 0 ? 4 : std::thread::hardware_concurrency());
+    static const size_t randomizeFirstNMoves = 0;
     static const size_t numLastRootNodes = 3;
     static const size_t virtualPlayouts = 5;
     static const size_t expandAt = virtualPlayouts + 1;
