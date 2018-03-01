@@ -190,16 +190,14 @@ Vertex Tree::bestMove()
     if ((_rootBoard.MoveCount() < 30) && config::tree::trainingMode) {
         std::vector<float> probabilites;
         probabilites.reserve(_rootNode->children().get().size());
-        size_t totalEvaluations = 0;
         for (const std::shared_ptr<Node>& child : _rootNode->children().get()) {
             size_t NumEvaluations = child->statistics().num_evaluations.load();
             probabilites.push_back(NumEvaluations);
-            totalEvaluations += NumEvaluations;
         }
         for (size_t i=0; i < probabilites.size(); ++i) {
-            probabilites[i] /= totalEvaluations;
+            probabilites[i] /= _rootNode->statistics().num_evaluations.load();
         }
-        std::discrete_distribution<size_t> d(probabilites.begin(), probabilites.end()); // Is this correctly distributed?
+        std::discrete_distribution<size_t> d(probabilites.begin(), probabilites.end());
         return _rootNode->children().get()[d(_gen)]->parentMove();
     }
     else {

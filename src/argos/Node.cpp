@@ -19,7 +19,7 @@ bool Node::expand(Tree& tree, Board const& board, Network& network) {
     if (!board.BothPlayerPass()) {
         const Network::Result result = network.apply(board);
 
-        if (config::tree::trainingMode) {
+        if (!(config::tree::trainingMode)) { //TODO: Delete "!"
             const float rolloutValue = tree.rollout(board, &network).ToScore();
             _position->statistics().value = rolloutValue;
         } else {

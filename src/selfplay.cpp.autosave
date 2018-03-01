@@ -26,8 +26,6 @@ int main() {
 
         std::cout << "Evaluating in " << format_duration(time) << std::endl;
         tc[actPl].timedAction([&]() { tree.evaluate(time); });
-        std::cout << "miau";
-
         std::cout << "Best move: " << tree.bestMove().ToGtpString() << std::endl;
         const auto winrate = tree.rootNode()->winrate(tree.rootBoard().ActPlayer());
 
