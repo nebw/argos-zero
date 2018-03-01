@@ -8,7 +8,7 @@ project(argos-zero)
 find_package(Threads)
 #set(Python_ADDITIONAL_VERSIONS 3.6)
 find_package(PythonLibs REQUIRED)
-find_package(Boost COMPONENTS system filesystem python REQUIRED)
+find_package(Boost COMPONENTS system filesystem program_options python REQUIRED)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -fPIC -fpermissive")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og -ggdb3 -fno-omit-frame-pointer")# -fsanitize=address")

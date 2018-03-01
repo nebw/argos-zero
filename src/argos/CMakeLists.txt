@@ -21,4 +21,5 @@ add_library(argos ${src} ${ego_src})
 target_link_libraries(argos
     ${CMAKE_THREAD_LIBS_INIT}
     ${Boost_FILESYSTEM_LIBRARY}
+    ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_SYSTEM_LIBRARY})
