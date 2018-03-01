@@ -8,7 +8,7 @@ set(src
     ThreadPool.h ThreadPool.cpp
     TimeControl.h TimeControl.cpp
     Statistics.h
-    Config.h
+    Config.h Config.cpp
     SpinLock.h)
 
 file(GLOB_RECURSE ego_src
