@@ -187,36 +187,7 @@ Player Tree::rollout(Board playoutBoard, Network* net)
 Vertex Tree::bestMove()
 {
     assert(_rootNode->isExpanded());
-
-    if (_rootBoard.MoveCount() < config::tree::randomizeFirstNMoves) {
-        std::vector<float> probabilites;
-        probabilites.reserve(_rootNode->children().get().size());
-        for (const std::shared_ptr<Node>& child : _rootNode->children().get()) {
-            probabilites.push_back(child->statistics().num_evaluations.load());
-        }
-        std::discrete_distribution<size_t> d(probabilites.begin(), probabilites.end());
-
-        return _rootNode->children().get()[d(_gen)]->parentMove();
-        // TODO: Check if this code is still needed. Do we need random play for the first 2 moves?
-    } else {
-        Node::NodeStack const& children = _rootNode->children().value();
-        size_t bestIdx = 0;
-        float maxRollouts = -1.f;
-        for (size_t i = 0; i < children.size(); ++i) {
-            if (children[i]->statistics().num_evaluations > maxRollouts) {
-                maxRollouts = children[i]->statistics().num_evaluations;
-                bestIdx = i;
-            }
-        }
-
-        return children[bestIdx]->parentMove();
-    }
-}
-
-Vertex Tree::bestMove2()
-{
-    assert(_rootNode->isExpanded());
-    if (_rootBoard.MoveCount() < 30) {
+    if ((_rootBoard.MoveCount() < 30) && config::tree::trainingMode) {
         std::vector<float> probabilites;
         probabilites.reserve(_rootNode->children().get().size());
         size_t totalEvaluations = 0;
@@ -225,12 +196,13 @@ Vertex Tree::bestMove2()
             probabilites.push_back(NumEvaluations);
             totalEvaluations += NumEvaluations;
         }
-
-        std::discrete_distribution<size_t> d(probabilites.begin(), probabilites.end());
-
+        for (size_t i=0; i < probabilites.size(); ++i) {
+            probabilites[i] /= totalEvaluations;
+        }
+        std::discrete_distribution<size_t> d(probabilites.begin(), probabilites.end()); // Is this correctly distributed?
         return _rootNode->children().get()[d(_gen)]->parentMove();
-        // TODO: Check if this code is still needed. Do we need random play for the first 2 moves?
-    } else {
+    }
+    else {
         Node::NodeStack const& children = _rootNode->children().value();
         size_t bestIdx = 0;
         float maxRollouts = -1.f;
