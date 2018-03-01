@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <random>
 
 #include "argos/Config.h"
 #include "argos/TimeControl.h"
@@ -17,6 +18,13 @@ int main() {
     NatMap<Player, BasicTimeControl> tc;
     tc[Player::Black()] = BasicTimeControl(config::engine::totalTime);
     tc[Player::White()] = BasicTimeControl(config::engine::totalTime);
+
+    bool noResignMode = false;
+    std::default_random_engine generator;
+    std::uniform_real_distribution<double> distribution(0.0,1.0);
+    if (distribution(generator)<0.1f) {
+        noResignMode = true;
+    }
 
     while ((!tree.rootBoard().BothPlayerPass())) {
         const Player actPl = tree.rootBoard().ActPlayer();
