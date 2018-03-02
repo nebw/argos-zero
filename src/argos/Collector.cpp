@@ -6,6 +6,9 @@
 #include <string>
 #include <vector>
 
+// to write file
+#include <stdio.h>
+
 #include "Config.h"
 #include "TimeControl.h"
 #include "Tree.h"
@@ -91,9 +94,9 @@ void Collector::collectMove(const Tree& tree){
 }
 
 void Collector::sendData(const Tree& tree){
-    int sockfd;
+    //int sockfd;
     // get the Socket fd for server at port
-    sockfd = connectToServer(this->_server, this->_port);
+    //sockfd = connectToServer(this->_server, this->_port);
 
     // serialize collected info into capnp Message
     std::uint16_t a, b, i, j, k;
@@ -145,6 +148,15 @@ void Collector::sendData(const Tree& tree){
     int binarized_result = (result + 1)/2;
     bool res = binarized_result;
     game.setResult(res);
+
+
+    // for testing purpose write capnp files to disk, not to network
+    FILE* capnp_file;
+    capnp_file = fopen("/home/franziska/capnp_test", "w");
+    if (capnp_file!=NULL){
+        writePackedMessageToFd(fileno(capnp_file), message);
+        fclose(capnp_file);
+    }
 
 
 
