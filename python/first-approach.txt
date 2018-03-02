@@ -1,0 +1,45 @@
+data= mx.sym.Variable('data')
+net = mx.sym.Convolution(data=data,kernel=(3,3),num_filter=num_filters,pad=(1,1))
+net = mx.sym.LeakyReLU(data=net,slope=0.3)
+__Block 4mal ___
+net = mx.sym.BatchNorm(data=net)
+net = mx.sym.LeakyReLU(data=net,slope=0.3)
+net = mx.sym.Convolution(data=net,kernel=(3,3),num_filter=?)
+net = mx.sym.BatchNorm(data=net)
+net = mx.sym.LeakyReLU(data=net,slope=0.3)
+net = mx.sym.Convolution(data=net,kernel=(3,3),num_filter=?,stride=(1,1))
+________________
+net = mx.sym.Convolution(data=net,kernel=(3,3),num_filter=?,stride=(1,1),pad=(1,1))
+net = mx.sym.LeakyReLU(data=net,slope=0.3)
+_
+value = mx.sym.Convolution(data=net,kernel=(3,3),num_filter=2,pad=(1,1))
+value = mx.sym.LeakyReLU(data=value,slope=0.3)
+value = mx.sym.Flatten(data=value)
+value = mx.sym.FullyConnected(data=value,num_hidden=num_filters)
+value = mx.sym.LeakyReLU(data=value,slope=0.3)
+value = mx.sym.FullyConnected(data=value,num_hidden=1)
+value = mx.sym.Activation(data=value,act_type="sigmoid")
+_
+policy = mx.sym.Convolution(data=net,kernel=(3,3),num_filter=2,pad=(1,1))
+policy = mx.sym.LeakyReLU(data=policy,slope=0.3)
+policy = mx.sym.Flatten(data=policy)
+policy = mx.sym.FullyConnected(data=policy,num_hidden=(19*19+1)*2)
+policy = mx.sym.LeakyReLU(data=policy,slope=0.3)
+policy = mx.sym.FullyConnected(data=policy,num_hidden=19*19+1)
+policy = mx.sym.SoftmaxOutput(data=policy)
+
+output= mx.symbol.Group([value, policy])
+
+model = mx.mod.Module(
+    context            = device,
+    symbol             = output
+    label_names = ('value_label', 'policy_label'))
+
+model.fit(
+    train_data         = ???,
+    eval_data          = ???,
+    eval_metric        = ???,
+    num_epoch          = ???,
+    optimizer_params   = (('learning_rate', ???), ('momentum', 0.9), ('wd', 0.00001)),
+    initializer        = mx.init.Xavier(factor_type="in", magnitude=2.34),
+    batch_end_callback = mx.callback.Speedometear(batch_size, 50))
