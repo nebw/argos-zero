@@ -9,7 +9,8 @@ set(src
     TimeControl.h TimeControl.cpp
     Statistics.h
     Config.h
-    SpinLock.h)
+    SpinLock.h
+    Collector.h Collector.cpp)
 
 file(GLOB_RECURSE ego_src
     "${PROJECT_SOURCE_DIR}/src/ego/*.cpp"
