@@ -17,7 +17,7 @@ int main() {
 
     // if network variable set: collect information
     // if yes, where to send them (IP Adress:port)
-    bool collect_data = 0;
+    bool collect_data = 1;
 
     string server = "hallo";
     int port = 80;
