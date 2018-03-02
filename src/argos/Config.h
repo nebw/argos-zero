@@ -74,7 +74,7 @@ namespace ArgosConfig
     public:
         static const constexpr int DEFAULT_C = 80;
         static const constexpr int DEFAULT_MAX_PLY = 80;
-        static const constexpr std::chrono::milliseconds DEFAULT_DELAY = std::chrono::milliseconds(10);
+        static const constexpr int DEFAULT_DELAY = 10;
     public:
         class Builder final
         {
@@ -82,7 +82,7 @@ namespace ArgosConfig
         private:
             int _C = DEFAULT_C;
             int _maxPly = DEFAULT_MAX_PLY;
-            std::chrono::milliseconds _delay = DEFAULT_DELAY;
+            std::chrono::milliseconds _delay = std::chrono::milliseconds(DEFAULT_DELAY);
         public:
             Builder C(const int& C) { _C = C; return *this; }
             Builder maxPly(const int& maxPly) { _maxPly = maxPly; return *this; }
@@ -105,14 +105,14 @@ namespace ArgosConfig
 
     public:
         static const constexpr float DEFAULT_RESIGN_THRESHOLD = 0.1f;
-        static const constexpr std::chrono::milliseconds DEFAULT_TOTAL_TIME = std::chrono::milliseconds(1000 * 60 * 10);
+        static const constexpr int DEFAULT_TOTAL_TIME = 1000 * 60 * 10;
     public:
         class Builder final
         {
             friend class Engine;
         private:
             float _resignThreshold = DEFAULT_RESIGN_THRESHOLD;
-            std::chrono::milliseconds _totalTime = DEFAULT_TOTAL_TIME;
+            std::chrono::milliseconds _totalTime = std::chrono::milliseconds(DEFAULT_TOTAL_TIME);
         public:
             Builder resignThreshold(const float& resignThreshold) { _resignThreshold = resignThreshold; return *this; }
             Builder totalTime(const std::chrono::milliseconds& totalTime) { _totalTime = totalTime; return *this; }
