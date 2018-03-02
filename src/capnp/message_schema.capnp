@@ -14,8 +14,8 @@ struct Game {
     stateprobs @1 :List(StateProb);         # states and probabilities of the game
     timestamp @2 :Float64;                  # unix time stamp of the game
     result @3 :Bool;                        # 1 white wins, 0 black wins
-    network1 @4 :UInt64;                    # network that played player one in the selfplay
-    network2 @5 :UInt64;                    # network that played player two in the selfplay
+    network1 @4 :Text;                      # network that played player one in the selfplay
+    network2 @5 :Text;                      # network that played player two in the selfplay
     boardsize @6: UInt8;                    # size of the board, 19 in real go, anything smaller to speed up training
 
 }

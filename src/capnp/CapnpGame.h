@@ -44,7 +44,7 @@ struct Game {
   class Pipeline;
 
   struct _capnpPrivate {
-    CAPNP_DECLARE_STRUCT_HEADER(a260f669aa063aa8, 4, 2)
+    CAPNP_DECLARE_STRUCT_HEADER(a260f669aa063aa8, 2, 4)
     #if !CAPNP_LITE
     static constexpr ::capnp::_::RawBrandedSchema const* brand = &schema->defaultBrand;
     #endif  // !CAPNP_LITE
@@ -178,9 +178,11 @@ public:
 
   inline bool getResult() const;
 
-  inline  ::uint64_t getNetwork1() const;
+  inline bool hasNetwork1() const;
+  inline  ::capnp::Text::Reader getNetwork1() const;
 
-  inline  ::uint64_t getNetwork2() const;
+  inline bool hasNetwork2() const;
+  inline  ::capnp::Text::Reader getNetwork2() const;
 
   inline  ::uint8_t getBoardsize() const;
 
@@ -232,11 +234,19 @@ public:
   inline bool getResult();
   inline void setResult(bool value);
 
-  inline  ::uint64_t getNetwork1();
-  inline void setNetwork1( ::uint64_t value);
+  inline bool hasNetwork1();
+  inline  ::capnp::Text::Builder getNetwork1();
+  inline void setNetwork1( ::capnp::Text::Reader value);
+  inline  ::capnp::Text::Builder initNetwork1(unsigned int size);
+  inline void adoptNetwork1(::capnp::Orphan< ::capnp::Text>&& value);
+  inline ::capnp::Orphan< ::capnp::Text> disownNetwork1();
 
-  inline  ::uint64_t getNetwork2();
-  inline void setNetwork2( ::uint64_t value);
+  inline bool hasNetwork2();
+  inline  ::capnp::Text::Builder getNetwork2();
+  inline void setNetwork2( ::capnp::Text::Reader value);
+  inline  ::capnp::Text::Builder initNetwork2(unsigned int size);
+  inline void adoptNetwork2(::capnp::Orphan< ::capnp::Text>&& value);
+  inline ::capnp::Orphan< ::capnp::Text> disownNetwork2();
 
   inline  ::uint8_t getBoardsize();
   inline void setBoardsize( ::uint8_t value);
@@ -447,32 +457,68 @@ inline void Game::Builder::setResult(bool value) {
       64 * ::capnp::ELEMENTS, value);
 }
 
-inline  ::uint64_t Game::Reader::getNetwork1() const {
-  return _reader.getDataField< ::uint64_t>(
-      2 * ::capnp::ELEMENTS);
+inline bool Game::Reader::hasNetwork1() const {
+  return !_reader.getPointerField(2 * ::capnp::POINTERS).isNull();
+}
+inline bool Game::Builder::hasNetwork1() {
+  return !_builder.getPointerField(2 * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::Text::Reader Game::Reader::getNetwork1() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(
+      _reader.getPointerField(2 * ::capnp::POINTERS));
+}
+inline  ::capnp::Text::Builder Game::Builder::getNetwork1() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(
+      _builder.getPointerField(2 * ::capnp::POINTERS));
+}
+inline void Game::Builder::setNetwork1( ::capnp::Text::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::set(
+      _builder.getPointerField(2 * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Text::Builder Game::Builder::initNetwork1(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(
+      _builder.getPointerField(2 * ::capnp::POINTERS), size);
+}
+inline void Game::Builder::adoptNetwork1(
+    ::capnp::Orphan< ::capnp::Text>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(
+      _builder.getPointerField(2 * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Text> Game::Builder::disownNetwork1() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(
+      _builder.getPointerField(2 * ::capnp::POINTERS));
 }
 
-inline  ::uint64_t Game::Builder::getNetwork1() {
-  return _builder.getDataField< ::uint64_t>(
-      2 * ::capnp::ELEMENTS);
+inline bool Game::Reader::hasNetwork2() const {
+  return !_reader.getPointerField(3 * ::capnp::POINTERS).isNull();
 }
-inline void Game::Builder::setNetwork1( ::uint64_t value) {
-  _builder.setDataField< ::uint64_t>(
-      2 * ::capnp::ELEMENTS, value);
+inline bool Game::Builder::hasNetwork2() {
+  return !_builder.getPointerField(3 * ::capnp::POINTERS).isNull();
 }
-
-inline  ::uint64_t Game::Reader::getNetwork2() const {
-  return _reader.getDataField< ::uint64_t>(
-      3 * ::capnp::ELEMENTS);
+inline  ::capnp::Text::Reader Game::Reader::getNetwork2() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(
+      _reader.getPointerField(3 * ::capnp::POINTERS));
 }
-
-inline  ::uint64_t Game::Builder::getNetwork2() {
-  return _builder.getDataField< ::uint64_t>(
-      3 * ::capnp::ELEMENTS);
+inline  ::capnp::Text::Builder Game::Builder::getNetwork2() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(
+      _builder.getPointerField(3 * ::capnp::POINTERS));
 }
-inline void Game::Builder::setNetwork2( ::uint64_t value) {
-  _builder.setDataField< ::uint64_t>(
-      3 * ::capnp::ELEMENTS, value);
+inline void Game::Builder::setNetwork2( ::capnp::Text::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::set(
+      _builder.getPointerField(3 * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Text::Builder Game::Builder::initNetwork2(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(
+      _builder.getPointerField(3 * ::capnp::POINTERS), size);
+}
+inline void Game::Builder::adoptNetwork2(
+    ::capnp::Orphan< ::capnp::Text>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(
+      _builder.getPointerField(3 * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Text> Game::Builder::disownNetwork2() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(
+      _builder.getPointerField(3 * ::capnp::POINTERS));
 }
 
 inline  ::uint8_t Game::Reader::getBoardsize() const {
