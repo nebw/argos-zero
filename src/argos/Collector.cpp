@@ -137,9 +137,8 @@ void Collector::sendData(const Tree& tree){
     // serialize collected info into capnp Message
     std::uint16_t a, b, i, j, k;
     std::uint16_t num_moves = _states.size();
-
-    std::uint16_t num_flattened_features = board_size * board_size * 8; // try to replace hardcoding of 8!
-
+    std::uint16_t num_features = NetworkFeatures::NUM_FEATURES;
+    std::uint16_t num_flattened_features = board_size * board_size * num_features;
     ::capnp::MallocMessageBuilder message;
     Game::Builder game = message.initRoot<Game>();
     ::capnp::List<StateProb>::Builder stateprobs = game.initStateprobs(num_moves);
@@ -161,7 +160,7 @@ void Collector::sendData(const Tree& tree){
         for (i=0;i<board_size;i++){
             for (j=0;j<board_size;j++){
                 for (k=0;k<8;k++){
-                    int ind = board_size * 8 * i + 8 * j + k;
+                    int ind = board_size * num_features * i + num_features * j + k;
                     cstates.set(ind, _states[a][i][j][k]);
                 }
             }
@@ -177,8 +176,9 @@ void Collector::sendData(const Tree& tree){
 
     game.setBoardsize(board_size);
 
-    game.setNetwork1(0); // to be initialized with the correct network idea
-    game.setNetwork2(0);
+    auto netID = config::networkPath.filename().string();
+    game.setNetwork1(netID);
+    game.setNetwork2(netID);
 
     int result = tree.rootBoard().PlayoutWinner().ToScore(); // ToScore (Black()) == 1, ToScore (White()) == -1
     int binarized_result = (result + 1)/2;
