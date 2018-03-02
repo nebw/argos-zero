@@ -175,3 +175,7 @@ $RECYCLE.BIN/
 
 # QtCreator user files
 *.user
+
+#IDE CLion
+.idea/
+cmake-build-debug/
