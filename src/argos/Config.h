@@ -11,7 +11,9 @@ static const MXNET_DEVICE_TYPE defaultDevice = CPU;
 static const boost::filesystem::path networkPath("/home/franziska/Downloads/randomnet_small_9x9");
 static const boost::filesystem::path logFilePath("/home/franziska/Documents/Master/sem1/argos-dbg.log");
 
+
 static const size_t boardSize = BOARDSIZE;
+
 
 namespace tree {
     static const size_t numThreads = std::thread::hardware_concurrency() == 0 ? 4 : std::thread::hardware_concurrency();
@@ -21,6 +23,7 @@ namespace tree {
     static const size_t expandAt = virtualPlayouts + 1;
     static const float priorC = 5;
     static const bool networkRollouts = false;
+    static const bool trainingMode = true;
 }  // namespace tree
 
 namespace time {

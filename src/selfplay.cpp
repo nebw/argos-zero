@@ -7,6 +7,9 @@
 
 #include "boost/optional.hpp"
 
+#include <random>
+
+
 #include "argos/Config.h"
 #include "argos/TimeControl.h"
 #include "argos/Tree.h"
@@ -35,6 +38,14 @@ int main() {
     tc[Player::Black()] = BasicTimeControl(config::engine::totalTime);
     tc[Player::White()] = BasicTimeControl(config::engine::totalTime);
 
+    float resignationThreshold = 0.1f;
+
+    bool noResignMode = false;
+    std::default_random_engine generator;
+    std::uniform_real_distribution<double> distribution(0.0,1.0);
+    if (distribution(generator)<0.1f) {
+        noResignMode = true;
+    }
 
     while ((!tree.rootBoard().BothPlayerPass())) {
         const Player actPl = tree.rootBoard().ActPlayer();
@@ -47,10 +58,12 @@ int main() {
 
         std::cout << "Best move: " << tree.bestMove().ToGtpString() << std::endl;
         const auto winrate = tree.rootNode()->winrate(tree.rootBoard().ActPlayer());
-        if (winrate < .1f) {
+
+        if ((winrate < resignationThreshold) && !(noResignMode)){
             std::cout << tree.rootBoard().ActPlayer().ToGtpString() << " resigns." << std::endl;
             break;
         }
+
         const Vertex move = tree.bestMove();
 
         printTree(tree.rootNode().get(), tree.rootBoard().ActPlayer());
@@ -64,6 +77,10 @@ int main() {
         tree.playMove(move);
 
         std::cout << tree.rootBoard().ToAsciiArt(move) << std::endl;
+
+
+        // TODO: Append new board state and predictions to Game list
+
     }
 
     // convert what we collected to capnp messages
@@ -72,4 +89,9 @@ int main() {
         collector.get().sendData(tree);
     }
 
+
+    //TODO: Export game
+
 }
+
+// TODO: Export Game
