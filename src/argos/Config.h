@@ -8,10 +8,12 @@ enum MXNET_DEVICE_TYPE { CPU = 1, GPU = 2, CPU_PINNED = 3 };
 
 static const MXNET_DEVICE_TYPE defaultDevice = CPU;
 
-static const boost::filesystem::path networkPath("/home/ben/tmp/expertnet_small");
-static const boost::filesystem::path logFilePath("/home/ben/tmp/argos-dbg.log");
+
+static const boost::filesystem::path networkPath("/home/julianstastny/Documents/Softwareprojekt/expertnet_small");
+static const boost::filesystem::path logFilePath("/home/julianstastny/Documents/Softwareprojekt/log");
 
 static const size_t boardSize = BOARDSIZE;
+
 
 namespace tree {
     static const size_t numThreads = std::thread::hardware_concurrency() == 0 ? 4 : std::thread::hardware_concurrency();
@@ -21,6 +23,7 @@ namespace tree {
     static const size_t expandAt = virtualPlayouts + 1;
     static const float priorC = 5;
     static const bool networkRollouts = false;
+    static const bool trainingMode = true;
 }  // namespace tree
 
 namespace time {

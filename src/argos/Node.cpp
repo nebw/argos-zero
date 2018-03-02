@@ -19,7 +19,7 @@ bool Node::expand(Tree& tree, Board const& board, Network& network) {
     if (!board.BothPlayerPass()) {
         const Network::Result result = network.apply(board);
 
-        if (config::tree::networkRollouts) {
+        if (!(config::tree::trainingMode)) { //TODO: Delete "!"
             const float rolloutValue = tree.rollout(board, &network).ToScore();
             _position->statistics().value = rolloutValue;
         } else {
@@ -52,6 +52,14 @@ bool Node::expand(Tree& tree, Board const& board, Network& network) {
 
     _children = children;
     return true;
+}
+
+float Node::getPrior() {
+    return _position->statistics().prior;
+}
+
+void Node::setPrior(float prior) {
+    _position->statistics().prior = prior;
 }
 
 void Node::addPrior(float prior) {
