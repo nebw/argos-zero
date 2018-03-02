@@ -31,7 +31,7 @@ include_directories(${CAPNP_INCLUDE_DIRS})
 
 link_directories("${MXNET_PATH}/lib")
 
-add_definitions(-DBOARDSIZE=19)
+add_definitions(-DBOARDSIZE=9)
 
 add_subdirectory(src)
 

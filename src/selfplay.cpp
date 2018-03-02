@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "boost/optional.hpp"
+
 #include "argos/Config.h"
 #include "argos/TimeControl.h"
 #include "argos/Tree.h"
@@ -19,7 +21,7 @@ int main() {
 
     string server = "hallo";
     int port = 80;
-    Collector collector;
+    boost::optional<Collector> collector;
 
     if (collect_data){
         collector = Collector(server, port);
@@ -55,7 +57,7 @@ int main() {
 
         // fill capnp struct statprob for the move
         if (collect_data){
-            collector.collectMove(&tree);
+            collector.get().collectMove(tree);
         }
 
 
@@ -67,7 +69,7 @@ int main() {
     // convert what we collected to capnp messages
     // only possible here and not before because we do not know the number of moves in advance
     if (collect_data){
-        collector.sendData(&tree);
+        collector.get().sendData(tree);
     }
 
 }
