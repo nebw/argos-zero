@@ -13,7 +13,7 @@ class Referee(Player):
     for move in moveList:
       pl = players[currentPlayer]
       self.applyMove(pl, move)
-      currentPlayer = (currentPlayer + 1)%2
+      currentPlayer = (currentPlayer + 1) % 2
     
     # get result
     self.runCommand("final_score")

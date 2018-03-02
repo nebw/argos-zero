@@ -1,0 +1,4 @@
+gnugo
+[1550, 50, 0.01]
+./precompiled_gtp9_random
+[1000, 100 , 0.01]
