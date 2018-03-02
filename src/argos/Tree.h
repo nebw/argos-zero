@@ -24,6 +24,7 @@ typedef FastStack<Node*, config::boardSize * config::boardSize * 3> NodeTrace;
 class Tree {
 public:
     Tree();
+    ~Tree();
 
     std::shared_ptr<Position> maybeAddPosition(const RawBoard &board);
     void evaluate(const std::chrono::milliseconds duration);

@@ -96,8 +96,9 @@ void Tree::evaluate(const size_t evaluations) {
     for (;;) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
-        if (static_cast<int>(_rootNode->statistics().num_evaluations.load()) - static_cast<int>(config::tree::numThreads * config::tree::virtualPlayouts) >= static_cast<int>(evaluations))
-        {
+        if (static_cast<int>(_rootNode->statistics().num_evaluations.load()) -
+                static_cast<int>(config::tree::numThreads * config::tree::virtualPlayouts) >=
+            static_cast<int>(evaluations)) {
             break;
         }
     }
@@ -111,13 +112,14 @@ void Tree::evaluate(const size_t evaluations) {
 
 void Tree::setKomi(float komi) { _rootBoard.SetKomi(komi); }
 
-void Tree::visitNode(Node* node)
-{
-    node->statistics().num_evaluations += config::tree::virtualPlayouts;
+void Tree::visitNode(Node* node) {
+    node->statistics().num_evaluations += config::tree::virtualPlayouts + 1;
     node->position()->statistics().num_evaluations += 1;
 }
 
 void Tree::playout(std::atomic<bool>* keepRunning) {
+    resetThreadAffinity();
+
     moodycamel::ProducerToken token(_evaluationQueue);
 
     do {
@@ -137,16 +139,20 @@ void Tree::playout(std::atomic<bool>* keepRunning) {
         }
 
         // if node is terminal
-        if (node->isExpanded() && (node->children())->empty()) {
-            updateStatistics(trace, playoutBoard.PlayoutWinner().ToScore());
+        if (node->isExpanded() && node->isTerminal()) {
+            updateStatistics(trace, node->statistics().playout_score.load());
             continue;
         }
 
         // expand node
         if (node->statistics().num_evaluations.load() >= config::tree::expandAt) {
-            const bool isExpandingThread = node->expand(*this, playoutBoard, *net);
+            const bool isExpandingThread = node->expand(*this, playoutBoard, _evaluationQueue, token);
             if (isExpandingThread) {
-                updateStatistics(trace, node->position()->statistics().value.load());
+                if (node->isTerminal()) {
+                    updateStatistics(trace, node->statistics().playout_score.load());
+                } else {
+                    updateStatistics(trace, node->position()->statistics().value.load());
+                }
             } else {
                 while (!trace.IsEmpty()) {
                     Node* node = trace.PopTop();
@@ -155,6 +161,7 @@ void Tree::playout(std::atomic<bool>* keepRunning) {
                 }
             }
         } else {
+            assert(false);
             updateStatistics(trace, node->position()->statistics().value.load());
         }
     } while (keepRunning->load());
@@ -178,10 +185,12 @@ Player Tree::rollout(Board playoutBoard, ConcurrentNodeQueue& queue,
                 size_t posIdx;
                 if (v == Vertex::Pass()) {
                     posIdx = config::boardSize * config::boardSize;
+                    probabilites.push_back(result.candidates[posIdx].prior);
+                    //probabilites.push_back(0.f);
                 } else {
                     posIdx = v.GetRow() * config::boardSize + v.GetColumn();
+                    probabilites.push_back(result.candidates[posIdx].prior);
                 }
-                probabilites.push_back(result.candidates[posIdx].prior);
                 moves.push_back(v);
             }
         });
@@ -195,8 +204,7 @@ Player Tree::rollout(Board playoutBoard, ConcurrentNodeQueue& queue,
     return playoutBoard.PlayoutWinner();
 }
 
-Vertex Tree::bestMove()
-{
+Vertex Tree::bestMove() {
     assert(_rootNode->isExpanded());
 
     if (_rootBoard.MoveCount() < config::tree::randomizeFirstNMoves) {
@@ -223,11 +231,6 @@ Vertex Tree::bestMove()
     }
 }
 
-void Tree::playMove(const Vertex& vertex)
-{
-    if (!_rootNode->isExpanded()) {
-        _rootNode->expand(*this, _rootBoard, _networks[0]);
-    }
 void Tree::playMove(const Vertex& vertex) {
     moodycamel::ProducerToken token(_evaluationQueue);
 
@@ -252,17 +255,15 @@ void Tree::beginEvaluation() {
     }
 }
 
-void Tree::updateStatistics(NodeTrace& trace, float score) const
-{
+void Tree::updateStatistics(NodeTrace& trace, float score) const {
     while (!trace.IsEmpty()) {
         Node* node = trace.PopTop();
         node->addEvaluation(score);
-        node->statistics().num_evaluations -= (config::tree::virtualPlayouts - 1);
+        node->statistics().num_evaluations -= (config::tree::virtualPlayouts);
     }
 }
 
-void Tree::setRootNode(const Vertex& vertex)
-{
+void Tree::setRootNode(const Vertex& vertex) {
     _lastRootNodes.push(_rootNode);
     while (_lastRootNodes.size() > config::tree::numLastRootNodes) {
         _lastRootNodes.pop();
@@ -284,12 +285,9 @@ void Tree::setRootNode(const Vertex& vertex)
     assert(found);
 }
 
-void Tree::purgeTranspositionTable()
-{
+void Tree::purgeTranspositionTable() {
     auto lt = _transpositionTable.lock_table();
     for (const auto& it : lt) {
-        if (it.second.expired()) {
-            lt.erase(it.first);
-        }
+        if (it.second.expired()) { lt.erase(it.first); }
     }
 }

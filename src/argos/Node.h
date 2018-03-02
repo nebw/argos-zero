@@ -10,7 +10,6 @@
 #include "Network.h"
 #include "SpinLock.h"
 #include "Statistics.h"
-#include "Network.h"
 #include "ego.hpp"
 
 class Position;
@@ -22,7 +21,10 @@ public:
     typedef std::vector<NodeSPtr> NodeStack;
 
     Node(std::shared_ptr<Position> position, Vertex const& parentMove)
-        : _position(position), _parentMove(parentMove), _isEvaluated(false) {}
+        : _position(position),
+          _parentMove(parentMove),
+          _isEvaluated(false),
+          _isTerminalNode(false) {}
 
     inline bool isExpanded() const { return _children.is_initialized(); }
     bool expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
@@ -33,6 +35,7 @@ public:
     inline std::shared_ptr<Position> const& position() const { return _position; }
     inline Vertex const& parentMove() const { return _parentMove; }
     inline bool isEvaluated() const { return _isEvaluated; }
+    inline bool isTerminal() const { return _isTerminalNode; }
 
     float getUCTValue(Node& parent) const;
     NodeSPtr const& getBestUCTChild();
@@ -49,6 +52,7 @@ private:
     Vertex _parentMove;
     SpinLock _expandLock;
     bool _isEvaluated;
+    bool _isTerminalNode;
 
     void addPrior(float prior);
 };

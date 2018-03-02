@@ -53,15 +53,19 @@ bool Node::expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
 
             children.push_back(child);
         }
+
+        if (legalMoves.empty()) { _isTerminalNode = true; }
+    } else {
+        _isTerminalNode = true;
     }
+
+    _statistics.playout_score = {static_cast<float>(board.PlayoutWinner().ToScore())};
 
     _children = children;
     return true;
 }
 
-void Node::addPrior(float prior) {
-    _position->statistics().prior = prior;
-}
+void Node::addPrior(float prior) { _position->statistics().prior = prior; }
 
 float Node::getUCTValue(Node& parent) const {
     const float winRate = winrate(parent.position()->actPlayer());
@@ -131,8 +135,15 @@ const std::shared_ptr<Node>& Node::getMostVisitsChild() {
 float Node::winrate(const Player& player) const {
     const auto& p = _position.get()->statistics();
 
-    float value = ((static_cast<float>(p.sum_value_evaluations.load()) /
-        std::max(1.f, static_cast<float>(p.num_evaluations.load()))) + 1.f) / 2.f;
+    float value;
+    if (_isTerminalNode) {
+        value = (_statistics.playout_score.load() + 1.f) / 2.f;
+    } else {
+        const float sum_eval = static_cast<float>(p.sum_value_evaluations.load());
+        const float num_eval = static_cast<float>(p.num_evaluations.load());
+        value = ((sum_eval / std::max(1.f, num_eval)) + 1.f) / 2.f;
+    }
+
     if (player == Player::White()) { value = 1.f - value; }
 
     return value;

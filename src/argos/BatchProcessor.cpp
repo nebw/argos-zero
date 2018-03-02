@@ -1,7 +1,10 @@
 #include "BatchProcessor.h"
 #include "Config.h"
+#include "Util.h"
 
 void evaluationQueueConsumer(ConcurrentNodeQueue* evaluationQueue, std::atomic<bool>* keepRunning) {
+    resetThreadAffinity();
+
     moodycamel::ConsumerToken token(*evaluationQueue);
 
     Network net(config::networkPath.string());

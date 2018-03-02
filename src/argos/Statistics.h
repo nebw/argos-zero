@@ -14,4 +14,5 @@ struct PositionStatistics {
 
 struct NodeStatistics {
     std::atomic<size_t> num_evaluations = {0};
+    std::atomic<float> playout_score = {0.f};
 };
