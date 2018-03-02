@@ -2,13 +2,14 @@
 
 #include <memory>
 #include <queue>
+#include <random>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include <random>
 #include "libcuckoo/cuckoohash_map.hh"
 #include "moodycamel/BlockingConcurrentQueue.h"
 
+#include "BatchProcessor.h"
 #include "Config.h"
 #include "Network.h"
 #include "Node.h"
@@ -23,6 +24,7 @@ typedef FastStack<Node*, config::boardSize * config::boardSize * 3> NodeTrace;
 class Tree {
 public:
     Tree();
+    ~Tree();
 
     std::shared_ptr<Position> maybeAddPosition(const RawBoard &board);
     void evaluate(const std::chrono::milliseconds duration);
@@ -37,19 +39,23 @@ public:
     Vertex bestMove();
     void playMove(Vertex const& vertex);
 
-    Player rollout(Board playoutBoard, Network* net);
+    Player rollout(Board playoutBoard, ConcurrentNodeQueue& queue,
+                   moodycamel::ProducerToken const& token);
 
 private:
     TranspositionTable _transpositionTable;
     std::queue<std::shared_ptr<Node>> _lastRootNodes;
+    ConcurrentNodeQueue _evaluationQueue;
     std::shared_ptr<Node> _rootNode;
     Board _rootBoard;
     std::vector<Network> _networks;
     std::random_device _rd;
     std::mt19937 _gen;
+    std::atomic<bool> _evaluationThreadKeepRunning;
+    std::thread _evaluationThread;
 
     void beginEvaluation();
-    void playout(std::atomic<bool>* keepRunning, Network *net);
+    void playout(std::atomic<bool>* keepRunning);
     void visitNode(Node* node);
     void updateStatistics(NodeTrace& trace, float score) const;
     void setRootNode(Vertex const& vertex);

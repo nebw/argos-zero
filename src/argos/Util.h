@@ -94,3 +94,5 @@ std::string format_duration(D duration) {
             << std::get<3>(clean_duration).count();
     return sstream.str();
 }
+
+void resetThreadAffinity();

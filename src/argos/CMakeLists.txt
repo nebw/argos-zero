@@ -7,6 +7,7 @@ set(src
     Network.h Network.cpp
     ThreadPool.h ThreadPool.cpp
     TimeControl.h TimeControl.cpp
+    BatchProcessor.h BatchProcessor.cpp
     Statistics.h
     Config.h
     SpinLock.h

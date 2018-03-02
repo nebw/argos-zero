@@ -77,3 +77,13 @@ void printTree(Node* node, Player const& player, ostream& out, float fractionPri
 
     out.flush();
 }
+
+void resetThreadAffinity() {
+    cpu_set_t cpuset;
+    pthread_t thread = pthread_self();
+    CPU_ZERO(&cpuset);
+    for (size_t j = 0; j < std::thread::hardware_concurrency(); ++j) {
+        CPU_SET(j, &cpuset);
+    }
+    pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
+}
