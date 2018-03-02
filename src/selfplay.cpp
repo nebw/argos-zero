@@ -22,8 +22,8 @@ int main() {
     // if yes, where to send them (IP Adress:port)
     bool collect_data = 1;
 
-    string server = "hallo";
-    int port = 80;
+    const char* server = "127.0.0.1";
+    int port = 800;
     boost::optional<Collector> collector;
 
     if (collect_data){

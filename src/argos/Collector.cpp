@@ -16,9 +16,13 @@
 #include "Collector.h" //copy end
 
 // TCP socket network:
-#include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <sys/socket.h>
+#include <cstdio>
+#include <cstring>
+#include <arpa/inet.h>
+#include <zconf.h>
 
 //capnp
 #include <capnp/message.h>
@@ -32,7 +36,7 @@
 #include <boost/lexical_cast.hpp>
 
 
-Collector::Collector(string server, int port){
+Collector::Collector(const char* server, int port){
     //initialize all the variables
     _server = server;
     _port = port;
@@ -93,10 +97,42 @@ void Collector::collectMove(const Tree& tree){
     _states.push_back(tree.rootBoard().getFeatures().getPlanes());
 }
 
+int Collector::connectToServer(const char* server, int port){
+
+    printf("connect\n");
+    struct sockaddr_in address;
+    int sock = 0;
+    struct sockaddr_in serv_addr;
+    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        printf("\n Socket creation error \n");
+        return -1;
+    }
+
+    memset(&serv_addr, '0', sizeof(serv_addr));
+
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(port);
+
+    // Convert IPv4 and IPv6 addresses from text to binary form
+    if (inet_pton(AF_INET, server, &serv_addr.sin_addr) <= 0) {
+        printf("\nInvalid address/ Address not supported \n");
+        return -1;
+    }
+
+    if (connect(sock, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
+        printf("\nConnection Failed \n");
+        return -1;
+    }
+
+    return sock;
+
+}
+
 void Collector::sendData(const Tree& tree){
-    //int sockfd;
+
     // get the Socket fd for server at port
-    //sockfd = connectToServer(this->_server, this->_port);
+    int sockfd;
+    sockfd = connectToServer(this->_server, this->_port);
 
     // serialize collected info into capnp Message
     std::uint16_t a, b, i, j, k;
@@ -151,42 +187,18 @@ void Collector::sendData(const Tree& tree){
 
 
     // for testing purpose write capnp files to disk, not to network
-    FILE* capnp_file;
-    capnp_file = fopen("/home/franziska/capnp_test", "w");
-    if (capnp_file!=NULL){
-        writePackedMessageToFd(fileno(capnp_file), message);
-        fclose(capnp_file);
-    }
+//    FILE* capnp_file;
+//    capnp_file = fopen("/home/franziska/capnp_test", "w");
+//    if (capnp_file!=NULL){
+//        writePackedMessageToFd(fileno(capnp_file), message);
+//        fclose(capnp_file);
+//    }
 
 
 
-    // open TCP socket
-//        sockfd = socket(AF_INET, SOCK_STREAM, 0);
-//        if (sockfd < 0)
-//                error("ERROR opening socket");
+    writePackedMessageToFd(sockfd, message);
 
-//        server = gethostbyname(server_name);
+    //close socket
+    close(sockfd);
 
-//        if (server == NULL) {
-//                fprintf(stderr,"ERROR, no such host\n");
-//                exit(0);
-//            }
-//        serv_addr.sin_family = AF_INET;
-
-//        bcopy((char *)server->h_addr,
-//                 (char *)&serv_addr.sin_addr.s_addr,
-//                 server->h_length);
-
-//        serv_addr.sin_port = htons(portno);
-
-//        if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0)
-//                error("ERROR connecting");
-
-//        // write capnp message to socket
-//        writePackedMessageToFd(sockfd, message);
-
-//        //close socket
-//        close(sockfd);
-
-    //send
 }

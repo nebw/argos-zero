@@ -6,13 +6,13 @@
 class Collector
 {
 public:
-    Collector(string host, int port);
+    Collector(const char* server, int port);
     void collectMove(const Tree &tree);
     void sendData(const Tree& tree);
 private:
     //all variables from Franzis code here
-    int connectToServer(string host, int port);
-    string _server;
+    int connectToServer(const char* server, int port);
+    const char* _server;
     int _port;
     std::vector<std::array<double, 362>> _probabilities;
     std::vector<NetworkFeatures::Planes> _states;
