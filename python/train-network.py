@@ -81,7 +81,7 @@ net = CombinedNet(64, 4)
 net.collect_params().initialize(mx.init.MSRAPrelu(), ctx=ctx)
 net.hybridize()
 
-policy_loss = gluon.loss.SoftmaxCrossEntropyLoss()
+policy_loss = gluon.loss.SoftmaxCrossEntropyLoss() #sparse_label=False
 policy_loss.hybridize()
 
 value_loss = gluon.loss.SigmoidBCELoss()
