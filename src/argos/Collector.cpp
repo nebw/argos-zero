@@ -167,7 +167,7 @@ void Collector::sendData(const Tree& tree){
     }
 
     // now fill the game
-    boost::uuids::uuid id(boost::uuids::random_generator());
+    boost::uuids::uuid id = boost::uuids::random_generator()();
     game.setId(boost::lexical_cast<std::string>(id));
 
     std::time_t time = std::time(nullptr);
