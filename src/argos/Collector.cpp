@@ -46,23 +46,22 @@ Collector::Collector(const char* server, int port){
     //    string server_name;
 
     // initialize capnp message if data should be collected
-    std::vector<std::array<double, 362>> _probabilities;
+    std::vector<std::array<double, BOARDSIZE * BOARDSIZE + 1>> _probabilities;
     std::vector<NetworkFeatures::Planes> _states;
-
 }
 
-void Collector::collectMove(const Tree& tree){
+void Collector::collectMove(const Tree& tree) {
+    static const size_t num_fields = BOARDSIZE * BOARDSIZE + 1;
 
-    std::array<double, 362> node_probs; // an allen Stellen mit 0 initialisieren
-    std::int16_t pos, row, col, board_size; //where in the array to write the probability
+    std::array<double, num_fields> node_probs;  // an allen Stellen mit 0 initialisieren
+    std::int16_t pos, row, col, board_size;     // where in the array to write the probability
 
     // iterate over all node. only legal moves do exist.
-    for (auto node : tree.rootNode()->children().get())
-    {
-        //is vertex a pass
-        if(node->parentMove().GetRaw() == Vertex::Pass().GetRaw()){
-            pos = 361;
-        }else{
+    for (auto node : tree.rootNode()->children().get()) {
+        // is vertex a pass
+        if (node->parentMove().GetRaw() == Vertex::Pass().GetRaw()) {
+            pos = BOARDSIZE * BOARDSIZE;
+        } else {
             row = node->parentMove().GetRow();
             col = node->parentMove().GetColumn();
             board_size = BOARDSIZE;
@@ -72,24 +71,20 @@ void Collector::collectMove(const Tree& tree){
 
         // write the statistics to the array
         node_probs[pos] = node->statistics().num_evaluations.load();
-
-
-        // normalize visits by dividing by the sum of all
-        // get the sum
-        int a, sum = 0;
-        for (a=0; a<362; a++)
-            {
-                sum+=node_probs[a];
-            }
-
-        // now divide
-        for (a=0; a<362; a++)
-            {
-                node_probs[a] = node_probs[a]/sum;
-            }
-
-
     }
+
+    // normalize visits by dividing by the sum of all
+    // get the sum
+    int a, sum = 0;
+    for (a = 0; a < num_fields; a++) {
+        sum += node_probs[a];
+    }
+
+    // now divide
+    for (a = 0; a < num_fields; a++) {
+        node_probs[a] = node_probs[a] / sum;
+    }
+
     // probabilities
     _probabilities.push_back(node_probs);
 
@@ -135,7 +130,8 @@ void Collector::sendData(const Tree& tree){
     sockfd = connectToServer(this->_server, this->_port);
 
     // serialize collected info into capnp Message
-    std::uint16_t a, b, i, j, k;
+    static const size_t num_fields = BOARDSIZE * BOARDSIZE + 1;
+    std::uint16_t a, b, row, col, f;
     std::uint16_t num_moves = _states.size();
     std::uint16_t num_features = NetworkFeatures::NUM_FEATURES;
     std::uint16_t num_flattened_features = board_size * board_size * num_features;
@@ -143,15 +139,14 @@ void Collector::sendData(const Tree& tree){
     Game::Builder game = message.initRoot<Game>();
     ::capnp::List<StateProb>::Builder stateprobs = game.initStateprobs(num_moves);
 
-
     // fill the StateProb structs with the information from the vectors
-    for (a=0;a<num_moves;a++){
-        StateProb:: Builder stateprob = stateprobs[a];
+    for (a = 0; a < num_moves; a++) {
+        StateProb::Builder stateprob = stateprobs[a];
         stateprob.setIdx(a);
 
         // fill probs
-        ::capnp::List<float>::Builder probs =  stateprob.initProbs(362);
-        for (b=0;b<362;b++){
+        ::capnp::List<float>::Builder probs = stateprob.initProbs(num_fields);
+        for (b = 0; b < num_fields; b++) {
             probs.set(b, _probabilities[a][b]);
         }
 
