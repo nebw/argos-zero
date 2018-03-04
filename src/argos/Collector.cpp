@@ -154,13 +154,13 @@ void Collector::sendData(const Tree& tree){
             probs.set(b, _probabilities[a][b]);
         }
 
-        //fill states
-        ::capnp::List<float>::Builder cstates =  stateprob.initState(num_flattened_features);
-        for (i=0;i<board_size;i++){
-            for (j=0;j<board_size;j++){
-                for (k=0;k<8;k++){
-                    int ind = board_size * num_features * i + num_features * j + k;
-                    cstates.set(ind, _states[a][i][j][k]);
+        // fill states
+        ::capnp::List<float>::Builder cstates = stateprob.initState(num_flattened_features);
+        for (f = 0; f < num_features; f++) {
+            for (row = 0; row < board_size; row++) {
+                for (col = 0; col < board_size; col++) {
+                    const size_t ind = f * board_size * board_size + row * board_size + col;
+                    cstates.set(ind, _states[a][f][row][col]);
                 }
             }
         }
