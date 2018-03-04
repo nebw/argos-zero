@@ -18,6 +18,8 @@ file(GLOB_RECURSE ego_src
     "${PROJECT_SOURCE_DIR}/src/ego/*.hpp"
     "${PROJECT_SOURCE_DIR}/src/ego/*.h")
 
+include_directories("${CMAKE_BINARY_DIR}/src/capnp/")
+
 add_library(argos ${src} ${ego_src})
 
 target_link_libraries(argos

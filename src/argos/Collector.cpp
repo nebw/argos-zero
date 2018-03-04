@@ -27,7 +27,7 @@
 // capnp
 #include <capnp/message.h>
 #include <capnp/serialize-packed.h>
-#include "../capnp/CapnpGame.capnp.h"
+#include "CapnpGame.capnp.h"
 
 #include <ctime>
 
