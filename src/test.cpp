@@ -5,7 +5,7 @@ int main(int argc, const char **argv) {
     using namespace std;
 
     try {
-        ArgosConfig::Config config = ArgosConfig::initializeConfig(argc, argv);
+        auto config = argos::config::parse(argc, argv);
 
         cout << config.networkPath << endl;
         cout << config.logFilePath << endl;
