@@ -56,6 +56,10 @@ void Collector::collectMove(const Tree& tree) {
     std::array<double, num_fields> node_probs;  // an allen Stellen mit 0 initialisieren
     std::int16_t pos, row, col, board_size;     // where in the array to write the probability
 
+    for (size_t i = 0; i < num_fields; ++i) {
+        node_probs[i] = 0.f;
+    }
+
     // iterate over all node. only legal moves do exist.
     for (auto node : tree.rootNode()->children().get()) {
         // is vertex a pass
