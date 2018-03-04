@@ -133,7 +133,6 @@ namespace argos {
 
         class Engine::Builder final
         {
-            friend class Engine;
         private:
             float _resignThreshold                  = DEFAULT_RESIGN_THRESHOLD;
             std::chrono::milliseconds _totalTime    = DEFAULT_TOTAL_TIME;
@@ -197,7 +196,7 @@ namespace argos {
                     _logFilePath(logFilePath) {}
             Builder tree(const Tree &tree) { _tree = std::make_shared<Tree>(tree); return *this; }
             Builder time(const Time &time) { _time = std::make_shared<Time>(time); return *this; }
-            Builder engine(Engine &engine) { _engine = std::make_shared<Engine>(engine); return *this; }
+            Builder engine(const Engine &engine) { _engine = std::make_shared<Engine>(engine); return *this; }
             Builder boardSize(const size_t &boardSize) { _boardSize = boardSize; return *this; }
             Builder deviceType(const MXNET_DEVICE_TYPE &deviceType) { _deviceType = deviceType; return *this; }
             Config build() { return Config(
