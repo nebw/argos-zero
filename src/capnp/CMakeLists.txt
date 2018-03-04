@@ -1,10 +1,9 @@
 set(src
-    CapnpGame.h CapnpGame.cpp
+    CapnpGame.capnp.h CapnpGame.capnp.c++
 )
 
+add_library(serialization ${src})
 
-add_library(capnp ${src})
-
-target_link_libraries(capnp
-    ${CAPNP_LIBRARIES}
+target_link_libraries(serialization
+    capnp
     ${Boost_SYSTEM_LIBRARY})

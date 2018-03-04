@@ -59,11 +59,10 @@ void Engine::Cgenmove(Gtp::Io &io) {
         const auto &rootNode = _tree->rootNode();
         const auto &winrate = rootNode->winrate(rootNode->position()->actPlayer());
 
-        if (_tree->rootNode()->parentMove() == Vertex::Pass()) {
-            move = Move(_tree->rootBoard().ActPlayer(), Vertex::Pass());
-        }
-
         if ((winrate) < config::engine::resignThreshold) {
+            printTree(_tree->rootNode().get(), _tree->rootBoard().ActPlayer(), _dbg);
+            _dbg << "Current value: " << winrate * 100 << "%\n";
+            _dbg << "Best move: " << move.ToGtpString() << "\n";
             _dbg << "resign" << std::endl;
             io.out << "resign";
         } else {

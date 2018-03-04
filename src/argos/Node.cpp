@@ -49,7 +49,7 @@ bool Node::expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
             } else {
                 posIdx = vertex.GetRow() * config::boardSize + vertex.GetColumn();
             }
-            child->addPrior(result.candidates[posIdx].prior);
+            child->setPrior(result.candidates[posIdx].prior);
 
             children.push_back(child);
         }

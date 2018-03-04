@@ -1,4 +1,4 @@
-#include "Collector.h" //copied from selfplay
+#include "Collector.h"  //copied from selfplay
 #include <chrono>
 #include <cstdlib>
 #include <fstream>
@@ -9,35 +9,35 @@
 // to write file
 #include <stdio.h>
 
+#include "Collector.h"  //copy end
 #include "Config.h"
 #include "TimeControl.h"
 #include "Tree.h"
 #include "Util.h"
-#include "Collector.h" //copy end
 
 // TCP socket network:
-#include <sys/types.h>
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <sys/types.h>
+#include <zconf.h>
 #include <cstdio>
 #include <cstring>
-#include <arpa/inet.h>
-#include <zconf.h>
 
-//capnp
+// capnp
 #include <capnp/message.h>
 #include <capnp/serialize-packed.h>
-#include "../capnp/CapnpGame.h"
+#include "../capnp/CapnpGame.capnp.h"
 
 #include <ctime>
 
+#include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
-#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
-
-Collector::Collector(const char* server, int port){
-    //initialize all the variables
+Collector::Collector(const char* server, int port) {
+    // initialize all the variables
     _server = server;
     _port = port;
 
@@ -96,8 +96,9 @@ void Collector::collectMove(const Tree& tree) {
     _states.push_back(tree.rootBoard().getFeatures().getPlanes());
 }
 
-int Collector::connectToServer(const char* server, int port){
+void Collector::collectWinner(const Player& winner) { _winner = winner; }
 
+int Collector::connectToServer(const char* server, int port) {
     printf("connect\n");
     struct sockaddr_in address;
     int sock = 0;
@@ -118,20 +119,20 @@ int Collector::connectToServer(const char* server, int port){
         return -1;
     }
 
-    if (connect(sock, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
+    if (connect(sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) {
         printf("\nConnection Failed \n");
         return -1;
     }
 
     return sock;
-
 }
 
-void Collector::sendData(const Tree& tree){
-
+void Collector::sendData(const Tree& tree) {
     // get the Socket fd for server at port
+    /*
     int sockfd;
     sockfd = connectToServer(this->_server, this->_port);
+    */
 
     // serialize collected info into capnp Message
     static const size_t num_fields = BOARDSIZE * BOARDSIZE + 1;
@@ -179,25 +180,25 @@ void Collector::sendData(const Tree& tree){
     game.setNetwork1(netID);
     game.setNetwork2(netID);
 
-    int result = tree.rootBoard().PlayoutWinner().ToScore(); // ToScore (Black()) == 1, ToScore (White()) == -1
-    int binarized_result = (result + 1)/2;
+    assert(_winner.IsValid());
+    int result = _winner.ToScore();  // ToScore (Black()) == 1, ToScore (White()) == -1
+    int binarized_result = (result + 1) / 2;
     bool res = binarized_result;
     game.setResult(res);
 
-
     // for testing purpose write capnp files to disk, not to network
-//    FILE* capnp_file;
-//    capnp_file = fopen("/home/franziska/capnp_test", "w");
-//    if (capnp_file!=NULL){
-//        writePackedMessageToFd(fileno(capnp_file), message);
-//        fclose(capnp_file);
-//    }
+    FILE* capnp_file;
+    std::string path = "/home/ben/tmp/games/";
+    std::string filename = boost::lexical_cast<std::string>(id);
+    std::cout << filename << std::endl;
+    capnp_file = fopen((path + filename).c_str(), "w");
+    if (capnp_file != NULL) {
+        writePackedMessageToFd(fileno(capnp_file), message);
+        fclose(capnp_file);
+    }
 
+    // writePackedMessageToFd(sockfd, message);
 
-
-    writePackedMessageToFd(sockfd, message);
-
-    //close socket
-    close(sockfd);
-
+    // close socket
+    // close(sockfd);
 }

@@ -56,8 +56,8 @@ void printTree(Node* node, std::string const& posName, Player const& player, std
     for (size_t cnt = 0; cnt < children.size(); ++cnt) {
         Node* child = children[cnt];
 
-        if ((child->statistics().num_evaluations > node->statistics().num_evaluations * fractionPrint) &&
-            (child->statistics().num_evaluations > static_cast<float>(buffer.rootEvaluations) / 100)) {
+        if ((child->statistics().num_evaluations > node->statistics().num_evaluations * fractionPrint)  &&
+            (child->statistics().num_evaluations > static_cast<float>(buffer.rootEvaluations) / 250)) {
             out << buffer.depth << " `--";
             buffer.push((cnt + 1) < child->isExpanded() ? '|' : ' ');
             const auto playerStr = child->position()->actPlayer().Other().ToGtpString() + ":";

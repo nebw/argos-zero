@@ -14,7 +14,7 @@ class Node;
 class Node;
 
 void printTree(Node* node, Player const& player, std::ostream& out = std::cout,
-               float fractionPrint = 0.15);
+               float fractionPrint = 0.01);
 
 void printScoreEstimate(NatMap<Vertex, double> const& influence, double komi, std::ostream& out,
                         double threshold = .25);

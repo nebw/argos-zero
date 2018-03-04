@@ -26,7 +26,7 @@ public:
     Tree();
     ~Tree();
 
-    std::shared_ptr<Position> maybeAddPosition(const RawBoard &board);
+    std::shared_ptr<Position> maybeAddPosition(const RawBoard& board);
     void evaluate(const std::chrono::milliseconds duration);
     void evaluate(const size_t evaluations);
 

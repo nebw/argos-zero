@@ -56,6 +56,4 @@ private:
     SpinLock _expandLock;
     bool _isEvaluated;
     bool _isTerminalNode;
-
-    void addPrior(float prior);
 };

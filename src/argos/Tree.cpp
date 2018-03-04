@@ -6,15 +6,15 @@
 #include "Position.h"
 #include "Util.h"
 
-#include <random>
 #include <algorithm>
 #include <chrono>
 #include <fstream>
+#include <random>
 #include <thread>
 
 Tree::Tree()
     : _evaluationQueue(
-          ConcurrentNodeQueue(config::tree::batchSize * 4, config::tree::numThreads, 0)),
+          ConcurrentNodeQueue(config::tree::batchSize * 4, 2 * config::tree::numThreads, 0)),
       _evaluationThreadKeepRunning(true),
       _evaluationThread(evaluationQueueConsumer, &_evaluationQueue, &_evaluationThreadKeepRunning),
       _gen(_rd()) {
@@ -147,7 +147,8 @@ void Tree::playout(std::atomic<bool>* keepRunning) {
 
         // expand node
         if (node->statistics().num_evaluations.load() >= config::tree::expandAt) {
-            const bool isExpandingThread = node->expand(*this, playoutBoard, _evaluationQueue, token);
+            const bool isExpandingThread =
+                node->expand(*this, playoutBoard, _evaluationQueue, token);
             if (isExpandingThread) {
                 if (node->isTerminal()) {
                     updateStatistics(trace, node->statistics().playout_score.load());
@@ -187,7 +188,6 @@ Player Tree::rollout(Board playoutBoard, ConcurrentNodeQueue& queue,
                 if (v == Vertex::Pass()) {
                     posIdx = config::boardSize * config::boardSize;
                     probabilites.push_back(result.candidates[posIdx].prior);
-                    //probabilites.push_back(0.f);
                 } else {
                     posIdx = v.GetRow() * config::boardSize + v.GetColumn();
                     probabilites.push_back(result.candidates[posIdx].prior);
@@ -207,20 +207,20 @@ Player Tree::rollout(Board playoutBoard, ConcurrentNodeQueue& queue,
 
 Vertex Tree::bestMove() {
     assert(_rootNode->isExpanded());
-    if ((_rootBoard.MoveCount() < 30) && config::tree::trainingMode) {
+    if ((_rootBoard.MoveCount() < config::tree::randomizeFirstNMoves) &&
+        config::tree::trainingMode) {
         std::vector<float> probabilites;
         probabilites.reserve(_rootNode->children().get().size());
         for (const std::shared_ptr<Node>& child : _rootNode->children().get()) {
             size_t NumEvaluations = child->statistics().num_evaluations.load();
             probabilites.push_back(NumEvaluations);
         }
-        for (size_t i=0; i < probabilites.size(); ++i) {
+        for (size_t i = 0; i < probabilites.size(); ++i) {
             probabilites[i] /= _rootNode->statistics().num_evaluations.load();
         }
         std::discrete_distribution<size_t> d(probabilites.begin(), probabilites.end());
         return _rootNode->children().get()[d(_gen)]->parentMove();
-    }
-    else {
+    } else {
         Node::NodeStack const& children = _rootNode->children().value();
         size_t bestIdx = 0;
         float maxRollouts = -1.f;
@@ -257,19 +257,14 @@ void Tree::beginEvaluation() {
         NodeTrace traceCpy;
         traceCpy.Push(_rootNode.get());
         updateStatistics(traceCpy, _rootNode->position()->statistics().value.load());
-
     }
 
-    //Add dirichlet noise
-    if (config::tree::trainingMode) {
-        addDirichletNoise(0.25f, 0.03f);
-    }
+    // Add dirichlet noise
+    if (config::tree::trainingMode) { addDirichletNoise(0.25f, 0.03f); }
 }
 
-void Tree::addDirichletNoise(const float amount, const float distribution)
-{
-
-    auto children = _rootNode -> children().get();
+void Tree::addDirichletNoise(const float amount, const float distribution) {
+    auto children = _rootNode->children().get();
     size_t child_cnt = children.size();
 
     auto dirichlet_vector = std::vector<float>{};
@@ -280,19 +275,18 @@ void Tree::addDirichletNoise(const float amount, const float distribution)
         dirichlet_vector.emplace_back(gamma(_gen));
     }
 
-    auto sample_sum = std::accumulate(begin(dirichlet_vector),
-                                      end(dirichlet_vector), 0.0f);
-    //std::cout << "new vector" << endl;
-    //std::cout << child_cnt << endl;
-    for (auto& v: dirichlet_vector) {
+    auto sample_sum = std::accumulate(begin(dirichlet_vector), end(dirichlet_vector), 0.0f);
+    // std::cout << "new vector" << endl;
+    // std::cout << child_cnt << endl;
+    for (auto& v : dirichlet_vector) {
         v /= sample_sum;
-        //std::cout << v << std::endl;
+        // std::cout << v << std::endl;
     }
 
-    for (size_t i=0; i != child_cnt; i++) {
-        //Add dirichlet distribution to each prior probability
-        float prior = children[i] -> getPrior();
-        children[i] -> setPrior(((1-amount)*prior) + (amount * dirichlet_vector[i]));
+    for (size_t i = 0; i != child_cnt; i++) {
+        // Add dirichlet distribution to each prior probability
+        float prior = children[i]->getPrior();
+        children[i]->setPrior(((1 - amount) * prior) + (amount * dirichlet_vector[i]));
     }
 }
 
