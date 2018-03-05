@@ -2,7 +2,7 @@
 <config>
     <tree>
         <num_threads>4</num_threads>
-        <randomize_first_n_moves>2</randomize_first_n_moves>
+        <randomize_first_n_moves>10</randomize_first_n_moves>
         <num_last_root_nodes>3</num_last_root_nodes>
         <virtual_playouts>5</virtual_playouts>
         <expand_at>6</expand_at>

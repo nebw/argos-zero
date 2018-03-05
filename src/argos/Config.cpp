@@ -142,6 +142,21 @@ namespace argos
                     exit(EXIT_FAILURE);
                 }
             }
+            else
+            {
+                if (vm.count("tree-numThreads"))
+                {
+                    treeBuilder.numThreads(vm["tree-numThreads"].as<size_t>());
+                }
+                else
+                {
+                    auto numThreads = std::max<size_t>(
+                            Tree::DEFAULT_NUM_EVALUATION_THREADS * Tree::DEFAULT_BATCH_SIZE,
+                            std::thread::hardware_concurrency() ? std::thread::hardware_concurrency()
+                                                                : Tree::DEFAULT_NUM_THREADS);
+                    treeBuilder.numThreads(numThreads);
+                }
+            }
 
             if (vm.count("deviceType"))
             {
