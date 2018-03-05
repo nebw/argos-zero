@@ -4,8 +4,7 @@
 
 using namespace mxnet::cpp;
 
-Network::Network(const std::string& path)
-{
+Network::Network(const std::string& path) {
     const std::string symbolPath = path + "-symbol.json";
     const std::string paramPath = path + "-0000.params";
 
@@ -30,28 +29,22 @@ Network::Network(const std::string& path)
     NDArray::WaitAll();
 
     _args_map["data"] = NDArray(
-        Shape(1, NetworkFeatures::NUM_FEATURES, config::boardSize, config::boardSize),
-        global_ctx);
+        Shape(config::tree::batchSize, NetworkFeatures::NUM_FEATURES, config::boardSize, config::boardSize), global_ctx);
 
     _executor = std::unique_ptr<mxnet::cpp::Executor>(
-        _net.SimpleBind(global_ctx,
-                        _args_map,
-                        std::map<std::string, NDArray>(),
-                        std::map<std::string, OpReqType>(),
-                        aux_map));
+        _net.SimpleBind(global_ctx, _args_map, std::map<std::string, NDArray>(),
+                        std::map<std::string, OpReqType>(), aux_map));
     NDArray::WaitAll();
 }
 
-Network::Result Network::apply(const Board& board)
-{
-    static const size_t inputs = 1;
+std::array<Network::Result, config::tree::batchSize> Network::apply(
+    const std::array<NetworkFeatures::Planes, config::tree::batchSize>& planes) {
+    static const size_t inputs = config::tree::batchSize;
     static const size_t channels = NetworkFeatures::NUM_FEATURES;
     static const size_t width = config::boardSize;
     static const size_t height = config::boardSize;
 
-    const auto planes = board.getFeatures().getPlanes();
-
-    const mx_float* data = &planes[0][0][0];
+    const mx_float* data = &planes[0][0][0][0];
     _args_map["data"].SyncCopyFromCPU(data, inputs * channels * width * height);
     NDArray::WaitAll();
     _executor->Forward(false);
@@ -63,14 +56,17 @@ Network::Result Network::apply(const Board& board)
     _executor->outputs[1].SyncCopyToCPU(&valueOutput);
     NDArray::WaitAll();
 
-    Network::Result::Candidates candidates;
-    for (size_t row = 0; row < width; ++row) {
-        for (size_t col = 0; col < height; ++col) {
-            const size_t posIdx = row * width + col;
-            candidates.emplace_back(policyOutput[posIdx], Vertex::OfCoords(row, col));
+    std::array<Network::Result, config::tree::batchSize> results;
+    for (size_t i = 0; i < config::tree::batchSize; ++i) {
+        Network::Result::Candidates candidates;
+        for (size_t row = 0; row < width; ++row) {
+            for (size_t col = 0; col < height; ++col) {
+                const size_t posIdx = i * height * width + row * width + col;
+                candidates.emplace_back(policyOutput[posIdx], Vertex::OfCoords(row, col));
+            }
         }
+        candidates.emplace_back(policyOutput[width * height], Vertex::Pass());
+        results[i] = Network::Result(std::move(candidates), valueOutput[i] * 2 - 1);
     }
-    candidates.emplace_back(policyOutput[width*height], Vertex::Pass());
-
-    return Network::Result(std::move(candidates), valueOutput[0] * 2 - 1);
+    return results;
 }

@@ -1,5 +1,6 @@
-#include "Config.h"
 #include "Node.h"
+#include "BatchProcessor.h"
+#include "Config.h"
 #include "Position.h"
 #include "Tree.h"
 #include "Util.h"
@@ -7,7 +8,8 @@
 #include <algorithm>
 #include <cassert>
 
-bool Node::expand(Tree& tree, Board const& board, Network& network) {
+bool Node::expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
+                  moodycamel::ProducerToken const& token) {
     std::unique_lock<SpinLock> lock(_expandLock, std::try_to_lock);
     if (!lock.owns_lock()) {
         // if another thread is already expanding the node, don't bother waiting
@@ -17,10 +19,13 @@ bool Node::expand(Tree& tree, Board const& board, Network& network) {
 
     NodeStack children;
     if (!board.BothPlayerPass()) {
-        const Network::Result result = network.apply(board);
+        EvaluationJob job(board.getFeatures().getPlanes());
+        auto future = job.result.get_future();
+        queue.enqueue(token, std::move(job));
+        const Network::Result result = future.get();
 
-        if (!(config::tree::trainingMode)) { //TODO: Delete "!"
-            const float rolloutValue = tree.rollout(board, &network).ToScore();
+        if (config::tree::networkRollouts) {
+            const float rolloutValue = tree.rollout(board, queue, token).ToScore();
             _position->statistics().value = rolloutValue;
         } else {
             _position->statistics().value = result.value;
@@ -44,27 +49,25 @@ bool Node::expand(Tree& tree, Board const& board, Network& network) {
             } else {
                 posIdx = vertex.GetRow() * config::boardSize + vertex.GetColumn();
             }
-            child->addPrior(result.candidates[posIdx].prior);
+            child->setPrior(result.candidates[posIdx].prior);
 
             children.push_back(child);
         }
+
+        if (legalMoves.empty()) { _isTerminalNode = true; }
+    } else {
+        _isTerminalNode = true;
     }
+
+    _statistics.playout_score = {static_cast<float>(board.PlayoutWinner().ToScore())};
 
     _children = children;
     return true;
 }
 
-float Node::getPrior() {
-    return _position->statistics().prior;
-}
+float Node::getPrior() { return statistics().prior; }
 
-void Node::setPrior(float prior) {
-    _position->statistics().prior = prior;
-}
-
-void Node::addPrior(float prior) {
-    _position->statistics().prior = prior;
-}
+void Node::setPrior(float prior) { _statistics.prior = prior; }
 
 float Node::getUCTValue(Node& parent) const {
     const float winRate = winrate(parent.position()->actPlayer());
@@ -73,7 +76,7 @@ float Node::getUCTValue(Node& parent) const {
 
     assert(parentVisits > 0);
 
-    const float prior = _position->statistics().prior.load();
+    const float prior = _statistics.prior.load();
     return winRate + config::tree::priorC * prior * (sqrt(parentVisits) / (1 + nodeVisits));
 }
 
@@ -134,8 +137,15 @@ const std::shared_ptr<Node>& Node::getMostVisitsChild() {
 float Node::winrate(const Player& player) const {
     const auto& p = _position.get()->statistics();
 
-    float value = ((static_cast<float>(p.sum_value_evaluations.load()) /
-        std::max(1.f, static_cast<float>(p.num_evaluations.load()))) + 1.f) / 2.f;
+    float value;
+    if (_isTerminalNode) {
+        value = (_statistics.playout_score.load() + 1.f) / 2.f;
+    } else {
+        const float sum_eval = static_cast<float>(p.sum_value_evaluations.load());
+        const float num_eval = static_cast<float>(p.num_evaluations.load());
+        value = ((sum_eval / std::max(1.f, num_eval)) + 1.f) / 2.f;
+    }
+
     if (player == Player::White()) { value = 1.f - value; }
 
     return value;

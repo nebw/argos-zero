@@ -10,10 +10,12 @@
 #include "argos/Util.h"
 
 int main() {
+    /*
     Tree tree;
     Board playoutBoard;
     playoutBoard.Load(tree.rootBoard());
     Network net(config::networkPath.string());
 
     std::cout << tree.rollout(playoutBoard, &net).ToGtpString() << std::endl;
+    */
 }

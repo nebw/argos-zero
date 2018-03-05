@@ -9,6 +9,6 @@ print "running " + str(numMatches) + \
 print "will use the default ratings available in ratings.txt"
 playerOneParams = ["gnugo", "--mode", "gtp"]
 playerTwoParams = ["./precompiled_gtp19_smart"]
-test = RatingSystem(playerOneParams, playerTwoParams,
+test = RatingSystem(playerOneParams, playerTwoParams, mode = "19",
                     numMatches=numMatches, batchSize=batchSize)
 test.run()
