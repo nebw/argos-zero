@@ -38,6 +38,9 @@ public:
     float winrate(Player const& player) const;
     void addEvaluation(float score);
 
+    float getPrior();
+    void setPrior(float prior);
+
 private:
     std::shared_ptr<Position> _position;
     NodeStatistics _statistics;

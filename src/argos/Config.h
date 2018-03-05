@@ -35,6 +35,7 @@ namespace argos {
             static const constexpr size_t DEFAULT_EXPAND_AT                 = DEFAULT_VIRTUAL_PLAYOUTS + 1;
             static const constexpr float DEFAULT_PRIOR_C                    = 5;
             static const constexpr bool DEFAULT_NETWORK_ROLLOUTS            = false;
+            static const constexpr bool DEFAULT_TRAINING_MODE               = true;
         private:
             explicit Tree(const size_t &numThreads,
                           const size_t &randomizeFirstNMoves,
@@ -42,14 +43,16 @@ namespace argos {
                           const size_t &virtualPlayouts,
                           const size_t &expandAt,
                           const float &priorC,
-                          const bool &networkRollouts) :
+                          const bool &networkRollouts,
+                          const bool &trainingMode) :
                     numThreads(numThreads),
                     randomizeFirstNMoves(randomizeFirstNMoves),
                     numLastRootNodes(numLastRootNodes),
                     virtualPlayouts(virtualPlayouts),
                     expandAt(expandAt),
                     priorC(priorC),
-                    networkRollouts(networkRollouts) {}
+                    networkRollouts(networkRollouts),
+                    trainingMode(trainingMode) {}
         public:
             class Builder;
             const size_t numThreads;
@@ -59,6 +62,7 @@ namespace argos {
             const size_t expandAt;
             const float priorC;
             const bool networkRollouts;
+            const bool trainingMode;
         };
 
         class Tree::Builder final
@@ -71,6 +75,7 @@ namespace argos {
             size_t _expandAt                = DEFAULT_EXPAND_AT;
             float _priorC                   = DEFAULT_PRIOR_C;
             bool _networkRollouts           = DEFAULT_NETWORK_ROLLOUTS;
+            bool _trainingMode              = DEFAULT_TRAINING_MODE;
         public:
             Builder numThreads(const size_t &val) { _numThreads = val; return *this; }
             Builder randomizeFirstNMoves(const size_t &val) { _randomizeFirstNMoves = val; return *this; }
@@ -79,6 +84,7 @@ namespace argos {
             Builder expandAt(const size_t &val) { _expandAt = val; return *this; }
             Builder priorC(const float &val) { _priorC = val; return *this; }
             Builder networkRollouts(const bool &val) { _networkRollouts = val; return *this; }
+            Builder trainingMode(const bool &val) { _trainingMode = val; return *this; }
             Tree build() {
                 return Tree(_numThreads,
                             _randomizeFirstNMoves,
@@ -86,7 +92,8 @@ namespace argos {
                             _virtualPlayouts,
                             _expandAt,
                             _priorC,
-                            _networkRollouts);
+                            _networkRollouts,
+                            _trainingMode);
             }
         };
 
@@ -243,6 +250,7 @@ namespace config {
         static const size_t expandAt = virtualPlayouts + 1;
         static const float priorC = 5;
         static const bool networkRollouts = false;
+        static const bool trainingMode = true;
     }  // namespace tree
 
     namespace time {

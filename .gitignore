@@ -179,3 +179,4 @@ $RECYCLE.BIN/
 #IDE CLion
 .idea/
 cmake-build-debug/
+.vscode/
