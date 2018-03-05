@@ -1,5 +1,8 @@
 #include <boost/program_options.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
 #include <iostream>
 
 #include "Config.h"
@@ -10,6 +13,7 @@ namespace argos
     {
         namespace fs = boost::filesystem;
         namespace po = boost::program_options;
+        namespace pt = boost::property_tree;
 
         std::string usage(const char *programPath,
                           const po::options_description &required,
@@ -70,7 +74,21 @@ namespace argos
 
                 if (fs::exists(configPath))
                 {
-                    // TODO parse config file
+                    fs::ifstream ifs(configPath);
+                    pt::ptree pTree;
+
+                    try
+                    {
+                        pt::xml_parser::read_xml(ifs, pTree);
+                        pTree = pTree.get_child("config");
+                        auto treeParser = pTree.get_child("tree");
+                        treeBuilder.networkRollouts(treeParser.get<bool>("network_rollouts"));
+                    }
+                    catch (pt::ptree_error&)
+                    {
+                        std::cout << "error: parsing configuration file failed" << std::endl;
+                        exit(EXIT_FAILURE);
+                    }
                 }
                 else
                 {
