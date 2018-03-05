@@ -41,10 +41,6 @@ Collector::Collector(const char* server, int port) {
     _server = server;
     _port = port;
 
-    //    int sockfd, portno, n;
-    //    struct sockaddr_in serv_addr;
-    //    string server_name;
-
     // initialize capnp message if data should be collected
     std::vector<std::array<double, BOARDSIZE * BOARDSIZE + 1>> _probabilities;
     std::vector<NetworkFeatures::Planes> _states;
@@ -53,10 +49,10 @@ Collector::Collector(const char* server, int port) {
 void Collector::collectMove(const Tree& tree) {
     static const size_t num_fields = BOARDSIZE * BOARDSIZE + 1;
 
-    std::array<double, num_fields> node_probs;  // an allen Stellen mit 0 initialisieren
+    std::array<double, num_fields> node_probs;
     std::int16_t pos, row, col, board_size;     // where in the array to write the probability
 
-    for (size_t i = 0; i < num_fields; ++i) {
+    for (size_t i = 0; i < num_fields; ++i) {   // initialize probabilities with zero
         node_probs[i] = 0.f;
     }
 
@@ -99,8 +95,7 @@ void Collector::collectMove(const Tree& tree) {
 void Collector::collectWinner(const Player& winner) { _winner = winner; }
 
 int Collector::connectToServer(const char* server, int port) {
-    printf("connect\n");
-    struct sockaddr_in address;
+
     int sock = 0;
     struct sockaddr_in serv_addr;
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -128,11 +123,11 @@ int Collector::connectToServer(const char* server, int port) {
 }
 
 void Collector::sendData(const Tree& tree) {
+
     // get the Socket fd for server at port
-    /*
     int sockfd;
     sockfd = connectToServer(this->_server, this->_port);
-    */
+
 
     // serialize collected info into capnp Message
     static const size_t num_fields = BOARDSIZE * BOARDSIZE + 1;
@@ -140,6 +135,7 @@ void Collector::sendData(const Tree& tree) {
     std::uint16_t num_moves = _states.size();
     std::uint16_t num_features = NetworkFeatures::NUM_FEATURES;
     std::uint16_t num_flattened_features = board_size * board_size * num_features;
+
     ::capnp::MallocMessageBuilder message;
     Game::Builder game = message.initRoot<Game>();
     ::capnp::List<StateProb>::Builder stateprobs = game.initStateprobs(num_moves);
@@ -187,18 +183,21 @@ void Collector::sendData(const Tree& tree) {
     game.setResult(res);
 
     // for testing purpose write capnp files to disk, not to network
-    FILE* capnp_file;
-    std::string path = "/home/ben/tmp/games/";
-    std::string filename = boost::lexical_cast<std::string>(id);
-    std::cout << filename << std::endl;
-    capnp_file = fopen((path + filename).c_str(), "w");
-    if (capnp_file != NULL) {
-        writePackedMessageToFd(fileno(capnp_file), message);
-        fclose(capnp_file);
+//    FILE* capnp_file;
+//    std::string path = "/home/franziska/";
+//    std::string filename = boost::lexical_cast<std::string>(id);
+//    std::cout << filename << std::endl;
+//    capnp_file = fopen((path + filename).c_str(), "w");
+//    if (capnp_file != NULL) {
+//        writePackedMessageToFd(fileno(capnp_file), message);
+//        fclose(capnp_file);
+//    }
+
+    // if valid file descriptor exists
+    if(sockfd != -1){
+        writePackedMessageToFd(sockfd, message);
     }
 
-    // writePackedMessageToFd(sockfd, message);
-
-    // close socket
-    // close(sockfd);
+     // close socket
+     close(sockfd);
 }

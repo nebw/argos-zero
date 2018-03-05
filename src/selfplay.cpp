@@ -15,15 +15,13 @@
 #include "argos/Util.h"
 
 int main() {
+
     // if network variable set: collect information
-    // if yes, where to send them (IP Adress:port)
     bool collect_data = config::tree::trainingMode;
 
-    const char* server = "127.0.0.1";
-    int port = 800;
     boost::optional<Collector> collector;
 
-    if (collect_data) { collector = Collector(server, port); }
+    if (collect_data) { collector = Collector(config::server, config::port); }
 
     Tree tree;
     tree.setKomi(5.5);
@@ -40,7 +38,7 @@ int main() {
 
     Player winner = Player::Invalid();
     while ((!tree.rootBoard().BothPlayerPass())) {
-        tree.evaluate(1600);
+        tree.evaluate(100);
         const auto winrate = tree.rootNode()->winrate(tree.rootBoard().ActPlayer());
 
         if ((winrate < resignationThreshold) && !(noResignMode)) {
@@ -58,8 +56,6 @@ int main() {
 
         tree.playMove(move);
         std::cout << tree.rootBoard().ToAsciiArt(move) << std::endl;
-
-        // TODO: Append new board state and predictions to Game list
     }
 
     if (!(winner.IsValid())) { winner = tree.rootBoard().TrompTaylorWinner(); }
@@ -71,7 +67,5 @@ int main() {
     // only possible here and not before because we do not know the number of moves in advance
     if (collect_data) { collector.get().sendData(tree); }
 
-    // TODO: Export game
 }
 
-// TODO: Export Game
