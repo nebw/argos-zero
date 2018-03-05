@@ -178,7 +178,6 @@ namespace argos {
         static const Time DEFAULT_TIME      = Time::Builder().build();
         static const Engine DEFAULT_ENGINE  = Engine::Builder().build();
 
-
         class Config final
         {
         public:

@@ -106,6 +106,9 @@ namespace argos
 
                         auto configParser = tree.get_child("config");
                         configBuilder.boardSize(configParser.get<size_t>("board_size"));
+                        configBuilder.server(configParser.get<std::string>("server"));
+                        configBuilder.port(configParser.get<int>("port"));
+
                         if (parseDeviceType(configParser.get<std::string>("device_type"), deviceType))
                         {
                             configBuilder.deviceType(deviceType);
@@ -117,6 +120,8 @@ namespace argos
                         }
 
                         auto treeParser = configParser.get_child("tree");
+                        treeBuilder.batchSize(treeParser.get<size_t>("batch_size"));
+                        treeBuilder.numEvaluationThreads(treeParser.get<size_t>("num_evaluation_threads"));
                         treeBuilder.numThreads(treeParser.get<size_t>("num_threads"));
                         treeBuilder.randomizeFirstNMoves(treeParser.get<size_t>("randomize_first_n_moves"));
                         treeBuilder.numLastRootNodes(treeParser.get<size_t>("num_last_root_nodes"));
@@ -180,10 +185,11 @@ namespace argos
             if (vm.count("boardSize")) configBuilder.boardSize(vm["boardSize"].as<size_t>());
             if (vm.count("server")) configBuilder.server(vm["server"].as<std::string>());
             if (vm.count("port")) configBuilder.port(vm["port"].as<int>());
+            /* deviceType defined above */
             if (vm.count("boardSize")) configBuilder.boardSize(vm["boardSize"].as<size_t>());
             if (vm.count("tree-batchSize")) treeBuilder.batchSize(vm["tree-batchSize"].as<size_t>());
             if (vm.count("tree-numEvaluationThreads")) treeBuilder.numThreads(vm["tree-numEvaluationThreads"].as<size_t>());
-            if (vm.count("tree-numThreads")) treeBuilder.numThreads(vm["tree-numThreads"].as<size_t>());
+            /* tree-numThreads defined above */
             if (vm.count("tree-randomizeFirstNMoves")) treeBuilder.randomizeFirstNMoves(vm["tree-randomizeFirstNMoves"].as<size_t>());
             if (vm.count("tree-numLastRootNodes")) treeBuilder.numLastRootNodes(vm["tree-numLastRootNodes"].as<size_t>());
             if (vm.count("tree-virtualPlayouts")) treeBuilder.virtualPlayouts(vm["tree-virtualPlayouts"].as<size_t>());

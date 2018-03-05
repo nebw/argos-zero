@@ -10,6 +10,10 @@ int main(int argc, const char **argv) {
     cout << "config.logFilePath: " << config.logFilePath << endl;
     cout << "config.deviceType: " << config.deviceType << endl;
     cout << "config.boardSize: " << config.boardSize << endl;
+    cout << "config.server: " << config.server << endl;
+    cout << "config.port: " << config.port << endl;
+    cout << "config.tree.batchSize: " << config.tree.batchSize << endl;
+    cout << "config.tree.numEvaluationThreads: " << config.tree.numEvaluationThreads << endl;
     cout << "config.tree.numThreads: " << config.tree.numThreads << endl;
     cout << "config.tree.randomizeFirstNMoves: " << config.tree.randomizeFirstNMoves << endl;
     cout << "config.tree.numLastRootNodes: " << config.tree.numLastRootNodes << endl;
