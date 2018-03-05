@@ -33,11 +33,16 @@ namespace argos
                     ("networkPath,p", po::value<std::string>()->required(), "path to trained model")
                     ("logfilePath,l", po::value<std::string>()->required(), "path where log file should be stored");
 
+            //TODO: add better params description
             optional.add_options()
                     ("help,h", "print this message and exit")
                     ("config,c", po::value<std::string>(), "path to config file")
                     ("deviceType,d", po::value<std::string>(), "set device type (CPU, GPU, CPU_PINNED)")
                     ("boardSize,b", po::value<size_t>(), "set boardsize")
+                    ("server,s", po::value<std::string>(), "set server ip, default is: 127.0.0.1")
+                    ("port", po::value<int>(), "set port")
+                    ("tree-batchSize", po::value<size_t>(), "set batchSize")
+                    ("tree-numEvaluationThreads", po::value<size_t>(), "set numEvaluationThreads")
                     ("tree-numThreads", po::value<size_t>(), "set numThreads")
                     ("tree-randomizeFirstNMoves", po::value<size_t>(), "set randomizeFirstNMoves")
                     ("tree-numLastRootNodes", po::value<size_t>(), "set numLastRootNodes")
@@ -158,6 +163,11 @@ namespace argos
             }
 
             if (vm.count("boardSize")) configBuilder.boardSize(vm["boardSize"].as<size_t>());
+            if (vm.count("server")) configBuilder.server(vm["server"].as<std::string>());
+            if (vm.count("port")) configBuilder.port(vm["port"].as<int>());
+            if (vm.count("boardSize")) configBuilder.boardSize(vm["boardSize"].as<size_t>());
+            if (vm.count("tree-batchSize")) treeBuilder.batchSize(vm["tree-batchSize"].as<size_t>());
+            if (vm.count("tree-numEvaluationThreads")) treeBuilder.numThreads(vm["tree-numEvaluationThreads"].as<size_t>());
             if (vm.count("tree-numThreads")) treeBuilder.numThreads(vm["tree-numThreads"].as<size_t>());
             if (vm.count("tree-randomizeFirstNMoves")) treeBuilder.randomizeFirstNMoves(vm["tree-randomizeFirstNMoves"].as<size_t>());
             if (vm.count("tree-numLastRootNodes")) treeBuilder.numLastRootNodes(vm["tree-numLastRootNodes"].as<size_t>());
