@@ -9,7 +9,6 @@
 #include "Node.h"
 #include "Position.h"
 
-
 namespace {
 struct TreeBuffer {
     size_t rootEvaluations;
@@ -35,10 +34,10 @@ struct TreeBuffer {
 
 void printTree(Node* node, std::string const& posName, Player const& player, std::ostream& out,
                TreeBuffer& buffer, float fractionPrint) {
-    out << std::fixed << std::setprecision(2) << posName << " (" << node->statistics().num_evaluations
-        << " | "
+    out << std::fixed << std::setprecision(2) << posName << " ("
+        << node->statistics().num_evaluations << " | "
         << "WR:" << node->winrate(player) * 100 << "%"
-        << " PN:" << node->position()->statistics().prior.load() * 100 << "%"
+        << " PN:" << node->statistics().prior.load() * 100 << "%"
         << ")\n";
     {
         auto const& children = node->children();
@@ -56,8 +55,10 @@ void printTree(Node* node, std::string const& posName, Player const& player, std
     for (size_t cnt = 0; cnt < children.size(); ++cnt) {
         Node* child = children[cnt];
 
-        if ((child->statistics().num_evaluations > node->statistics().num_evaluations * fractionPrint)  &&
-            (child->statistics().num_evaluations > static_cast<float>(buffer.rootEvaluations) / 250)) {
+        if ((child->statistics().num_evaluations >
+             node->statistics().num_evaluations * fractionPrint) &&
+            (child->statistics().num_evaluations >
+             static_cast<float>(buffer.rootEvaluations) / 250)) {
             out << buffer.depth << " `--";
             buffer.push((cnt + 1) < child->isExpanded() ? '|' : ' ');
             const auto playerStr = child->position()->actPlayer().Other().ToGtpString() + ":";

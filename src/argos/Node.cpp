@@ -65,13 +65,9 @@ bool Node::expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
     return true;
 }
 
-float Node::getPrior() {
-    return _position->statistics().prior;
-}
+float Node::getPrior() { return statistics().prior; }
 
-void Node::setPrior(float prior) {
-    _position->statistics().prior = prior;
-}
+void Node::setPrior(float prior) { _statistics.prior = prior; }
 
 float Node::getUCTValue(Node& parent) const {
     const float winRate = winrate(parent.position()->actPlayer());
@@ -80,7 +76,7 @@ float Node::getUCTValue(Node& parent) const {
 
     assert(parentVisits > 0);
 
-    const float prior = _position->statistics().prior.load();
+    const float prior = _statistics.prior.load();
     return winRate + config::tree::priorC * prior * (sqrt(parentVisits) / (1 + nodeVisits));
 }
 
