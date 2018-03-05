@@ -37,3 +37,6 @@ class Player(object):
     def applyMove(self, color, move):
       self.runCommand("play " + color + " " + move)
       return self.getOutput()
+
+    def terminate(self):
+      self.process.terminate()
