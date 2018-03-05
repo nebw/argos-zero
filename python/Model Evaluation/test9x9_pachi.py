@@ -7,8 +7,8 @@ numMatches = 1
 batchSize = 1
 print "running " + str(numMatches)+ " matches with batch size of "+ str(batchSize)
 print "will use the default ratings available in ratings.txt"
-playerOneParams = ["gnugo", "--mode", "gtp", "--boardsize", "9"]
-playerTwoParams = ["./precompiled_gtp9_random"]
-test = RatingSystem(playerOneParams, playerTwoParams,
+playerOneParams = ["./precompiled_gtp9_random"]
+playerTwoParams = ["./pachi", "--no-dcnn", "-e", "uct", "-D"]
+test = RatingSystem(playerOneParams, playerTwoParams, mode = "9",
                     numMatches=numMatches, batchSize=batchSize)
 test.run()
