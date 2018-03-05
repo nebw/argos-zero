@@ -49,10 +49,11 @@ private:
     std::shared_ptr<Node> _rootNode;
     Board _rootBoard;
     std::vector<Network> _networks;
-    std::random_device _rd;
-    std::mt19937 _gen;
+    moodycamel::ProducerToken _token;
     std::atomic<bool> _evaluationThreadKeepRunning;
     std::thread _evaluationThread;
+    std::random_device _rd;
+    std::mt19937 _gen;
 
     void beginEvaluation();
     void playout(std::atomic<bool>* keepRunning);

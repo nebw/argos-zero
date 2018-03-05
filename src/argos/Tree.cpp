@@ -14,7 +14,8 @@
 
 Tree::Tree()
     : _evaluationQueue(
-          ConcurrentNodeQueue(config::tree::batchSize * 4, 2 * config::tree::numThreads, 0)),
+          ConcurrentNodeQueue(config::tree::batchSize * 4, 1 + 2 * config::tree::numThreads, 0)),
+      _token(_evaluationQueue),
       _evaluationThreadKeepRunning(true),
       _evaluationThread(evaluationQueueConsumer, &_evaluationQueue, &_evaluationThreadKeepRunning),
       _gen(_rd()) {
@@ -23,11 +24,10 @@ Tree::Tree()
 
     purgeTranspositionTable();
 
-    moodycamel::ProducerToken token(_evaluationQueue);
     for (size_t i = 0; i < config::tree::numThreads; ++i) {
         EvaluationJob job(_rootBoard.getFeatures().getPlanes());
         auto future = job.result.get_future();
-        _evaluationQueue.enqueue(token, std::move(job));
+        _evaluationQueue.enqueue(_token, std::move(job));
         future.wait();
     }
 }
@@ -248,12 +248,9 @@ void Tree::playMove(const Vertex& vertex) {
 }
 
 void Tree::beginEvaluation() {
-    // one shared token for tree
-    moodycamel::ProducerToken token(_evaluationQueue);
-
     if (!_rootNode->isExpanded()) {
         visitNode(_rootNode.get());
-        _rootNode->expand(*this, _rootBoard, _evaluationQueue, token);
+        _rootNode->expand(*this, _rootBoard, _evaluationQueue, _token);
         NodeTrace traceCpy;
         traceCpy.Push(_rootNode.get());
         updateStatistics(traceCpy, _rootNode->position()->statistics().value.load());
