@@ -29,7 +29,7 @@ for file in glob.glob(games_combined_path):
     f = open(file, 'rb')
     g = CapnpGame_capnp.Game.from_bytes_packed(f.read())
 
-    if np.random.sample(1)[0] > valprob:
+    if np.random.sample(1)[0] > val_prob:
         inputs, probs, winners = inputs_t, probs_t, winners_t
     else:
         inputs, probs, winners = inputs_v, probs_v, winners_v
@@ -68,8 +68,8 @@ ctx = mx.cpu()
 batch_size = 128
 
 diter = mx.io.NDArrayIter(inputs_t, labels_t, batch_size=batch_size, last_batch_handle='roll_over')
-val_set_x = mx.nd.array(inputs_v).as_in_context(mx.cpu)
-val_set_y = mx.nd.array(labels_v).as_in_context(mx.cpu)
+val_set_x = mx.nd.array(inputs_v).as_in_context(mx.cpu())
+val_set_y = mx.nd.array(labels_v).as_in_context(mx.cpu())
 
 # Net
 def _conv3x3(channels, stride, in_channels, kernel_size, groups, padding):
@@ -165,7 +165,7 @@ def pred_val_set(x,y):
     ploss = policy_loss(pp, py)
     closs = (0.1 * vloss.mean() + ploss.mean())
 
-    val_closses.append(combined_loss.as_in_context(mx.cpu()).asnumpy()[0])
+    val_closses.append(closs.as_in_context(mx.cpu()).asnumpy()[0])
     val_vlosses.append(vloss.as_in_context(mx.cpu()).asnumpy()[0])
     val_plosses.append(ploss.as_in_context(mx.cpu()).asnumpy()[0])
 
@@ -184,13 +184,25 @@ def early_stopping(last = 3):
     """retruns true if the combined validation loss has been rising over the
     last 3 epochs"""
     if len(val_closses) >= 3:
-        return val_closses[-3]<val_closses[-2] and val_closses[-2]<val_closses[-1]
+        return (val_closses[-3]<val_closses[-2] and val_closses[-2]<val_closses[-1])
     return False
+
+def random_augmentation(batch):
+    for i in range(batch.data[0].shape[0]):
+        seed = np.random.randint(low=0, high=2, size=3, dtype=int)
+        if seed[0]:
+            batch.data[0][i] = nd.transpose(batch.data[0][i], (0, 2, 1))
+        if seed[1]:
+            batch.data[0][i] = nd.flip(batch.data[0][i], 1)
+        if seed[2]:
+            batch.data[0][i] = nd.flip(batch.data[0][i], 2)
+    return batch
 
 sigmoid = gluon.nn.Activation('sigmoid')
 
 # training loop
 for i, batch in enumerate(wrap_iter(diter)):
+    batch = random_augmentation(batch)
     x = batch.data[0].as_in_context(ctx)
     y = batch.label[0].as_in_context(ctx)
 
