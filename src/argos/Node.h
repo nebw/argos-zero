@@ -3,11 +3,13 @@
 #include <boost/optional.hpp>
 #include <memory>
 #include <mutex>
+
 #include <vector>
 
+#include "BatchProcessor.h"
+#include "Network.h"
 #include "SpinLock.h"
 #include "Statistics.h"
-#include "Network.h"
 #include "ego.hpp"
 
 class Position;
@@ -19,16 +21,21 @@ public:
     typedef std::vector<NodeSPtr> NodeStack;
 
     Node(std::shared_ptr<Position> position, Vertex const& parentMove)
-        : _position(position), _parentMove(parentMove), _isEvaluated(false) {}
+        : _position(position),
+          _parentMove(parentMove),
+          _isEvaluated(false),
+          _isTerminalNode(false) {}
 
     inline bool isExpanded() const { return _children.is_initialized(); }
-    bool expand(Tree& tree, Board const& board, Network& network);
+    bool expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
+                moodycamel::ProducerToken const& token);
 
     inline NodeStatistics& statistics() { return _statistics; }
     inline boost::optional<NodeStack> const& children() const { return _children; }
     inline std::shared_ptr<Position> const& position() const { return _position; }
     inline Vertex const& parentMove() const { return _parentMove; }
     inline bool isEvaluated() const { return _isEvaluated; }
+    inline bool isTerminal() const { return _isTerminalNode; }
 
     float getUCTValue(Node& parent) const;
     NodeSPtr const& getBestUCTChild();
@@ -48,6 +55,5 @@ private:
     Vertex _parentMove;
     SpinLock _expandLock;
     bool _isEvaluated;
-
-    void addPrior(float prior);
+    bool _isTerminalNode;
 };

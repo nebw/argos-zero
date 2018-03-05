@@ -8,6 +8,7 @@ using namespace mxnet::cpp;
 
 int main()
 {
+    /*
     const size_t num_warmup = 10000;
     const size_t num_evaluations = 10000;
 
@@ -27,4 +28,5 @@ int main()
     auto end = chrono::steady_clock::now();
     auto diff = end - start;
     std::cout << chrono::duration <double, milli> (diff).count() / num_evaluations << " ms" << std::endl;
+    */
 }

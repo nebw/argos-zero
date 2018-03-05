@@ -1,32 +1,50 @@
 #include "Tree.h"
+#include "BatchProcessor.h"
 #include "Config.h"
 #include "Network.h"
 #include "Node.h"
 #include "Position.h"
 #include "Util.h"
 
-#include <random>
 #include <algorithm>
 #include <chrono>
 #include <fstream>
+#include <random>
 #include <thread>
 
 Tree::Tree()
-    : _gen(_rd())
-{
+    : _evaluationQueue(
+          ConcurrentNodeQueue(config::tree::batchSize * 4, 1 + 2 * config::tree::numThreads, 0)),
+      _token(_evaluationQueue),
+      _evaluationThreadKeepRunning(true),
+      _gen(_rd()) {
+    for (size_t i = 0; i < config::tree::numEvaluationThreads; ++i) {
+        _evaluationThreads.emplace_back(evaluationQueueConsumer, &_evaluationQueue,
+                                        &_evaluationThreadKeepRunning);
+    }
+
     const auto position = maybeAddPosition(_rootBoard);
     _rootNode = std::make_shared<Node>(position, Vertex::Invalid());
 
     purgeTranspositionTable();
 
     for (size_t i = 0; i < config::tree::numThreads; ++i) {
-        _networks.emplace_back(config::networkPath.string());
-        _networks[i].apply(_rootBoard);
+        EvaluationJob job(_rootBoard.getFeatures().getPlanes());
+        auto future = job.result.get_future();
+        _evaluationQueue.enqueue(_token, std::move(job));
+        future.wait();
     }
 }
 
-std::shared_ptr<Position> Tree::maybeAddPosition(const RawBoard& board)
-{
+Tree::~Tree() {
+    _evaluationThreadKeepRunning = {false};
+
+    for (size_t i = 0; i < config::tree::numEvaluationThreads; ++i) {
+        _evaluationThreads[i].join();
+    }
+}
+
+std::shared_ptr<Position> Tree::maybeAddPosition(const RawBoard& board) {
     const auto hash = board.TranspositionHash();
 
     std::shared_ptr<Position> pos;
@@ -44,17 +62,15 @@ std::shared_ptr<Position> Tree::maybeAddPosition(const RawBoard& board)
     return position;
 }
 
-void Tree::evaluate(const std::chrono::milliseconds duration)
-{
+void Tree::evaluate(const std::chrono::milliseconds duration) {
     const auto start = std::chrono::system_clock::now();
     beginEvaluation();
 
-    std::atomic<bool> keepRunning = { true };
+    std::atomic<bool> keepRunning = {true};
 
     std::vector<std::future<void>> threads;
     for (size_t i = 0; i < config::tree::numThreads; ++i) {
-        Network* net = &_networks[i];
-        auto f = std::async(std::launch::async, &Tree::playout, this, &keepRunning, net);
+        auto f = std::async(std::launch::async, &Tree::playout, this, &keepRunning);
         threads.push_back(std::move(f));
     }
 
@@ -74,24 +90,23 @@ void Tree::evaluate(const std::chrono::milliseconds duration)
     }
 }
 
-void Tree::evaluate(const size_t evaluations)
-{
+void Tree::evaluate(const size_t evaluations) {
     beginEvaluation();
 
-    std::atomic<bool> keepRunning = { true };
+    std::atomic<bool> keepRunning = {true};
 
     std::vector<std::future<void>> threads;
     for (size_t i = 0; i < config::tree::numThreads; ++i) {
-        Network* net = &_networks[i];
-        auto f = std::async(std::launch::async, &Tree::playout, this, &keepRunning, net);
+        auto f = std::async(std::launch::async, &Tree::playout, this, &keepRunning);
         threads.push_back(std::move(f));
     }
 
     for (;;) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
-        if (static_cast<int>(_rootNode->statistics().num_evaluations.load()) - static_cast<int>(config::tree::numThreads * config::tree::virtualPlayouts) >= static_cast<int>(evaluations))
-        {
+        if (static_cast<int>(_rootNode->statistics().num_evaluations.load()) -
+                static_cast<int>(config::tree::numThreads * config::tree::virtualPlayouts) >=
+            static_cast<int>(evaluations)) {
             break;
         }
     }
@@ -105,14 +120,14 @@ void Tree::evaluate(const size_t evaluations)
 
 void Tree::setKomi(float komi) { _rootBoard.SetKomi(komi); }
 
-void Tree::visitNode(Node* node)
-{
-    node->statistics().num_evaluations += config::tree::virtualPlayouts;
+void Tree::visitNode(Node* node) {
+    node->statistics().num_evaluations += config::tree::virtualPlayouts + 1;
     node->position()->statistics().num_evaluations += 1;
 }
 
-void Tree::playout(std::atomic<bool>* keepRunning, Network* net)
-{
+void Tree::playout(std::atomic<bool>* keepRunning) {
+    moodycamel::ProducerToken token(_evaluationQueue);
+
     do {
         NodeTrace trace;
         Board playoutBoard;
@@ -130,16 +145,21 @@ void Tree::playout(std::atomic<bool>* keepRunning, Network* net)
         }
 
         // if node is terminal
-        if (node->isExpanded() && (node->children())->empty()) {
-            updateStatistics(trace, playoutBoard.PlayoutWinner().ToScore());
+        if (node->isExpanded() && node->isTerminal()) {
+            updateStatistics(trace, node->statistics().playout_score.load());
             continue;
         }
 
         // expand node
         if (node->statistics().num_evaluations.load() >= config::tree::expandAt) {
-            const bool isExpandingThread = node->expand(*this, playoutBoard, *net);
+            const bool isExpandingThread =
+                node->expand(*this, playoutBoard, _evaluationQueue, token);
             if (isExpandingThread) {
-                updateStatistics(trace, node->position()->statistics().value.load());
+                if (node->isTerminal()) {
+                    updateStatistics(trace, node->statistics().playout_score.load());
+                } else {
+                    updateStatistics(trace, node->position()->statistics().value.load());
+                }
             } else {
                 while (!trace.IsEmpty()) {
                     Node* node = trace.PopTop();
@@ -148,17 +168,21 @@ void Tree::playout(std::atomic<bool>* keepRunning, Network* net)
                 }
             }
         } else {
+            assert(false);
             updateStatistics(trace, node->position()->statistics().value.load());
         }
     } while (keepRunning->load());
 }
 
-Player Tree::rollout(Board playoutBoard, Network* net)
-{
+Player Tree::rollout(Board playoutBoard, ConcurrentNodeQueue& queue,
+                     moodycamel::ProducerToken const& token) {
     while (!playoutBoard.BothPlayerPass()) {
         Player pl = playoutBoard.ActPlayer();
 
-        const Network::Result result = net->apply(playoutBoard);
+        EvaluationJob job(playoutBoard.getFeatures().getPlanes());
+        auto future = job.result.get_future();
+        queue.enqueue(token, std::move(job));
+        const Network::Result result = future.get();
 
         std::vector<float> probabilites;
         std::vector<Vertex> moves;
@@ -168,10 +192,11 @@ Player Tree::rollout(Board playoutBoard, Network* net)
                 size_t posIdx;
                 if (v == Vertex::Pass()) {
                     posIdx = config::boardSize * config::boardSize;
+                    probabilites.push_back(result.candidates[posIdx].prior);
                 } else {
                     posIdx = v.GetRow() * config::boardSize + v.GetColumn();
+                    probabilites.push_back(result.candidates[posIdx].prior);
                 }
-                probabilites.push_back(result.candidates[posIdx].prior);
                 moves.push_back(v);
             }
         });
@@ -185,23 +210,22 @@ Player Tree::rollout(Board playoutBoard, Network* net)
     return playoutBoard.PlayoutWinner();
 }
 
-Vertex Tree::bestMove()
-{
+Vertex Tree::bestMove() {
     assert(_rootNode->isExpanded());
-    if ((_rootBoard.MoveCount() < 30) && config::tree::trainingMode) {
+    if ((_rootBoard.MoveCount() < config::tree::randomizeFirstNMoves) &&
+        config::tree::trainingMode) {
         std::vector<float> probabilites;
         probabilites.reserve(_rootNode->children().get().size());
         for (const std::shared_ptr<Node>& child : _rootNode->children().get()) {
             size_t NumEvaluations = child->statistics().num_evaluations.load();
             probabilites.push_back(NumEvaluations);
         }
-        for (size_t i=0; i < probabilites.size(); ++i) {
+        for (size_t i = 0; i < probabilites.size(); ++i) {
             probabilites[i] /= _rootNode->statistics().num_evaluations.load();
         }
         std::discrete_distribution<size_t> d(probabilites.begin(), probabilites.end());
         return _rootNode->children().get()[d(_gen)]->parentMove();
-    }
-    else {
+    } else {
         Node::NodeStack const& children = _rootNode->children().value();
         size_t bestIdx = 0;
         float maxRollouts = -1.f;
@@ -216,12 +240,10 @@ Vertex Tree::bestMove()
     }
 }
 
+void Tree::playMove(const Vertex& vertex) {
+    moodycamel::ProducerToken token(_evaluationQueue);
 
-void Tree::playMove(const Vertex& vertex)
-{
-    if (!_rootNode->isExpanded()) {
-        _rootNode->expand(*this, _rootBoard, _networks[0]);
-    }
+    if (!_rootNode->isExpanded()) { _rootNode->expand(*this, _rootBoard, _evaluationQueue, token); }
     assert(_rootBoard.IsLegal(_rootBoard.ActPlayer(), vertex));
     _rootBoard.PlayLegal(_rootBoard.ActPlayer(), vertex);
 
@@ -230,27 +252,21 @@ void Tree::playMove(const Vertex& vertex)
     purgeTranspositionTable();
 }
 
-void Tree::beginEvaluation()
-{
+void Tree::beginEvaluation() {
     if (!_rootNode->isExpanded()) {
         visitNode(_rootNode.get());
-        _rootNode->expand(*this, _rootBoard, _networks[0]);
+        _rootNode->expand(*this, _rootBoard, _evaluationQueue, _token);
         NodeTrace traceCpy;
         traceCpy.Push(_rootNode.get());
         updateStatistics(traceCpy, _rootNode->position()->statistics().value.load());
-
     }
 
-    //Add dirichlet noise
-    if (config::tree::trainingMode) {
-        addDirichletNoise(0.25f, 0.03f);
-    }
+    // Add dirichlet noise
+    if (config::tree::trainingMode) { addDirichletNoise(0.25f, 0.03f); }
 }
 
-void Tree::addDirichletNoise(const float amount, const float distribution)
-{
-
-    auto children = _rootNode -> children().get();
+void Tree::addDirichletNoise(const float amount, const float distribution) {
+    auto children = _rootNode->children().get();
     size_t child_cnt = children.size();
 
     auto dirichlet_vector = std::vector<float>{};
@@ -261,33 +277,30 @@ void Tree::addDirichletNoise(const float amount, const float distribution)
         dirichlet_vector.emplace_back(gamma(_gen));
     }
 
-    auto sample_sum = std::accumulate(begin(dirichlet_vector),
-                                      end(dirichlet_vector), 0.0f);
-    //std::cout << "new vector" << endl;
-    //std::cout << child_cnt << endl;
-    for (auto& v: dirichlet_vector) {
+    auto sample_sum = std::accumulate(begin(dirichlet_vector), end(dirichlet_vector), 0.0f);
+    // std::cout << "new vector" << endl;
+    // std::cout << child_cnt << endl;
+    for (auto& v : dirichlet_vector) {
         v /= sample_sum;
-        //std::cout << v << std::endl;
+        // std::cout << v << std::endl;
     }
 
-    for (size_t i=0; i != child_cnt; i++) {
-        //Add dirichlet distribution to each prior probability
-        float prior = children[i] -> getPrior();
-        children[i] -> setPrior(((1-amount)*prior) + (amount * dirichlet_vector[i]));
+    for (size_t i = 0; i != child_cnt; i++) {
+        // Add dirichlet distribution to each prior probability
+        float prior = children[i]->getPrior();
+        children[i]->setPrior(((1 - amount) * prior) + (amount * dirichlet_vector[i]));
     }
 }
 
-void Tree::updateStatistics(NodeTrace& trace, float score) const
-{
+void Tree::updateStatistics(NodeTrace& trace, float score) const {
     while (!trace.IsEmpty()) {
         Node* node = trace.PopTop();
         node->addEvaluation(score);
-        node->statistics().num_evaluations -= (config::tree::virtualPlayouts - 1);
+        node->statistics().num_evaluations -= (config::tree::virtualPlayouts);
     }
 }
 
-void Tree::setRootNode(const Vertex& vertex)
-{
+void Tree::setRootNode(const Vertex& vertex) {
     _lastRootNodes.push(_rootNode);
     while (_lastRootNodes.size() > config::tree::numLastRootNodes) {
         _lastRootNodes.pop();
@@ -309,12 +322,9 @@ void Tree::setRootNode(const Vertex& vertex)
     assert(found);
 }
 
-void Tree::purgeTranspositionTable()
-{
+void Tree::purgeTranspositionTable() {
     auto lt = _transpositionTable.lock_table();
     for (const auto& it : lt) {
-        if (it.second.expired()) {
-            lt.erase(it.first);
-        }
+        if (it.second.expired()) { lt.erase(it.first); }
     }
 }

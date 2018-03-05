@@ -1,7 +1,8 @@
 #pragma once
 
-#include "mxnet-cpp/MxNetCpp.h"
+#include "Config.h"
 #include "ego.hpp"
+#include "mxnet-cpp/MxNetCpp.h"
 
 class Network {
 public:
@@ -20,11 +21,14 @@ public:
         Candidates candidates;
         float value;
 
-        Result(Candidates&& candidates, float value) : candidates(std::move(candidates)), value(value) {}
+        Result() {}
+        Result(Candidates&& candidates, float value)
+            : candidates(std::move(candidates)), value(value) {}
     };
 
     Network(const std::string& path);
-    Result apply(Board const& board);
+    std::array<Network::Result, config::tree::batchSize> apply(
+        const std::array<NetworkFeatures::Planes, config::tree::batchSize>& planes);
 
 private:
     mxnet::cpp::Symbol _net;

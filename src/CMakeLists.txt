@@ -1,4 +1,6 @@
+add_subdirectory(capnp)
 add_subdirectory(argos)
+
 
 add_executable(speedtest speedtest.cpp)
 target_link_libraries(speedtest argos mxnet)
