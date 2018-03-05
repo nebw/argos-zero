@@ -20,11 +20,11 @@ namespace tree {
         std::thread::hardware_concurrency() == 0 ? 4 : std::thread::hardware_concurrency());
     static const size_t randomizeFirstNMoves = 10;
     static const size_t numLastRootNodes = 3;
-    static const size_t virtualPlayouts = 5;
+    static const size_t virtualPlayouts = 0;
     static const size_t expandAt = virtualPlayouts + 1;
     static const float priorC = 5;
-    static const bool networkRollouts = true;
-    static const bool trainingMode = true;
+    static const bool networkRollouts = false;
+    static const bool trainingMode = false;
 }  // namespace tree
 
 namespace time {

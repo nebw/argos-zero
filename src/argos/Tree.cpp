@@ -129,6 +129,7 @@ void Tree::playout(std::atomic<bool>* keepRunning) {
     resetThreadAffinity();
 
     moodycamel::ProducerToken token(_evaluationQueue);
+    std::mt19937 randomEngine(std::time(0));
 
     do {
         NodeTrace trace;
@@ -140,7 +141,7 @@ void Tree::playout(std::atomic<bool>* keepRunning) {
         trace.Push(node);
 
         while (node->isExpanded() && node->isEvaluated() && !(node->children())->empty()) {
-            node = node->getBestUCTChild().get();
+            node = node->getBestUCTChild(randomEngine).get();
             visitNode(node);
             playoutBoard.PlayLegal(playoutBoard.ActPlayer(), node->parentMove());
             trace.Push(node);

@@ -3,6 +3,7 @@
 #include <boost/optional.hpp>
 #include <memory>
 #include <mutex>
+#include <random>
 
 #include <vector>
 
@@ -38,7 +39,9 @@ public:
     inline bool isTerminal() const { return _isTerminalNode; }
 
     float getUCTValue(Node& parent) const;
-    NodeSPtr const& getBestUCTChild();
+    float getBetaValue(std::mt19937& engine) const;
+
+    NodeSPtr const& getBestUCTChild(std::mt19937& engine);
     NodeSPtr const& getBestWinrateChild();
     NodeSPtr const& getMostVisitsChild();
 

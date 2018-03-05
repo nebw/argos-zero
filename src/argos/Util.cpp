@@ -34,11 +34,13 @@ struct TreeBuffer {
 
 void printTree(Node* node, std::string const& posName, Player const& player, std::ostream& out,
                TreeBuffer& buffer, float fractionPrint) {
+    std::mt19937 randomEngine(std::time(0));
+
     out << std::fixed << std::setprecision(2) << posName << " ("
         << node->statistics().num_evaluations << " | "
         << "WR:" << node->winrate(player) * 100 << "%"
         << " PN:" << node->statistics().prior.load() * 100 << "%"
-        << ")\n";
+        << " β:" << node->getBetaValue(randomEngine) << ")\n";
     {
         auto const& children = node->children();
         if (!children.is_initialized()) { return; }
