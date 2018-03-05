@@ -10,6 +10,7 @@ namespace argos {
     namespace config {
         namespace defaults
         {
+            static const std::string DEFAULT_SERVER = "127.0.0.1";
             namespace time
             {
                 static const constexpr std::chrono::milliseconds DEFAULT_DELAY = std::chrono::milliseconds(10);
@@ -28,8 +29,10 @@ namespace argos {
         class Tree final
         {
         public:
+            static const constexpr size_t DEFAULT_BATCH_SIZE                = 8;
+            static const constexpr size_t DEFAULT_NUM_EVALUATION_THREADS    = 2;
             static const constexpr size_t DEFAULT_NUM_THREADS               = 4;
-            static const constexpr size_t DEFAULT_RANDOMIZE_FIRST_N_MOVES   = 2;
+            static const constexpr size_t DEFAULT_RANDOMIZE_FIRST_N_MOVES   = 10;
             static const constexpr size_t DEFAULT_NUM_LAST_ROOT_NODES       = 3;
             static const constexpr size_t DEFAULT_VIRTUAL_PLAYOUTS          = 5;
             static const constexpr size_t DEFAULT_EXPAND_AT                 = DEFAULT_VIRTUAL_PLAYOUTS + 1;
@@ -37,7 +40,9 @@ namespace argos {
             static const constexpr bool DEFAULT_NETWORK_ROLLOUTS            = false;
             static const constexpr bool DEFAULT_TRAINING_MODE               = true;
         private:
-            explicit Tree(const size_t &numThreads,
+            explicit Tree(const size_t &batchSize,
+                          const size_t &numEvaluationThreads,
+                          const size_t &numThreads,
                           const size_t &randomizeFirstNMoves,
                           const size_t &numLastRootNodes,
                           const size_t &virtualPlayouts,
@@ -45,6 +50,8 @@ namespace argos {
                           const float &priorC,
                           const bool &networkRollouts,
                           const bool &trainingMode) :
+                    batchSize(batchSize),
+                    numEvaluationThreads(numEvaluationThreads),
                     numThreads(numThreads),
                     randomizeFirstNMoves(randomizeFirstNMoves),
                     numLastRootNodes(numLastRootNodes),
@@ -55,6 +62,8 @@ namespace argos {
                     trainingMode(trainingMode) {}
         public:
             class Builder;
+            const size_t batchSize;
+            const size_t numEvaluationThreads;
             const size_t numThreads;
             const size_t randomizeFirstNMoves;
             const size_t numLastRootNodes;
@@ -68,6 +77,8 @@ namespace argos {
         class Tree::Builder final
         {
         private:
+            size_t _batchSize               = DEFAULT_BATCH_SIZE;
+            size_t _numEvaluationThreads    = DEFAULT_NUM_EVALUATION_THREADS;
             size_t _numThreads              = DEFAULT_NUM_THREADS;
             size_t _randomizeFirstNMoves    = DEFAULT_RANDOMIZE_FIRST_N_MOVES;
             size_t _numLastRootNodes        = DEFAULT_NUM_LAST_ROOT_NODES;
@@ -77,6 +88,8 @@ namespace argos {
             bool _networkRollouts           = DEFAULT_NETWORK_ROLLOUTS;
             bool _trainingMode              = DEFAULT_TRAINING_MODE;
         public:
+            Builder batchSize(const size_t &val) { _batchSize = val; return *this; }
+            Builder numEvaluationThreads(const size_t &val) { _numEvaluationThreads = val; return *this; }
             Builder numThreads(const size_t &val) { _numThreads = val; return *this; }
             Builder randomizeFirstNMoves(const size_t &val) { _randomizeFirstNMoves = val; return *this; }
             Builder numLastRootNodes(const size_t &val) { _numLastRootNodes = val; return *this; }
@@ -86,7 +99,9 @@ namespace argos {
             Builder networkRollouts(const bool &val) { _networkRollouts = val; return *this; }
             Builder trainingMode(const bool &val) { _trainingMode = val; return *this; }
             Tree build() {
-                return Tree(_numThreads,
+                return Tree(_batchSize,
+                            _numEvaluationThreads,
+                            _numThreads,
                             _randomizeFirstNMoves,
                             _numLastRootNodes,
                             _virtualPlayouts,
@@ -122,7 +137,7 @@ namespace argos {
         private:
             int _C                              = DEFAULT_C;
             int _maxPly                         = DEFAULT_MAX_PLY;
-            std::chrono::milliseconds _delay    = argos::config::defaults::time::DEFAULT_DELAY;
+            std::chrono::milliseconds _delay    = defaults::time::DEFAULT_DELAY;
         public:
             Builder C(const int &C) { _C = C; return *this; }
             Builder maxPly(const int &maxPly) { _maxPly = maxPly; return *this; }
@@ -151,7 +166,7 @@ namespace argos {
         {
         private:
             float _resignThreshold                  = DEFAULT_RESIGN_THRESHOLD;
-            std::chrono::milliseconds _totalTime    = argos::config::defaults::engine::DEFAULT_TOTAL_TIME;
+            std::chrono::milliseconds _totalTime    = defaults::engine::DEFAULT_TOTAL_TIME;
         public:
             Builder resignThreshold(const float &resignThreshold) { _resignThreshold = resignThreshold; return *this; }
             Builder totalTime(const std::chrono::milliseconds &totalTime) { _totalTime = totalTime; return *this; }
@@ -163,12 +178,15 @@ namespace argos {
         static const Time DEFAULT_TIME      = Time::Builder().build();
         static const Engine DEFAULT_ENGINE  = Engine::Builder().build();
 
+
         class Config final
         {
         public:
 
             static const constexpr size_t DEFAULT_BOARD_SIZE                = 19;
             static const constexpr MXNET_DEVICE_TYPE DEFAULT_DEVICE_TYPE    = CPU;
+            static const constexpr int DEFAULT_PORT                         = 8000;
+
         private:
             explicit Config(const boost::filesystem::path &networkPath,
                             const boost::filesystem::path &logFilePath,
@@ -176,14 +194,18 @@ namespace argos {
                             Time time,
                             Engine engine,
                             const size_t &boardSize,
-                            const MXNET_DEVICE_TYPE &deviceType) :
+                            const MXNET_DEVICE_TYPE &deviceType,
+                            const int &port,
+                            const std::string &server) :
                     networkPath(networkPath),
                     logFilePath(logFilePath),
                     tree(tree),
                     time(std::move(time)),
                     engine(std::move(engine)),
                     boardSize(boardSize),
-                    deviceType(deviceType) {}
+                    deviceType(deviceType),
+                    port(port),
+                    server(server) {}
         public:
             class Builder;
             const boost::filesystem::path networkPath;
@@ -193,6 +215,8 @@ namespace argos {
             const Engine engine;
             const size_t boardSize;
             const MXNET_DEVICE_TYPE deviceType;
+            const int port;
+            const std::string server;
         };
 
         class Config::Builder final
@@ -205,6 +229,8 @@ namespace argos {
             std::shared_ptr<Engine> _engine;
             size_t _boardSize                           = DEFAULT_BOARD_SIZE;
             MXNET_DEVICE_TYPE _deviceType               = DEFAULT_DEVICE_TYPE;
+            int _port                                   = DEFAULT_PORT;
+            std::string _server                         = defaults::DEFAULT_SERVER;
         public:
             Builder(const boost::filesystem::path &networkPath,
                     const boost::filesystem::path &logFilePath) :
@@ -215,6 +241,8 @@ namespace argos {
             Builder engine(const Engine &engine) { _engine = std::make_shared<Engine>(engine); return *this; }
             Builder boardSize(const size_t &boardSize) { _boardSize = boardSize; return *this; }
             Builder deviceType(const MXNET_DEVICE_TYPE &deviceType) { _deviceType = deviceType; return *this; }
+            Builder port(const int &port) { _port = port; return *this; }
+            Builder server(const std::string &server) { _server = server; return *this; }
             Config build() { return Config(
                         _networkPath,
                         _logFilePath,
@@ -222,7 +250,9 @@ namespace argos {
                         _time ? *_time : DEFAULT_TIME,
                         _engine ? *_engine : DEFAULT_ENGINE,
                         _boardSize,
-                        _deviceType); }
+                        _deviceType,
+                        _port,
+                        _server); }
         };
 
         Config parse(int argc, const char **argv);
