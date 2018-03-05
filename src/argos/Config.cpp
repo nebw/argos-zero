@@ -4,6 +4,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <iostream>
+#include <chrono>
 
 #include "Config.h"
 
@@ -75,14 +76,34 @@ namespace argos
                 if (fs::exists(configPath))
                 {
                     fs::ifstream ifs(configPath);
-                    pt::ptree pTree;
+                    pt::ptree tree;
 
                     try
                     {
-                        pt::xml_parser::read_xml(ifs, pTree);
-                        pTree = pTree.get_child("config");
-                        auto treeParser = pTree.get_child("tree");
+                        pt::xml_parser::read_xml(ifs, tree);
+
+                        auto configParser = tree.get_child("config");
+                        configBuilder.boardSize(configParser.get<size_t>("board_size"));
+                        // configBuilder.deviceType() TODO
+
+                        auto treeParser = configParser.get_child("tree");
+                        treeBuilder.numThreads(treeParser.get<size_t>("num_threads"));
+                        treeBuilder.randomizeFirstNMoves(treeParser.get<size_t>("randomize_first_n_moves"));
+                        treeBuilder.numLastRootNodes(treeParser.get<size_t>("num_last_root_nodes"));
+                        treeBuilder.virtualPlayouts(treeParser.get<size_t>("virtual_playouts"));
+                        treeBuilder.expandAt(treeParser.get<size_t>("expand_at"));
+                        treeBuilder.priorC(treeParser.get<float>("prior_c"));
                         treeBuilder.networkRollouts(treeParser.get<bool>("network_rollouts"));
+                        treeBuilder.trainingMode(treeParser.get<bool>("training_mode"));
+
+                        auto timeParser = configParser.get_child("time");
+                        timeBuilder.C(timeParser.get<int>("c"));
+                        timeBuilder.maxPly(timeParser.get<int>("max_ply"));
+                        timeBuilder.delay(std::chrono::milliseconds(timeParser.get<size_t>("delay")));
+
+                        auto engineParser = configParser.get_child("engine");
+                        engineBuilder.resignThreshold(engineParser.get<float>("resign_threshold"));
+                        engineBuilder.totalTime(std::chrono::milliseconds(engineParser.get<size_t>("total_time")));
                     }
                     catch (pt::ptree_error&)
                     {
