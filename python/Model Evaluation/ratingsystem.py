@@ -5,8 +5,8 @@ import ast
 
 
 class RatingSystem(Evaluator):
-    def __init__(self, playerOneArgs, playerTwoArgs, numMatches=1, batchSize=20, verbose=True, fileName="ratings.txt"):
-        super(RatingSystem, self).__init__(playerOneArgs, playerTwoArgs,  verbose=verbose)
+    def __init__(self, playerOneArgs, playerTwoArgs, mode ="19",numMatches=1, batchSize=20, verbose=True, fileName="ratings.txt"):
+        super(RatingSystem, self).__init__(playerOneArgs, playerTwoArgs, mode, verbose=verbose)
         self.numMatches = numMatches
         self.batchSize = batchSize
         self.ratings = self.getPlayerRatingsFromFile(fileName)
