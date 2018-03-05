@@ -34,7 +34,21 @@ namespace argos
             optional.add_options()
                     ("help,h", "print this message and exit")
                     ("config,c", po::value<std::string>(), "path to config file")
-                    ("tree-networkRollouts", po::value<bool>(), "enable|disable network rollouts");
+                    ("deviceType,d", po::value<std::string>(), "set device type (CPU, GPU, CPU_PINNED)")
+                    ("boardSize,b", po::value<size_t>(), "set boardsize")
+                    ("tree-numThreads", po::value<size_t>(), "set numThreads")
+                    ("tree-randomizeFirstNMoves", po::value<size_t>(), "set randomizeFirstNMoves")
+                    ("tree-numLastRootNodes", po::value<size_t>(), "set numLastRootNodes")
+                    ("tree-virtualPlayouts", po::value<size_t>(), "set virtualPlayouts")
+                    ("tree-expandAt", po::value<size_t>(), "set expandAt")
+                    ("tree-priorC", po::value<float>(), "set priorC")
+                    ("tree-networkRollouts", po::value<bool>(), "enable|disable network rollouts")
+                    ("tree-trainingMode", po::value<bool>(), "enable|disable training mode")
+                    ("time-c", po::value<int>(), "set time c")
+                    ("time-maxPly", po::value<int>(), "set maxPly")
+                    ("time-delay", po::value<int>(), "set delay")
+                    ("engine-totalTime", po::value<int>(), "set totalTime in milliseconds")
+                    ("engine-resignThreshold", po::value<float>(), "set resignThreshold");
 
             options
                     .add(required)
@@ -114,6 +128,20 @@ namespace argos
                 else
                 {
                     std::cout << "error: invalid configuration path" << std::endl;
+                    exit(EXIT_FAILURE);
+                }
+            }
+
+            if (vm.count("deviceType"))
+            {
+                using namespace std;
+                std::string deviceType = vm["deviceType"].as<std::string>();
+                if (deviceType.compare("CPU")) { configBuilder.deviceType(CPU); }
+                else if (deviceType.compare("GPU")) { configBuilder.deviceType(GPU); }
+                else if (deviceType.compare("CPU_PINNED")) { configBuilder.deviceType(CPU_PINNED); }
+                else
+                {
+                    std::cout << "error: invalid device type: " << vm.count("deviceType") << std::endl;
                     exit(EXIT_FAILURE);
                 }
             }
