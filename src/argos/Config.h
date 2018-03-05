@@ -8,6 +8,17 @@
 
 namespace argos {
     namespace config {
+        namespace defaults
+        {
+            namespace time
+            {
+                static const constexpr std::chrono::milliseconds DEFAULT_DELAY = std::chrono::milliseconds(10);
+            }
+            namespace engine
+            {
+                static const constexpr std::chrono::milliseconds DEFAULT_TOTAL_TIME = std::chrono::milliseconds(1000 * 60 * 10);
+            }
+        }
         enum MXNET_DEVICE_TYPE {
             CPU         = 1,
             GPU         = 2,
@@ -84,7 +95,6 @@ namespace argos {
         public:
             static const constexpr int DEFAULT_C = 80;
             static const constexpr int DEFAULT_MAX_PLY = 80;
-            static const constexpr std::chrono::milliseconds DEFAULT_DELAY = std::chrono::milliseconds(10);
         private:
             explicit Time(const int &C,
                           const int &maxPly,
@@ -105,7 +115,7 @@ namespace argos {
         private:
             int _C                              = DEFAULT_C;
             int _maxPly                         = DEFAULT_MAX_PLY;
-            std::chrono::milliseconds _delay    = DEFAULT_DELAY;
+            std::chrono::milliseconds _delay    = argos::config::defaults::time::DEFAULT_DELAY;
         public:
             Builder C(const int &C) { _C = C; return *this; }
             Builder maxPly(const int &maxPly) { _maxPly = maxPly; return *this; }
@@ -119,7 +129,6 @@ namespace argos {
         {
         public:
             static const constexpr float DEFAULT_RESIGN_THRESHOLD               = 0.1f;
-            static const constexpr std::chrono::milliseconds DEFAULT_TOTAL_TIME = std::chrono::milliseconds(1000 * 60 * 10);
         private:
             explicit Engine(const float &resignThreshold,
                             const std::chrono::milliseconds &totalTime) :
@@ -135,7 +144,7 @@ namespace argos {
         {
         private:
             float _resignThreshold                  = DEFAULT_RESIGN_THRESHOLD;
-            std::chrono::milliseconds _totalTime    = DEFAULT_TOTAL_TIME;
+            std::chrono::milliseconds _totalTime    = argos::config::defaults::engine::DEFAULT_TOTAL_TIME;
         public:
             Builder resignThreshold(const float &resignThreshold) { _resignThreshold = resignThreshold; return *this; }
             Builder totalTime(const std::chrono::milliseconds &totalTime) { _totalTime = totalTime; return *this; }
@@ -220,8 +229,8 @@ namespace config {
 
     static const MXNET_DEVICE_TYPE defaultDevice = CPU;
 
-    static const boost::filesystem::path networkPath("/home/ben/tmp/expertnet_small");
-    static const boost::filesystem::path logFilePath("/home/ben/tmp/argos-dbg.log");
+    static const boost::filesystem::path networkPath("/Users/rs/Documents/dev/uni/swpdeeplearning/tmp/expertnet_small");
+    static const boost::filesystem::path logFilePath("/Users/rs/Documents/dev/uni/swpdeeplearning/tmp/argos-dbg.log");
 
     static const size_t boardSize = BOARDSIZE;
 
