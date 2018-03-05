@@ -19,6 +19,8 @@ int main() {
     // if network variable set: collect information
     bool collect_data = config::tree::trainingMode;
 
+    const char* server = "127.0.0.1";
+    int port = 1345;
     boost::optional<Collector> collector;
 
     if (collect_data) { collector = Collector(config::server, config::port); }

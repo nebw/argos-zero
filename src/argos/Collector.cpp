@@ -128,7 +128,6 @@ void Collector::sendData(const Tree& tree) {
     int sockfd;
     sockfd = connectToServer(this->_server, this->_port);
 
-
     // serialize collected info into capnp Message
     static const size_t num_fields = BOARDSIZE * BOARDSIZE + 1;
     std::uint16_t a, b, row, col, f;
