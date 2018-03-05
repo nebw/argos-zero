@@ -125,7 +125,20 @@ namespace argos
                 }
             }
 
+            if (vm.count("boardSize")) configBuilder.boardSize(vm["boardSize"].as<size_t>());
+            if (vm.count("tree-numThreads")) treeBuilder.numThreads(vm["tree-numThreads"].as<size_t>());
+            if (vm.count("tree-randomizeFirstNMoves")) treeBuilder.randomizeFirstNMoves(vm["tree-randomizeFirstNMoves"].as<size_t>());
+            if (vm.count("tree-numLastRootNodes")) treeBuilder.numLastRootNodes(vm["tree-numLastRootNodes"].as<size_t>());
+            if (vm.count("tree-virtualPlayouts")) treeBuilder.virtualPlayouts(vm["tree-virtualPlayouts"].as<size_t>());
+            if (vm.count("tree-expandAt")) treeBuilder.expandAt(vm["tree-expandAt"].as<size_t>());
+            if (vm.count("tree-priorC")) treeBuilder.priorC(vm["tree-priorC"].as<float>());
             if (vm.count("tree-networkRollouts")) treeBuilder.networkRollouts(vm["tree-networkRollouts"].as<bool>());
+            if (vm.count("tree-trainingMode")) treeBuilder.trainingMode(vm["tree-trainingMode"].as<bool>());
+            if (vm.count("time-c")) timeBuilder.C(vm["time-c"].as<int>());
+            if (vm.count("time-maxPly")) timeBuilder.maxPly(vm["time-maxPly"].as<int>());
+            if (vm.count("time-delay")) timeBuilder.delay(std::chrono::milliseconds(vm["time-delay"].as<int>()));
+            if (vm.count("engine-totalTime")) engineBuilder.totalTime(std::chrono::milliseconds(vm["engine-totalTime"].as<int>()));
+            if (vm.count("engine-resignThreshold")) engineBuilder.resignThreshold(vm["engine-resignThreshold"].as<float>());
 
             return configBuilder
                     .tree(treeBuilder.build())
