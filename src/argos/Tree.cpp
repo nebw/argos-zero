@@ -126,8 +126,6 @@ void Tree::visitNode(Node* node) {
 }
 
 void Tree::playout(std::atomic<bool>* keepRunning) {
-    resetThreadAffinity();
-
     moodycamel::ProducerToken token(_evaluationQueue);
 
     do {
