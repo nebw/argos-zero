@@ -2,20 +2,24 @@ import numpy as np
 import mxnet as mx
 from mxnet import nd, autograd, gluon
 import sys
-#import h5py
+import h5py
 
-#valnet_data = h5py.File('~/Studies/sem7/go/data-val-all-combined.h5', 'r')
-#polnet_data = h5py.File('~/Studies/sem7/go/data-pol-gogod-tygem-combined.h5', 'r')
+valnet_data = h5py.File('/home/zehha/Studies/sem7/go/valnet-data-mounted/data-val-all-combined.h5', 'r')
+polnet_data = h5py.File('/home/zehha/Studies/sem7/go/polnet-data-mounted/data-pol-gogod-tygem-combined.h5', 'r')
 
-#pX = polnet_data['X']
-#pY = polnet_data['Y']
+pX = polnet_data['X']
+pY = polnet_data['Y']
 
+vX = valnet_data['X']
+vY = valnet_data['Y']
 
+'''
 pX = np.random.rand(10000, 60, 19, 19)
 vX = np.random.rand(10000, 60, 19, 19)
 
 pY = np.random.rand(10000,).astype(np.int64)
 vY = np.random.rand(10000,)
+'''
 
 ctx = mx.cpu()
 batch_size = 128
@@ -32,8 +36,7 @@ class BasicBlockV2(gluon.HybridBlock):
         super(BasicBlockV2, self).__init__(**kwargs)
         self.convs = gluon.nn.HybridSequential()
         self.convs.add(gluon.nn.BatchNorm())
-        #self.convs.add(gluon.nn.LeakyReLU(alpha=0.3))
-        self.convs.add(mx.sym.QActivation())
+        self.convs.add(gluon.nn.LeakyReLU(alpha=0.3))
         self.convs.add(_conv3x3(channels, stride, in_channels, 3, 1, 1))
         self.convs.add(gluon.nn.BatchNorm())
         self.convs.add(gluon.nn.LeakyReLU(alpha=0.3))
