@@ -51,7 +51,7 @@ private:
     std::vector<Network> _networks;
     moodycamel::ProducerToken _token;
     std::atomic<bool> _evaluationThreadKeepRunning;
-    std::thread _evaluationThread;
+    std::vector<std::thread> _evaluationThreads;
     std::random_device _rd;
     std::mt19937 _gen;
 

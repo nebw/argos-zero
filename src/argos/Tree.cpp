@@ -17,8 +17,12 @@ Tree::Tree()
           ConcurrentNodeQueue(config::tree::batchSize * 4, 1 + 2 * config::tree::numThreads, 0)),
       _token(_evaluationQueue),
       _evaluationThreadKeepRunning(true),
-      _evaluationThread(evaluationQueueConsumer, &_evaluationQueue, &_evaluationThreadKeepRunning),
       _gen(_rd()) {
+    for (size_t i = 0; i < config::tree::numEvaluationThreads; ++i) {
+        _evaluationThreads.emplace_back(evaluationQueueConsumer, &_evaluationQueue,
+                                        &_evaluationThreadKeepRunning);
+    }
+
     const auto position = maybeAddPosition(_rootBoard);
     _rootNode = std::make_shared<Node>(position, Vertex::Invalid());
 
@@ -34,7 +38,10 @@ Tree::Tree()
 
 Tree::~Tree() {
     _evaluationThreadKeepRunning = {false};
-    _evaluationThread.join();
+
+    for (size_t i = 0; i < config::tree::numEvaluationThreads; ++i) {
+        _evaluationThreads[i].join();
+    }
 }
 
 std::shared_ptr<Position> Tree::maybeAddPosition(const RawBoard& board) {
