@@ -20,6 +20,8 @@ namespace argos
                           const po::options_description &required,
                           const po::options_description &optional);
 
+        bool parseDeviceType(const std::string &deviceType, MXNET_DEVICE_TYPE &parsed);
+
         Config parse(int argc, const char **argv)
         {
             po::options_description options;
@@ -95,10 +97,19 @@ namespace argos
                     try
                     {
                         pt::xml_parser::read_xml(ifs, tree);
+                        MXNET_DEVICE_TYPE deviceType;
 
                         auto configParser = tree.get_child("config");
                         configBuilder.boardSize(configParser.get<size_t>("board_size"));
-                        // configBuilder.deviceType() TODO
+                        if (parseDeviceType(configParser.get<std::string>("device_type"), deviceType))
+                        {
+                            configBuilder.deviceType(deviceType);
+                        }
+                        else
+                        {
+                            std::cout << "error: invalid device type" << std::endl;
+                            exit(EXIT_FAILURE);
+                        }
 
                         auto treeParser = configParser.get_child("tree");
                         treeBuilder.numThreads(treeParser.get<size_t>("num_threads"));
@@ -132,20 +143,6 @@ namespace argos
                 }
             }
 
-            if (vm.count("deviceType"))
-            {
-                using namespace std;
-                std::string deviceType = vm["deviceType"].as<std::string>();
-                if (deviceType.compare("CPU")) { configBuilder.deviceType(CPU); }
-                else if (deviceType.compare("GPU")) { configBuilder.deviceType(GPU); }
-                else if (deviceType.compare("CPU_PINNED")) { configBuilder.deviceType(CPU_PINNED); }
-                else
-                {
-                    std::cout << "error: invalid device type: " << vm.count("deviceType") << std::endl;
-                    exit(EXIT_FAILURE);
-                }
-            }
-
             if (vm.count("tree-networkRollouts")) treeBuilder.networkRollouts(vm["tree-networkRollouts"].as<bool>());
 
             return configBuilder
@@ -168,6 +165,14 @@ namespace argos
                << (optional.options().empty() ? "" : " [optional options]");
 
             return ss.str();
+        }
+
+        bool parseDeviceType(const std::string &deviceType, MXNET_DEVICE_TYPE &parsed)
+        {
+            if (deviceType == "CPU") { parsed = CPU; return true; }
+            else if (deviceType == "GPU") { parsed = GPU; return true; }
+            else if (deviceType == "CPU_PINNED") { parsed = CPU_PINNED; return true; }
+            else { return false; }
         }
     }
 }
