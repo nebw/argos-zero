@@ -81,7 +81,7 @@ float Node::getUCTValue(Node& parent, std::mt19937& engine) const {
 }
 
 float Node::getBetaValue(Node& parent, std::mt19937& engine) const {
-    const float numPriorEvals = 10;
+    const float numPriorEvals = 100;
     const float prior = _statistics.prior.load();
     const float winRate = winrate(parent.position()->actPlayer());
     const float nodeVisits = static_cast<float>(_statistics.num_evaluations.load());

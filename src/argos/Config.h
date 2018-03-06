@@ -6,16 +6,16 @@
 namespace config {
 enum MXNET_DEVICE_TYPE { CPU = 1, GPU = 2, CPU_PINNED = 3 };
 
-static const MXNET_DEVICE_TYPE defaultDevice = CPU;
+static const MXNET_DEVICE_TYPE defaultDevice = GPU;
 
-static const boost::filesystem::path networkPath("/home/franziska/Downloads/randomnet_small_9x9");
-static const boost::filesystem::path logFilePath("/home/franziska/Documents/Master/sem1/argos-dbg.log");
+static const boost::filesystem::path networkPath("/home/ben/go-swp/networks/agz_small_9x9");
+static const boost::filesystem::path logFilePath("/home/ben/tmp/argos-dbg.log");
 static const size_t boardSize = BOARDSIZE;
 static const char* server = "127.0.0.1";
-static const int port = 8000;
+static const int port = 18000;
 
 namespace tree {
-    static const size_t batchSize = 8;
+    static const size_t batchSize = 32;
     static const size_t numEvaluationThreads = 2;
     static const size_t numThreads = std::max<size_t>(
         numEvaluationThreads * batchSize,
@@ -25,8 +25,8 @@ namespace tree {
     static const size_t virtualPlayouts = 0;
     static const size_t expandAt = virtualPlayouts + 1;
     static const float priorC = 5;
-    static const bool networkRollouts = false;
-    static const bool trainingMode = false;
+    static const bool networkRollouts = true;
+    static const bool trainingMode = true;
 }  // namespace tree
 
 namespace time {
