@@ -6,6 +6,8 @@
 #include <chrono>
 #include <utility>
 
+#define DEBUG
+
 namespace argos {
     namespace config {
         namespace defaults
@@ -182,7 +184,7 @@ namespace argos {
         {
         public:
 
-            static const constexpr size_t DEFAULT_BOARD_SIZE                = 19;
+            static const constexpr size_t DEFAULT_BOARD_SIZE                = BOARDSIZE;
             static const constexpr MXNET_DEVICE_TYPE DEFAULT_DEVICE_TYPE    = CPU;
             static const constexpr int DEFAULT_PORT                         = 8000;
 
@@ -258,6 +260,7 @@ namespace argos {
     }
 }
 
+// TODO deprecated, use config object instead and delete unused parameters
 namespace config {
     enum MXNET_DEVICE_TYPE {
         CPU = 1, GPU = 2, CPU_PINNED = 3
@@ -265,8 +268,8 @@ namespace config {
 
     static const MXNET_DEVICE_TYPE defaultDevice = CPU;
 
-    static const boost::filesystem::path networkPath("/Users/rs/Documents/dev/uni/swpdeeplearning/tmp/expertnet_small");
-    static const boost::filesystem::path logFilePath("/Users/rs/Documents/dev/uni/swpdeeplearning/tmp/argos-dbg.log");
+    //static const boost::filesystem::path networkPath("/Users/rs/Documents/dev/uni/swpdeeplearning/tmp/expertnet_small");
+    //static const boost::filesystem::path logFilePath("/Users/rs/Documents/dev/uni/swpdeeplearning/tmp/argos-dbg.log");
 
     static const size_t boardSize = BOARDSIZE;
     static const char* server = "127.0.0.1";

@@ -6,12 +6,15 @@
 #include "Config.h"
 #include "Util.h"
 
-Engine::Engine() : _tree(std::make_unique<Tree>()), _komi(6.5) {
+Engine::Engine(const argos::config::Config &config) :
+        _tree(std::make_unique<Tree>(config)),
+        _komi(6.5),
+        _config(config) {
     RegisterCommands();
     RegisterParams();
 
     _tc.setRemainingTime(config::engine::totalTime);
-    _dbg.open(config::logFilePath.string(), ios_base::out | ios_base::app);
+    _dbg.open(config.logFilePath.string(), ios_base::out | ios_base::app);
 }
 
 void Engine::RegisterCommands() {
@@ -34,7 +37,7 @@ void Engine::RegisterParams() {
 void Engine::Cclear_board(Gtp::Io &io) {
     io.CheckEmpty();
 
-    _tree = std::make_unique<Tree>();
+    _tree = std::make_unique<Tree>(_config);
     _tree->setKomi(_komi);
     _tc.setRemainingTime(config::engine::totalTime);
 }

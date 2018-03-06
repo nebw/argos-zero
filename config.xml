@@ -21,7 +21,7 @@
         <resign_threshold>0.1</resign_threshold>
         <total_time>600000</total_time>
     </engine>
-    <board_size>19</board_size>
+    <board_size>9</board_size>
     <device_type>CPU</device_type>
     <server>127.0.0.1</server>
     <port>8000</port>
