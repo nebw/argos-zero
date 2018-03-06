@@ -19,11 +19,8 @@ class Parser():
             parser.add_argument('--playerTwo', type=lambda s: s.split(','), required=True,
                                 help='path and launch parameters of second player seperated with commas')
 
-            parser.add_argument('--batchSize', type=lambda s: int(s) if int(s) > 0 else 1, default=20,
-                                help='number of matches to be used for evaluating the score (default 20)')
-
             parser.add_argument('--loadFrom', type=str, default= "ratings.txt",
-                                help='file in local folder to copy ratings from (default ratings.txt), if no file is found default values of [1500, 350, 0.06] will be used')
+                                help='file in local folder to copy ratings from (default ratings.txt), if no file is found default values of [1500, 40] will be used')
 
         self.parser = parser
 

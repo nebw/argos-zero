@@ -4,11 +4,11 @@ from ratingsystem import RatingSystem
 # gnugo can be installed using the command: sudo apt-get install gnugo
 # pretrained random version of our model is needed or the gtp file in the build folder
 numMatches = 1
-batchSize = 1
-print "running " + str(numMatches)+ " matches with batch size of "+ str(batchSize)
+print "running " + str(numMatches) + " matches"
 print "will use the default ratings available in ratings.txt"
+print "if this test fails you maybe have not installed GnuGo yet? apt-get install gnugo"
 playerOneParams = ["gnugo", "--mode", "gtp", "--boardsize", "9"]
-playerTwoParams = ["./precompiled_gtp9_random"]
-test = RatingSystem(playerOneParams, playerTwoParams, mode = "9",
-                    numMatches=numMatches, batchSize=batchSize)
+playerTwoParams = ["./argos_model/gtp", "-p",
+                   "./argos_model/agz_small_9x9", "-l", "./argos_model/agz_small_9x9.log"]
+test = RatingSystem(playerOneParams, playerTwoParams, numMatches=numMatches)
 test.run()

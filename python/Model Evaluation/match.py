@@ -2,10 +2,9 @@ from referee import Referee
 from player import Player
 
 class Match():
-  def __init__(self, blackP, whiteP, mode ="19"):
+  def __init__(self, blackP, whiteP):
     self.black = blackP
     self.white = whiteP
-    self.mode = mode
 
   # returns 0 if black wins, 1 if white wins
   def run(self):
@@ -37,7 +36,7 @@ class Match():
       moveList.append(move.replace("=", ""))
 
     # match has ended!
-    ref = Referee(self.mode)
+    ref = Referee()
     winner = ref.simulateGame(moveList)
     ref.terminate()
     return winner

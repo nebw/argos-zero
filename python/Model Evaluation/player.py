@@ -25,7 +25,7 @@ class Player(object):
     def checkReturnedValue(self, val):
       if "?" in val:
         raise ValueError(self.color + " has encountered an error!\noutput: " + val)
-    
+
     def genAndPlayMove(self):
       self.runCommand("genmove " + self.color)
       return self.getOutput()

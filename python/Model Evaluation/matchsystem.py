@@ -3,11 +3,9 @@ from player import Player
 import time
 
 class MatchSystem(object):
-  def __init__(self, firstPlayer, secondPlayer, boardSize = 19, komi = 6.5, verbose = False):
-    # params = ["--boardsize", str(boardSize),"--komi", str(komi)]
-    params = []
-    self.first = firstPlayer + params
-    self.second = secondPlayer + params
+  def __init__(self, firstPlayer, secondPlayer, verbose = False):
+    self.first = firstPlayer
+    self.second = secondPlayer
     self.verbose = verbose
 
   def runMatches(self, numMatches):
@@ -27,10 +25,12 @@ class MatchSystem(object):
       print "match started"
 
     blackP = Player(playerOne, "black")
+    # blackP.getOutput()
     if self.verbose:
       print "black player started: " + str(playerOne)
 
     whiteP = Player(playerTwo, "white")
+    # whiteP.getOutput()
 
     if self.verbose:
       print "white player started: " + str(playerTwo)
