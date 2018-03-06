@@ -187,16 +187,23 @@ def early_stopping(last = 3):
         return (val_closses[-3]<val_closses[-2] and val_closses[-2]<val_closses[-1])
     return False
 
-def random_augmentation(batch):
-    for i in range(batch.data[0].shape[0]):
+def random_augmentation(x,y):
+    for i in range(x.shape[0]):
         seed = np.random.randint(low=0, high=2, size=3, dtype=int)
+        y_probs = y[i,:(9*9+1)].reshape((9, 9))
         if seed[0]:
-            batch.data[0][i] = nd.transpose(batch.data[0][i], (0, 2, 1))
+            x[i] = nd.transpose(x[i], (0, 2, 1))
+            y_probs[i] = nd.transpose(y_probs[i])
         if seed[1]:
-            batch.data[0][i] = nd.flip(batch.data[0][i], 1)
+            x[i] = nd.flip(x[i], 1)
+            y_probs[i] = nd.flip(y_probs[i], 1)
         if seed[2]:
-            batch.data[0][i] = nd.flip(batch.data[0][i], 2)
-    return batch
+            x[i] = nd.flip(x[i], 2)
+            y_probs[i] = nd.flip(y_probs[i], 2)
+        y_probs = y[i,:-1].flatten()
+        y[i] = np.concatenate((y_probs, y[i, (9*9+1)]), axis=0)
+        print(x,y)
+    return x,y
 
 sigmoid = gluon.nn.Activation('sigmoid')
 
