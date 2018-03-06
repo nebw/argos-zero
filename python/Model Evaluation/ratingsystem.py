@@ -1,10 +1,10 @@
-from evaluator import Evaluator
+from matchsystem import MatchSystem
 from parameterparser import Parser
 import glicko2
 import ast
 
 
-class RatingSystem(Evaluator):
+class RatingSystem(MatchSystem):
     def __init__(self, playerOneArgs, playerTwoArgs, mode ="19",numMatches=1, batchSize=20, verbose=True, fileName="ratings.txt"):
         super(RatingSystem, self).__init__(playerOneArgs, playerTwoArgs, mode, verbose=verbose)
         self.numMatches = numMatches
@@ -39,7 +39,7 @@ class RatingSystem(Evaluator):
         numMatches = self.numMatches
         while numMatches > 0:
             length = min(numMatches, self.batchSize)
-            results = self.evaluate(length)
+            results = self.runMatches(length)
             endResults = [sum(x) for x in zip(results, endResults)]
 
             self.ratings[0].update_player([self.ratings[1].getRating()] * length,

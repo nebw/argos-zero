@@ -1,7 +1,8 @@
 from match import Match
 from player import Player
+import time
 
-class Evaluator(object):
+class MatchSystem(object):
   def __init__(self, firstPlayer, secondPlayer, boardSize = 19, komi = 6.5, verbose = False):
     # params = ["--boardsize", str(boardSize),"--komi", str(komi)]
     params = []
@@ -9,7 +10,7 @@ class Evaluator(object):
     self.second = secondPlayer + params
     self.verbose = verbose
 
-  def evaluate(self, numMatches):
+  def runMatches(self, numMatches):
     wins = [0,0]
     for i in range(numMatches):
       if i % 2 == 0:
@@ -26,7 +27,6 @@ class Evaluator(object):
       print "match started"
 
     blackP = Player(playerOne, "black")
-
     if self.verbose:
       print "black player started: " + str(playerOne)
 
