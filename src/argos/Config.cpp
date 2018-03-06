@@ -38,7 +38,6 @@ namespace argos
                     ("help,h", "print this message and exit")
                     ("config,c", po::value<std::string>(), "path to config file")
                     ("deviceType,d", po::value<std::string>(), "set device type (CPU, GPU, CPU_PINNED)")
-                    ("boardSize,b", po::value<size_t>(), "set boardsize")
                     ("server,s", po::value<std::string>(), "set server ip, default is: 127.0.0.1")
                     ("port", po::value<int>(), "set port")
                     ("tree-batchSize", po::value<size_t>(), "set batchSize")
@@ -105,7 +104,6 @@ namespace argos
                         MXNET_DEVICE_TYPE deviceType;
 
                         auto configParser = tree.get_child("config");
-                        configBuilder.boardSize(configParser.get<size_t>("board_size"));
                         configBuilder.server(configParser.get<std::string>("server"));
                         configBuilder.port(configParser.get<int>("port"));
 
@@ -182,7 +180,6 @@ namespace argos
                 }
             }
 
-            if (vm.count("boardSize")) configBuilder.boardSize(vm["boardSize"].as<size_t>());
             if (vm.count("server")) configBuilder.server(vm["server"].as<std::string>());
             if (vm.count("port")) configBuilder.port(vm["port"].as<int>());
             /* deviceType defined above */
