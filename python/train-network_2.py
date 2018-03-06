@@ -10,25 +10,44 @@ polnet_data = h5py.File('/home/zehha/Studies/sem7/go/polnet-data-mounted/data-po
 pX = polnet_data['X']
 pY = polnet_data['Y']
 
-
 vX = valnet_data['X']
 vY = valnet_data['Y']
 
-pX = np.random.rand(10000, 60, 19, 19)
-vX = np.random.rand(10000, 60, 19, 19)
-
-pY = np.random.rand(10000,).astype(np.int64)
-vY = np.random.rand(10000,)
-
 ctx = mx.cpu()
-batch_size = 128
+batch_size = 64
+num_batches = 10
 
-#piter = mx.io.NDArrayIter(pX, pY, batch_size=batch_size, last_batch_handle='roll_over')
-#viter = mx.io.NDArrayIter(vX, vY, batch_size=batch_size, last_batch_handle='roll_over')
+vXred = np.empty((num_batches*batch_size, 12, 19, 19))
+vYred = np.empty((num_batches*batch_size,))
 
-data = {'data1': pX, 'data2': vX }
-label = {'label1': pY, 'label2': vY }
+pXred = np.empty((num_batches*batch_size, 12, 19, 19))
+pYred = np.empty((num_batches*batch_size,))
+
+piter = mx.io.NDArrayIter(pX, pY, batch_size=batch_size, last_batch_handle='roll_over')
+viter = mx.io.NDArrayIter(vX, vY, batch_size=batch_size, last_batch_handle='roll_over')
+
+def wrap_iter(it):
+    while True:
+        try:
+            yield it.next()
+        except StopIteration:
+            it.reset()
+
+for i, (pbatch, vbatch) in enumerate(zip(wrap_iter(piter), wrap_iter(viter))):
+    if (i == num_batches):
+        break
+
+    vXred[i*batch_size:(i+1)*batch_size , :, :, :] = mx.ndarray.concat(vbatch.data[0][:, :4, :, :], vbatch.data[0][:, 37:45, :, :], dim=1).as_in_context(ctx).asnumpy()
+    vYred[i*batch_size:(i+1)*batch_size,] = vbatch.label[0].as_in_context(ctx).asnumpy()
+
+    pXred[i*batch_size:(i+1)*batch_size, :, :, :] = mx.ndarray.concat(pbatch.data[0][:, :4, :, :], pbatch.data[0][:, 37:45, :, :], dim=1).as_in_context(ctx).asnumpy()
+    pYred[i*batch_size:(i+1)*batch_size,] = pbatch.label[0].as_in_context(ctx).asnumpy()
+
+
+data = {'data1': pXred, 'data2': vXred }
+label = {'label1': pYred, 'label2': vYred }
 trainIt = mx.io.NDArrayIter(data, label, batch_size=batch_size, last_batch_handle='roll_over')
+
 
 class CombinedNet():
     def __init__(self, num_filters, num_blocks, **kwargs):
@@ -81,22 +100,24 @@ output= mx.symbol.Group([net.policy, net.value])
 model = mx.mod.Module(
     context            = ctx,
     symbol             = output,
-    label_names        = ['output1_label', 'output2_label'],
+    label_names        = ['label1', 'label2'],
     data_names         = ['data1', 'data2']
     )
+
+print("start training")
+
 
 model.fit(
     train_data         = trainIt,
     eval_metric        = mx.metric.Accuracy(),
     num_epoch          = 1000,
     optimizer_params   = (('learning_rate', 0.01), ('momentum', 0.9), ('wd', 0.00001)),
-    #initializer        = mx.init.Xavier(factor_type="in", magnitude=2.34)
+    initializer        = mx.init.Xavier(factor_type="in", magnitude=2.34),
+    batch_end_callback = mx.callback.Speedometer(batch_size, 1)
     )
-    #batch_end_callback = mx.callback.Speedometer(batch_size, 50))
+
+
 '''
-
-
-
 def rmean(series, win=1000):
     return np.mean(series[-win:])
 
