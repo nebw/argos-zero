@@ -12,12 +12,8 @@ from os.path import exists
 import json
 
 
-# In[2]:
+get_ipython().system('cat ./src/capnp/CapnpGame.capnp')
 
-get_ipython().system('cat /home/franziska/Documents/Master/sem1/argos-zero/src/capnp/CapnpGame.capnp')
-
-
-# In[3]:
 
 def recvall(sock, n):
     # Helper function to recv n bytes or return None if EOF is hit
@@ -30,7 +26,10 @@ def recvall(sock, n):
     return data
 
 
-# In[ ]:
+def show_hd5_content():
+    f = h5py.File("game_record.h5")
+    print(f["json_game_record"][0])
+
 
 class GameLogger:
     def __init__(self, port, schema_path, filename):
@@ -84,8 +83,7 @@ class GameLogger:
             
             # if limited_state_num == current_id:
                 
-        
-        
+                
     def listen(self):
         try:
             sys.stdout.flush()
@@ -112,56 +110,11 @@ class GameLogger:
             self.f.close()
             print("closed")
 
-
-# In[ ]:
-
+# Main function
 PORT = 8000
-logger = GameLogger(port=PORT, schema_path='/home/franziska/Documents/Master/sem1/argos-zero/src/capnp/CapnpGame.capnp', filename = 'game_record')
+logger = GameLogger(port=PORT, schema_path='./src/capnp/CapnpGame.capnp', filename = 'game_record')
 logger.listen()
 
-
-# In[ ]:
-
-msg.to_dict()
-
-
-# In[ ]:
-
-logger.server.close()
-
-
-# ## HDF5
-
-# In[ ]:
-
-f = h5py.File("game_record.h5")
-
-
-# In[ ]:
-
-f["json_game_record"][0]
-
-
-# In[ ]:
-
-# todo
-# new file if old one is full
-
-
-#done: 
-# append multiple games: check
-# take multiple connections: queue
-# open file correctly also if already exists
-
-# remote connection(ben!)
-
-
-# In[ ]:
-
-f = h5py.File("game_record1.h5", 'a')
-
-
-# In[ ]:
 
 
 
