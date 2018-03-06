@@ -195,7 +195,8 @@ Player Tree::rollout(Board playoutBoard, ConcurrentNodeQueue& queue,
                 size_t posIdx;
                 if (v == Vertex::Pass()) {
                     posIdx = config::boardSize * config::boardSize;
-                    probabilites.push_back(result.candidates[posIdx].prior);
+                    //probabilites.push_back(result.candidates[posIdx].prior);
+                    probabilites.push_back(1e-8);
                 } else {
                     posIdx = v.GetRow() * config::boardSize + v.GetColumn();
                     probabilites.push_back(result.candidates[posIdx].prior);
@@ -210,7 +211,7 @@ Player Tree::rollout(Board playoutBoard, ConcurrentNodeQueue& queue,
         playoutBoard.PlayLegal(pl, v);
     }
 
-    return playoutBoard.PlayoutWinner();
+    return playoutBoard.TrompTaylorWinner();
 }
 
 Vertex Tree::bestMove() {
