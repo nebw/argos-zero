@@ -11,7 +11,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} /opt/capnproto/cmake)
 find_package(Threads)
 #set(Python_ADDITIONAL_VERSIONS 3.6)
 find_package(PythonLibs REQUIRED)
-find_package(Boost COMPONENTS system filesystem python REQUIRED)
+find_package(Boost COMPONENTS system filesystem program_options python REQUIRED)
 find_package(CapnProto REQUIRED)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -fPIC -fpermissive")

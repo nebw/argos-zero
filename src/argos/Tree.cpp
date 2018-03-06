@@ -12,15 +12,16 @@
 #include <random>
 #include <thread>
 
-Tree::Tree()
+Tree::Tree(const argos::config::Config &config)
     : _evaluationQueue(
           ConcurrentNodeQueue(config::tree::batchSize * 4, 1 + 2 * config::tree::numThreads, 0)),
       _token(_evaluationQueue),
       _evaluationThreadKeepRunning(true),
-      _gen(_rd()) {
+      _gen(_rd()),
+      _config(config) {
     for (size_t i = 0; i < config::tree::numEvaluationThreads; ++i) {
         _evaluationThreads.emplace_back(evaluationQueueConsumer, &_evaluationQueue,
-                                        &_evaluationThreadKeepRunning);
+                                        &_evaluationThreadKeepRunning, _config);
     }
 
     const auto position = maybeAddPosition(_rootBoard);

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<config>
+    <tree>
+        <batch_size>8</batch_size>
+        <num_evaluation_threads>2</num_evaluation_threads>
+        <num_threads>4</num_threads>
+        <randomize_first_n_moves>10</randomize_first_n_moves>
+        <num_last_root_nodes>3</num_last_root_nodes>
+        <virtual_playouts>5</virtual_playouts>
+        <expand_at>6</expand_at>
+        <prior_c>5</prior_c>
+        <network_rollouts>0</network_rollouts>
+        <training_mode>1</training_mode>
+    </tree>
+    <time>
+        <c>80</c>
+        <max_ply>80</max_ply>
+        <delay>10</delay>
+    </time>
+    <engine>
+        <resign_threshold>0.1</resign_threshold>
+        <total_time>600000</total_time>
+    </engine>
+    <board_size>9</board_size>
+    <device_type>CPU</device_type>
+    <server>127.0.0.1</server>
+    <port>8000</port>
+</config>

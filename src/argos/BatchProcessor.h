@@ -3,6 +3,7 @@
 #include <moodycamel/ConcurrentQueue.h>
 #include <future>
 #include "Network.h"
+#include "Config.h"
 
 struct EvaluationJob {
     NetworkFeatures::Planes features;
@@ -14,4 +15,6 @@ struct EvaluationJob {
 
 typedef moodycamel::ConcurrentQueue<EvaluationJob> ConcurrentNodeQueue;
 
-void evaluationQueueConsumer(ConcurrentNodeQueue* evaluationQueue, std::atomic<bool>* keepRunning);
+void evaluationQueueConsumer(ConcurrentNodeQueue* evaluationQueue,
+                             std::atomic<bool>* keepRunning,
+                             const argos::config::Config &configuration);
