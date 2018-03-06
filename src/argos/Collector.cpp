@@ -18,6 +18,7 @@
 // TCP socket network:
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <zconf.h>
@@ -26,7 +27,7 @@
 
 // capnp
 #include <capnp/message.h>
-#include <capnp/serialize-packed.h>
+#include <capnp/serialize.h>
 #include "CapnpGame.capnp.h"
 
 #include <ctime>
@@ -119,6 +120,9 @@ int Collector::connectToServer(const char* server, int port) {
         return -1;
     }
 
+    int flag = 1;
+    setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (char *) &flag, sizeof(int));
+
     return sock;
 }
 
@@ -193,10 +197,15 @@ void Collector::sendData(const Tree& tree) {
 //        fclose(capnp_file);
 //    }
 
+
+
+    std::cout << sizeof(message) << std::endl;
     // if valid file descriptor exists
     if(sockfd != -1){
-        writePackedMessageToFd(sockfd, message);
+        writeMessageToFd(sockfd, message);
     }
+
+
 
      // close socket
      close(sockfd);
