@@ -194,7 +194,7 @@ Player Tree::rollout(Board playoutBoard, ConcurrentNodeQueue& queue,
                 if (v == Vertex::Pass()) {
                     posIdx = config::boardSize * config::boardSize;
                     //probabilites.push_back(result.candidates[posIdx].prior);
-                    probabilites.push_back(1e-8);
+                    probabilites.push_back(0.00000001f);
                 } else {
                     posIdx = v.GetRow() * config::boardSize + v.GetColumn();
                     probabilites.push_back(result.candidates[posIdx].prior);
@@ -288,9 +288,11 @@ void Tree::addDirichletNoise(const float amount, const float distribution) {
     }
 
     for (size_t i = 0; i != child_cnt; i++) {
-        // Add dirichlet distribution to each prior probability
-        float prior = children[i]->getPrior();
-        children[i]->setPrior(((1 - amount) * prior) + (amount * dirichlet_vector[i]));
+        if (children[i]->parentMove() != Vertex::Pass()) {
+            // Add dirichlet distribution to each prior probability
+            float prior = children[i]->getPrior();
+            children[i]->setPrior(((1 - amount) * prior) + (amount * dirichlet_vector[i]));
+        }
     }
 }
 
