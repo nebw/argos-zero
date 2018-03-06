@@ -9,11 +9,10 @@ enum MXNET_DEVICE_TYPE { CPU = 1, GPU = 2, CPU_PINNED = 3 };
 static const MXNET_DEVICE_TYPE defaultDevice = CPU;
 
 static const boost::filesystem::path networkPath("/Users/florian/Dropbox/uni/Module/Deep-RL/agz_small_9x9");
-static const boost::filesystem::path logFilePath("/Users/florian/Desktop/log.txt");
+static const boost::filesystem::path logFilePath("/home/franziska/Documents/Master/sem1/argos-dbg.log");
 static const size_t boardSize = BOARDSIZE;
 static const char* server = "127.0.0.1";
-static const int port = 1345;
-    static const auto totalTime = std::chrono::milliseconds(1000 * 60 * 10);
+static const int port = 8002;
 
 namespace tree {
     static const size_t batchSize = 8;
