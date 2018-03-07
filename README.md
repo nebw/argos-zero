@@ -25,7 +25,7 @@ How to build:
   * Either: `cd python; pip install --user -e .`
   * Or: Install precompiled [pypi package](https://pypi.python.org/pypi/mxnet/1.1.0)
 * Install Cap'n Proto package 
-  * Either from [official web page]https://capnproto.org/install.html
+  * Either from [official web page](https://capnproto.org/install.html)
   * Or: install with package manager `apt-get install capnproto`
 * Download a [pretrained model](https://drive.google.com/open?id=1gAxR_jJXmT2DhSOllJYW8Yng3jV07lTI):
 * Compile Argos Zero:
