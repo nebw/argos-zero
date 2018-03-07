@@ -12,15 +12,16 @@
 #include <random>
 #include <thread>
 
-Tree::Tree()
+Tree::Tree(const argos::config::Config &config)
     : _evaluationQueue(
           ConcurrentNodeQueue(config::tree::batchSize * 4, 1 + 2 * config::tree::numThreads, 0)),
       _token(_evaluationQueue),
       _evaluationThreadKeepRunning(true),
-      _gen(_rd()) {
+      _gen(_rd()),
+      _config(config) {
     for (size_t i = 0; i < config::tree::numEvaluationThreads; ++i) {
         _evaluationThreads.emplace_back(evaluationQueueConsumer, &_evaluationQueue,
-                                        &_evaluationThreadKeepRunning);
+                                        &_evaluationThreadKeepRunning, _config);
     }
 
     const auto position = maybeAddPosition(_rootBoard);
@@ -127,6 +128,7 @@ void Tree::visitNode(Node* node) {
 
 void Tree::playout(std::atomic<bool>* keepRunning) {
     moodycamel::ProducerToken token(_evaluationQueue);
+    std::mt19937 randomEngine(std::time(0));
 
     do {
         NodeTrace trace;
@@ -138,7 +140,7 @@ void Tree::playout(std::atomic<bool>* keepRunning) {
         trace.Push(node);
 
         while (node->isExpanded() && node->isEvaluated() && !(node->children())->empty()) {
-            node = node->getBestUCTChild().get();
+            node = node->getBestUCTChild(randomEngine).get();
             visitNode(node);
             playoutBoard.PlayLegal(playoutBoard.ActPlayer(), node->parentMove());
             trace.Push(node);
@@ -192,7 +194,8 @@ Player Tree::rollout(Board playoutBoard, ConcurrentNodeQueue& queue,
                 size_t posIdx;
                 if (v == Vertex::Pass()) {
                     posIdx = config::boardSize * config::boardSize;
-                    probabilites.push_back(result.candidates[posIdx].prior);
+                    //probabilites.push_back(result.candidates[posIdx].prior);
+                    probabilites.push_back(1e-8);
                 } else {
                     posIdx = v.GetRow() * config::boardSize + v.GetColumn();
                     probabilites.push_back(result.candidates[posIdx].prior);
@@ -207,7 +210,7 @@ Player Tree::rollout(Board playoutBoard, ConcurrentNodeQueue& queue,
         playoutBoard.PlayLegal(pl, v);
     }
 
-    return playoutBoard.PlayoutWinner();
+    return playoutBoard.TrompTaylorWinner();
 }
 
 Vertex Tree::bestMove() {

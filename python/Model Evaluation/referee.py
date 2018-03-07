@@ -2,7 +2,7 @@ from player import Player
 import re
 
 class Referee(Player):
-  def __init__(self, mode):
+  def __init__(self, mode = "9"):
     if mode == "9":
       super(Referee, self).__init__(["gnugo", "--mode", "gtp", "--boardsize", "9"], "none")
     elif mode == "19":

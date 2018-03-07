@@ -14,7 +14,8 @@
 #include "argos/Tree.h"
 #include "argos/Util.h"
 
-int main() {
+int main(int argc, const char** argv) {
+    auto config = argos::config::parse(argc, argv);
 
     // if network variable set: collect information
     bool collect_data = config::tree::trainingMode;
@@ -25,7 +26,7 @@ int main() {
 
     if (collect_data) { collector = Collector(config::server, config::port); }
 
-    Tree tree;
+    Tree tree(config);
     tree.setKomi(5.5);
     std::cout << tree.rootBoard().ToAsciiArt() << std::endl;
 

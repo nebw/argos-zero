@@ -5,5 +5,5 @@ capnp_generate_cpp(CAPNP_SRCS CAPNP_HDRS CapnpGame.capnp)
 add_library(serialization ${CAPNP_SRCS})
 
 target_link_libraries(serialization
-    ${CAPNP_LIBRARIES}
+    ${CAPNP_LIBRARIES_LITE}
     ${Boost_SYSTEM_LIBRARY})
