@@ -262,6 +262,7 @@ namespace argos {
 
 // TODO deprecated, use config object instead and delete unused parameters
 namespace config {
+
     enum MXNET_DEVICE_TYPE {
         CPU = 1, GPU = 2, CPU_PINNED = 3
     };
