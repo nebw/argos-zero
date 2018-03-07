@@ -4,13 +4,13 @@
 
 using namespace mxnet::cpp;
 
-Network::Network(const std::string& path) {
+Network::Network(const std::string& path, const argos::config::Config &config) : _config(config) {
     const std::string symbolPath = path + "-symbol.json";
     const std::string paramPath = path + "-0000.params";
 
     _net = Symbol::Load(symbolPath);
 
-    Context global_ctx(static_cast<DeviceType>(config::defaultDevice), 0);
+    Context global_ctx(static_cast<DeviceType>(config.deviceType), 0);
 
     std::map<std::string, NDArray> aux_map;
 
