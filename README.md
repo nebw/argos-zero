@@ -8,6 +8,7 @@ Requirements:
 * MXNet
 * CMake
 * Git
+* Cap'n Proto
 
 Optional requirements:
 * CUDA / cuDNN
@@ -23,6 +24,9 @@ How to build:
 * Install MXNet python package
   * Either: `cd python; pip install --user -e .`
   * Or: Install precompiled [pypi package](https://pypi.python.org/pypi/mxnet/1.1.0)
+* Install Cap'n Proto package 
+  * Either from [official web page]https://capnproto.org/install.html
+  * Or: install with package manager `apt-get install capnproto`
 * Download a [pretrained model](https://drive.google.com/open?id=1gAxR_jJXmT2DhSOllJYW8Yng3jV07lTI):
 * Compile Argos Zero:
   * Clone the repository: `git clone https://github.com/nebw/argos-zero.git`
