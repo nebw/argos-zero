@@ -5,7 +5,6 @@ class Match():
   def __init__(self, blackP, whiteP):
     self.black = blackP
     self.white = whiteP
-    # FIXME other parameters such as boardsize and komi and and and ....
 
   # returns 0 if black wins, 1 if white wins
   def run(self):
@@ -18,26 +17,27 @@ class Match():
     while (numPasses < 2):
       # generate move
       move = pl.genAndPlayMove()
-
-      print len(moveList)
+      
       # switch player
       currentPlayer = (currentPlayer + 1) % 2
       pl = players[currentPlayer]
 
-      # apply generated move to other player
-      pl.applyMoveOfOtherPlayer(move)
-
       # game logic
       if "resign" in move.lower():
-        return (currentPlayer + 1) % 2
-
+        return currentPlayer
       elif "pass" in move.lower():
         numPasses += 1
-      else:       #its a normal move
+      else:  # its a normal move
         numPasses = 0
+
+      # apply generated move to other player
+      pl.applyMoveOfOtherPlayer(move)
+      
       moveList.append(move.replace("=", ""))
 
     # match has ended!
-    ref = Referee(["gnugo", "--mode", "gtp"])
-    return ref.simulateGame(moveList)
+    ref = Referee()
+    winner = ref.simulateGame(moveList)
+    ref.terminate()
+    return winner
 

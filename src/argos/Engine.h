@@ -5,14 +5,16 @@
 
 #include "TimeControl.h"
 #include "Tree.h"
+#include "Config.h"
 #include "ego.hpp"
 #include "gtp_gogui.hpp"
 
 class Engine {
 public:
-    Engine();
+    Engine(const argos::config::Config &config);
 
     Gtp::ReplWithGogui& getGtp() { return _gtp; }
+    inline argos::config::Config const& configuration() const { return _config; }
 
 private:
     void RegisterCommands();
@@ -37,4 +39,5 @@ private:
     float _komi;
 
     ofstream _dbg;
+    argos::config::Config _config;
 };

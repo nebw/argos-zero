@@ -176,7 +176,7 @@ void Collector::sendData(const Tree& tree) {
 
     game.setBoardsize(board_size);
 
-    auto netID = config::networkPath.filename().string();
+    auto netID = tree.configuration().networkPath.filename().string();
     game.setNetwork1(netID);
     game.setNetwork2(netID);
 

@@ -9,7 +9,7 @@ set(src
     TimeControl.h TimeControl.cpp
     BatchProcessor.h BatchProcessor.cpp
     Statistics.h
-    Config.h
+    Config.h Config.cpp
     SpinLock.h
     Collector.h Collector.cpp)
 
@@ -26,4 +26,5 @@ target_link_libraries(argos
     serialization
     ${CMAKE_THREAD_LIBS_INIT}
     ${Boost_FILESYSTEM_LIBRARY}
+    ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_SYSTEM_LIBRARY})
