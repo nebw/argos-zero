@@ -286,8 +286,8 @@ namespace config {
         static const size_t virtualPlayouts = 5;
         static const size_t expandAt = virtualPlayouts + 1;
         static const float priorC = 5;
-        static const bool networkRollouts = false;
-        static const bool trainingMode = true;
+        //static const bool networkRollouts = false;
+        //static const bool trainingMode = true;
     }  // namespace tree
 
     namespace time {

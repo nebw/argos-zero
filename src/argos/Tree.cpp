@@ -214,7 +214,7 @@ Player Tree::rollout(Board playoutBoard, ConcurrentNodeQueue& queue,
 Vertex Tree::bestMove() {
     assert(_rootNode->isExpanded());
     if ((_rootBoard.MoveCount() < config::tree::randomizeFirstNMoves) &&
-        config::tree::trainingMode) {
+        configuration().tree.trainingMode) {
         std::vector<float> probabilites;
         probabilites.reserve(_rootNode->children().get().size());
         for (const std::shared_ptr<Node>& child : _rootNode->children().get()) {
@@ -263,7 +263,7 @@ void Tree::beginEvaluation() {
     }
 
     // Add dirichlet noise
-    if (config::tree::trainingMode) { addDirichletNoise(0.25f, 0.03f); }
+    if (configuration().tree.trainingMode) { addDirichletNoise(0.25f, 0.03f); }
 }
 
 void Tree::addDirichletNoise(const float amount, const float distribution) {

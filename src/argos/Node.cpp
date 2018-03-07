@@ -24,7 +24,7 @@ bool Node::expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
         queue.enqueue(token, std::move(job));
         const Network::Result result = future.get();
 
-        if (config::tree::networkRollouts) {
+        if (tree.configuration().tree.networkRollouts) {
             const float rolloutValue = tree.rollout(board, queue, token).ToScore();
             _position->statistics().value = rolloutValue;
         } else {

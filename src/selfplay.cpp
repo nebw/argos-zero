@@ -18,7 +18,7 @@ int main(int argc, const char** argv) {
     auto config = argos::config::parse(argc, argv);
 
     // if network variable set: collect information
-    bool collect_data = config::tree::trainingMode;
+    bool collect_data = config.tree.trainingMode;
 
     boost::optional<Collector> collector;
 
@@ -31,7 +31,7 @@ int main(int argc, const char** argv) {
     float resignationThreshold = 0.025f;
 
     bool noResignMode = false;
-    if (config::tree::trainingMode) {
+    if (collect_data) {
         std::default_random_engine generator;
         std::uniform_real_distribution<double> distribution(0.0, 1.0);
         if (distribution(generator) < 0.1f) { noResignMode = true; }
