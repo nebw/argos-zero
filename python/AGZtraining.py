@@ -68,12 +68,14 @@ def train(export_path):
             with self.name_scope():
                 self.convs = gluon.nn.HybridSequential()
                 self.convs.add(gluon.nn.Conv2D(num_filters, 3, padding=1))
+                self.convs.add(gluon.nn.BatchNorm())
                 self.convs.add(gluon.nn.LeakyReLU(alpha=0.3))
 
                 for _ in range(num_blocks):
                     self.convs.add(BasicBlockV2(num_filters))
 
                 self.convs.add(gluon.nn.Conv2D(num_filters, 3, padding=1))
+                self.convs.add(gluon.nn.BatchNorm())
                 self.convs.add(gluon.nn.LeakyReLU(alpha=0.3))
 
                 self.value = gluon.nn.HybridSequential()
