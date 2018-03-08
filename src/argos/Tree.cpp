@@ -194,8 +194,7 @@ Player Tree::rollout(Board playoutBoard, ConcurrentNodeQueue& queue,
                 size_t posIdx;
                 if (v == Vertex::Pass()) {
                     posIdx = config::boardSize * config::boardSize;
-                    //probabilites.push_back(result.candidates[posIdx].prior);
-                    probabilites.push_back(0.00000001f);
+                    probabilites.push_back(0.f);
                 } else {
                     posIdx = v.GetRow() * config::boardSize + v.GetColumn();
                     probabilites.push_back(result.candidates[posIdx].prior);

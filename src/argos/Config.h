@@ -31,16 +31,16 @@ namespace argos {
         class Tree final
         {
         public:
-            static const constexpr size_t DEFAULT_BATCH_SIZE                = 8;
+            static const constexpr size_t DEFAULT_BATCH_SIZE                = 32;
             static const constexpr size_t DEFAULT_NUM_EVALUATION_THREADS    = 2;
-            static const constexpr size_t DEFAULT_NUM_THREADS               = 4;
+            static const constexpr size_t DEFAULT_NUM_THREADS               = DEFAULT_BATCH_SIZE * DEFAULT_NUM_EVALUATION_THREADS;
             static const constexpr size_t DEFAULT_RANDOMIZE_FIRST_N_MOVES   = 10;
             static const constexpr size_t DEFAULT_NUM_LAST_ROOT_NODES       = 3;
-            static const constexpr size_t DEFAULT_VIRTUAL_PLAYOUTS          = 5;
+            static const constexpr size_t DEFAULT_VIRTUAL_PLAYOUTS          = 0;
             static const constexpr size_t DEFAULT_EXPAND_AT                 = DEFAULT_VIRTUAL_PLAYOUTS + 1;
             static const constexpr float DEFAULT_PRIOR_C                    = 5;
             static const constexpr bool DEFAULT_NETWORK_ROLLOUTS            = false;
-            static const constexpr bool DEFAULT_TRAINING_MODE               = true;
+            static const constexpr bool DEFAULT_TRAINING_MODE               = false;
         private:
             explicit Tree(const size_t &batchSize,
                           const size_t &numEvaluationThreads,
@@ -185,8 +185,8 @@ namespace argos {
         public:
 
             static const constexpr size_t DEFAULT_BOARD_SIZE                = BOARDSIZE;
-            static const constexpr MXNET_DEVICE_TYPE DEFAULT_DEVICE_TYPE    = CPU;
-            static const constexpr int DEFAULT_PORT                         = 8000;
+            static const constexpr MXNET_DEVICE_TYPE DEFAULT_DEVICE_TYPE    = GPU;
+            static const constexpr int DEFAULT_PORT                         = 18000;
 
         private:
             explicit Config(const boost::filesystem::path &networkPath,
@@ -265,7 +265,6 @@ namespace config {
     static const size_t boardSize = BOARDSIZE; // TODO used during compilation
 
     namespace tree {
-        static const size_t batchSize = 8;  // TODO used in array initialization...
+        static const size_t batchSize = argos::config::Tree::DEFAULT_BATCH_SIZE;  // TODO used in array initialization...
     } // namespace tree
-
 }  // namespace config

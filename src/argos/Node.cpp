@@ -46,10 +46,10 @@ bool Node::expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
             size_t posIdx;
             if (vertex == Vertex::Pass()) {
                 posIdx = config::boardSize * config::boardSize;
-                child->setPrior(0.0000001f);
+            	child->setPrior(0.f);
             } else {
                 posIdx = vertex.GetRow() * config::boardSize + vertex.GetColumn();
-                child->setPrior(result.candidates[posIdx].prior);
+            	child->setPrior(result.candidates[posIdx].prior);
             }
 
             children.push_back(child);

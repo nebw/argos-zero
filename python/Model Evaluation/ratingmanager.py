@@ -3,10 +3,9 @@ import re
 import ast
 import time
 import datetime
-import random
 
 class RatingManager(object):
-  def __init__(self,  fileName="ratings", path = "./"):
+  def __init__(self,  fileName="ratings", path = "./rating"):
     if not path[-1] == "/":
       path = path + "/"
     self.path = path 

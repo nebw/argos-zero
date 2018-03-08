@@ -1,6 +1,7 @@
+## 2018-03-08 11:22:50
 ['gnugo', '--mode', 'gtp', '--boardsize', '9']
 [1550, 20]
-['./argos_model/gtp', '-p', './argos_model/agz_small_9x9', '-l', './argos_model/agz_small_9x9.log']
+['./argos_model/gtp', '-p', './argos_model/agz_small_9x9']
 [1000, 40]
 ['./pachi', '--no-dcnn', '-e', 'uct', '-D']
 [2000, 10]

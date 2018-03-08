@@ -1,9 +1,3 @@
-
-# coding: utf-8
-
-# In[3]:
-
-
 import h5py
 import socket
 import capnp
@@ -11,15 +5,6 @@ import sys
 import struct
 from os.path import exists
 import numpy as np
-
-
-# In[4]:
-
-
-get_ipython().system('cat /home/franziska/Documents/Master/sem1/argos-zero/src/capnp/CapnpGame.capnp')
-
-
-# In[5]:
 
 
 def recvall(sock, n):
@@ -31,9 +16,6 @@ def recvall(sock, n):
             return data
         data += packet
     return data
-
-
-# In[6]:
 
 
 class GameLogger:
@@ -73,6 +55,8 @@ class GameLogger:
         current_id = gamerecord_dataset.attrs[self.count_key]
         gamerecord_dataset[current_id] = msg
         gamerecord_dataset.attrs[self.count_key] += 1
+
+        self.f.flush()
         
         if self.limited_game_num <= gamerecord_dataset.attrs[self.count_key]:
             self.file_i += 1
@@ -86,6 +70,7 @@ class GameLogger:
             while True:
                 client, address = self.server.accept()
                 msg = recvall(client, 4096 * 100)
+                print('Message from {}'.format(address))
                 self._write_h5(msg)
                 
         finally:
@@ -94,10 +79,6 @@ class GameLogger:
             print("closed")
 
 
-# In[7]:
-
-
-PORT = 6000
+PORT = 18000
 logger = GameLogger(port=PORT, filename='game_record')
 logger.listen()
-
