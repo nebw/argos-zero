@@ -14,7 +14,6 @@ public:
     Engine(const argos::config::Config &config);
 
     Gtp::ReplWithGogui& getGtp() { return _gtp; }
-    inline argos::config::Config const& configuration() const { return _config; }
 
 private:
     void RegisterCommands();

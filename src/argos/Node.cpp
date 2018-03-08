@@ -24,7 +24,7 @@ bool Node::expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
         queue.enqueue(token, std::move(job));
         const Network::Result result = future.get();
 
-        if (config::tree::networkRollouts) {
+        if (_config.networkRollouts) {
             const float rolloutValue = tree.rollout(board, queue, token).ToScore();
             _position->statistics().value = rolloutValue;
         } else {
@@ -41,7 +41,7 @@ bool Node::expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
             tempBoard.PlayLegal(actPlayer, vertex);
 
             auto position = tree.maybeAddPosition(tempBoard);
-            auto child = std::make_shared<Node>(position, vertex);
+            auto child = std::make_shared<Node>(position, vertex, _config);
 
             size_t posIdx;
             if (vertex == Vertex::Pass()) {
@@ -82,7 +82,7 @@ float Node::getUCTValue(Node& parent, std::mt19937& engine) const {
     assert(parentVisits > 0);
 
     const float prior = _statistics.prior.load();
-    return winRate + config::tree::priorC * prior * (sqrt(parentVisits) / (1 + nodeVisits));
+    return winRate + _config.priorC * prior * (sqrt(parentVisits) / (1 + nodeVisits));
 }
 
 float Node::getBetaValue(Node& parent, std::mt19937& engine) const {
