@@ -60,7 +60,7 @@ private:
     void beginEvaluation();
     void playout(std::atomic<bool>* keepRunning);
     void visitNode(Node* node);
-    void updateStatistics(NodeTrace& trace, float score) const;
+    void updateStatistics(NodeTrace& trace, float score);
     void setRootNode(Vertex const& vertex);
     void purgeTranspositionTable();
     void addDirichletNoise(const float amount, const float distribution);
