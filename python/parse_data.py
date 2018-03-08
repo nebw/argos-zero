@@ -8,32 +8,29 @@ sys.path.append('/Users/valentinwolf/Documents/Studium/Machine_Learning/Software
 
 import CapnpGame_capnp
 
-# raw_data_folder = '/Users/valentinwolf/Documents/Studium/Machine_Learning/SoftwareProjekt/raw_data/*'
-# dataset_path = '/Users/valentinwolf/Documents/Studium/Machine_Learning/SoftwareProjekt/train_val.h5'
-#
-# # probability of a specific game is chosen for the validation set
-# val_prob = 0.05
-# boardsize = 9
-
-# states the dataset can hold, changes only if file at dataset_path does not exist
-# samples = 25000
-
 
 def write_in_dataset(dataset, raw_data_folder, boardsize=9, val_prob=0.05, force_full_write=False,total_written=[0,0]):
     """
+    TODO: writing should stop once we see the first entry has already been
+    written before / only write new entries
     TODO: make code nice and readable
-    TODO: writing should stop once we see the first entry was already written
-    at some other time / only write new entries
     val_prob: probability of a specific game is chosen for the validation set
     force_full_write: True will make sure that there will be no empty entries
-    in the dataset by duplicates some datapoints
+    in the dataset by duplicating some datapoints
     total_written: states written in [train_set,val_set]
 
     """
+    train_x = dataset['train_x']
+    train_y = dataset['train_y']
+    val_x = dataset['val_x']
+    val_y = dataset['val_y']
+
     paths = glob.glob(raw_data_folder)
     paths.reverse()
-
+    print(raw_data_folder)
+    print(paths)
     for raw_data_path in paths:
+        print(raw_data_path)
         raw_data = h5py.File(raw_data_path,'r')
         for file in raw_data['game_record']:
             game_msg = file.tostring()
@@ -67,8 +64,8 @@ def write_in_dataset(dataset, raw_data_folder, boardsize=9, val_prob=0.05, force
             # save to disk after every iteration(?)
             dataset.flush()
         raw_data.close()
-        if force_full_write:
-            write_in_dataset(force_full_write=True,total_written)
+    if force_full_write:
+        write_in_dataset(dataset, raw_data_folder, force_full_write=True,total_written=total_written)
     return
 
 def update_dataset(raw_data_folder, dataset_path, boardsize=9, val_prob=0.05, samples=25000):
@@ -78,14 +75,14 @@ def update_dataset(raw_data_folder, dataset_path, boardsize=9, val_prob=0.05, sa
     boardsize: _
     val_prob: probability of a specific game is chosen for the validation set
     samples: if dataset file has to be created, states the new dataset file can hold"""
-    try: # open if dataset already exists
+    if os.path.isfile(dataset_path):
         dataset = h5py.File(dataset_path, 'r+', libver='latest')
-        write_in_dataset(dataset, raw_data_folder, )
-    except OSError:
+        write_in_dataset(dataset, raw_data_folder)
+    else:
         print("dataset not found at specified path, creating new dataset")
         # create file for dataset
         dataset = h5py.File(dataset_path, 'w', libver='latest')
-
+        print("created dataset")
         #dataset.swmr_mode = True # not sure if we want that
         train_x = dataset.create_dataset("train_x", shape=(int(samples*(1-val_prob)),12,boardsize,boardsize), dtype='int8')
         train_y = dataset.create_dataset("train_y", shape=(int(samples*(1-val_prob)),83))
@@ -95,5 +92,7 @@ def update_dataset(raw_data_folder, dataset_path, boardsize=9, val_prob=0.05, sa
         # save where to (over-)write next in dataset
         train_x.attrs.create("next_i_to_overwrite",0)
         val_x.attrs.create("next_i_to_overwrite",0)
-
+        dataset.flush()
         write_in_dataset(dataset, raw_data_folder, force_full_write=True)
+    dataset.close()
+    print("Dataset updated")

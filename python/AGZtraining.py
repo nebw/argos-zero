@@ -4,17 +4,32 @@ import sys
 import glob
 import os
 import numpy as np
-sys.path.append('/home/julianstastny/Documents/Softwareprojekt')
-import matplotlib.pyplot as plt
+sys.path.append('/Users/valentinwolf/Documents/Studium/Machine_Learning/SoftwareProjekt')
 import CapnpGame_capnp
 import mxnet as mx
 from mxnet import nd, autograd, gluon
 import sys
+import parse_data
 
-data = h5py.File('/home/julianstastny/Documents/Softwareprojekt/argos-zero/python/train_val.h5','r')
+#data = h5py.File('/home/julianstastny/Documents/Softwareprojekt/argos-zero/python/train_val.h5','r')
+raw_data_folder = '/Users/valentinwolf/Documents/Studium/Machine_Learning/SoftwareProjekt/raw_data/*'
+dataset_path = '/Users/valentinwolf/Documents/Studium/Machine_Learning/SoftwareProjekt/train_val.h5'
 
+parse_data.update_dataset(raw_data_folder,dataset_path)
+
+data = h5py.File(dataset_path)
+print(list(data.keys()))
 ctx = mx.cpu()
 batch_size = 128
+
+def update_data():
+    data.close()
+    parse_data.update_dataset(raw_data_folder,dataset_path)
+    data = h5py.File(dataset_path)
+    inputs_t = data['train_x']
+    labels_t = data['train_y']
+    inputs_v = data['val_x']
+    labels_v = data['val_y']
 
 inputs_t = data['train_x']
 labels_t = data['train_y']
@@ -128,6 +143,7 @@ def wrap_iter(it):
             yield it.next()
         except StopIteration:
             pred_val_set(val_set_x,val_set_y)
+            update_data()
             it.reset()
 
 def early_stopping(last = 3):
@@ -189,4 +205,4 @@ np.mean(paccs[-1000:])
 
 np.mean(vaccs[-1000:])
 
-net.export('/home/ben/go-swp/networks/agz_small_9x9')
+net.export('/Users/valentinwolf/Documents/Studium/Machine_Learning/SoftwareProjekt')
