@@ -7,6 +7,7 @@
 #include "Util.h"
 
 Engine::Engine(const argos::config::Config &config) :
+        _tc(config.engine.totalTime, config.time),
         _tree(std::make_unique<Tree>(config)),
         _komi(6.5),
         _config(config) {
@@ -124,8 +125,8 @@ void Engine::Cshowboard(Gtp::Io &io) {
 void Engine::Ctime_settings(Gtp::Io &io) {
     // TODO: implement different time controls
 
-    _tc = BasicTimeControl(parseGtpTime(io));
-
+    _tc.setRemainingTime(parseGtpTime(io));
+    
     _dbg << "Total time set to " << format_duration(_tc.getRemainingTime()) << std::endl;
 
     io.CheckEmpty();

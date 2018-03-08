@@ -291,9 +291,9 @@ namespace config {
     }  // namespace tree
 
     namespace time {
-        static const int C = 80;
-        static const int maxPly = 80;
-        static const auto delay = std::chrono::milliseconds(10);
+        // static const int C = 80;
+        // static const int maxPly = 80;
+        // static const auto delay = std::chrono::milliseconds(10);
     }  // namespace time
 
     namespace engine {
