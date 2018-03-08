@@ -271,7 +271,7 @@ namespace config {
     //static const boost::filesystem::path networkPath("/Users/rs/Documents/dev/uni/swpdeeplearning/tmp/expertnet_small");
     //static const boost::filesystem::path logFilePath("/Users/rs/Documents/dev/uni/swpdeeplearning/tmp/argos-dbg.log");
 
-    static const size_t boardSize = BOARDSIZE;
+    static const size_t boardSize = BOARDSIZE; // TODO used during compilation
     //static const char* server = "127.0.0.1";
     //static const int port = 8000;
 
@@ -285,7 +285,7 @@ namespace config {
         //static const size_t numLastRootNodes = 3;
         //static const size_t virtualPlayouts = 5;
         //static const size_t expandAt = virtualPlayouts + 1;
-        static const float priorC = 5;
+        // static const float priorC = 5;
         //static const bool networkRollouts = false;
         //static const bool trainingMode = true;
     }  // namespace tree

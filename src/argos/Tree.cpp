@@ -25,7 +25,7 @@ Tree::Tree(const argos::config::Config &config)
     }
 
     const auto position = maybeAddPosition(_rootBoard);
-    _rootNode = std::make_shared<Node>(position, Vertex::Invalid(), config);
+    _rootNode = std::make_shared<Node>(position, Vertex::Invalid(), config.tree);
 
     purgeTranspositionTable();
 
@@ -214,7 +214,7 @@ Player Tree::rollout(Board playoutBoard, ConcurrentNodeQueue& queue,
 Vertex Tree::bestMove() {
     assert(_rootNode->isExpanded());
     if ((_rootBoard.MoveCount() < _config.tree.randomizeFirstNMoves) &&
-        configuration().tree.trainingMode) {
+        _config.tree.trainingMode) {
         std::vector<float> probabilites;
         probabilites.reserve(_rootNode->children().get().size());
         for (const std::shared_ptr<Node>& child : _rootNode->children().get()) {
@@ -263,7 +263,7 @@ void Tree::beginEvaluation() {
     }
 
     // Add dirichlet noise
-    if (configuration().tree.trainingMode) { addDirichletNoise(0.25f, 0.03f); }
+    if (_config.tree.trainingMode) { addDirichletNoise(0.25f, 0.03f); }
 }
 
 void Tree::addDirichletNoise(const float amount, const float distribution) {

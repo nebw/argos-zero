@@ -24,7 +24,7 @@ bool Node::expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
         queue.enqueue(token, std::move(job));
         const Network::Result result = future.get();
 
-        if (tree.configuration().tree.networkRollouts) {
+        if (_config.networkRollouts) {
             const float rolloutValue = tree.rollout(board, queue, token).ToScore();
             _position->statistics().value = rolloutValue;
         } else {
@@ -77,7 +77,7 @@ float Node::getUCTValue(Node& parent) const {
     assert(parentVisits > 0);
 
     const float prior = _statistics.prior.load();
-    return winRate + config::tree::priorC * prior * (sqrt(parentVisits) / (1 + nodeVisits));
+    return winRate + _config.priorC * prior * (sqrt(parentVisits) / (1 + nodeVisits));
 }
 
 const std::shared_ptr<Node>& Node::getBestUCTChild() {
