@@ -12,7 +12,7 @@ struct PositionStatistics {
 };
 
 struct NodeStatistics {
-    std::atomic<float> prior = {1e-8f};
+    std::atomic<float> prior = {0.f};
 
     std::atomic<size_t> num_evaluations = {0};
     std::atomic<float> playout_score = {0.f};

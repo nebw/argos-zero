@@ -41,7 +41,7 @@ int main(int argc, const char** argv) {
 
     Player winner = Player::Invalid();
     while ((!tree.rootBoard().BothPlayerPass())) {
-        tree.evaluate(100);
+        tree.evaluate(500);
         const auto winrate = tree.rootNode()->winrate(tree.rootBoard().ActPlayer());
 
         if ((winrate < resignationThreshold) && !(noResignMode)) {
