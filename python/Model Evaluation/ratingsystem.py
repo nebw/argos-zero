@@ -19,7 +19,8 @@ class RatingSystem(MatchSystem):
 
     def run(self):
         endResults = self.runMatches(self.numMatches)
-        ratings = self.ratingManager.updateRatings(self.args, endResults)
+        wins = [endResults[str(self.args[0])], endResults[str(self.args[1])]]
+        ratings = self.ratingManager.updateRatings(self.args, wins)
         if self.verbose:
             print "\n -------------\ndone!"
             print "total wins: " + str(endResults)
