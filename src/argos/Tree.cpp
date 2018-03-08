@@ -25,7 +25,7 @@ Tree::Tree(const argos::config::Config &config)
     }
 
     const auto position = maybeAddPosition(_rootBoard);
-    _rootNode = std::make_shared<Node>(position, Vertex::Invalid());
+    _rootNode = std::make_shared<Node>(position, Vertex::Invalid(), config);
 
     purgeTranspositionTable();
 
