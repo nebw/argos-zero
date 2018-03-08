@@ -27,6 +27,9 @@ def write_in_dataset(dataset, raw_data_folder, boardsize=9, val_prob=0.05,
     paths = glob.glob(raw_data_folder)
     paths.reverse()
 
+    latest_p_read = dataset.attrs["latest_p_read"]
+    latest_i_read = dataset.attrs["latest_i_read"]
+
     dataset.attrs["latest_p_read"] = paths[0]
     f = h5py.File(paths[0],'r')
     dataset.attrs["latest_i_read"] = f['game_record'].attrs['count_id']-1
@@ -35,7 +38,7 @@ def write_in_dataset(dataset, raw_data_folder, boardsize=9, val_prob=0.05,
     for raw_data_path in paths:
         raw_data = h5py.File(raw_data_path,'r')
         for i in range(raw_data['game_record'].attrs['count_id']-1,-1,-1):
-            if i == dataset.attrs["latest_i_read"] and raw_data_path == dataset.attrs["latest_p_read"]:
+            if i == latest_i_read and raw_data_path == latest_p_read:
                 print("found the first entry that is already in the dataset")
                 raw_data.close()
                 return
