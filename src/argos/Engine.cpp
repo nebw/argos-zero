@@ -7,13 +7,14 @@
 #include "Util.h"
 
 Engine::Engine(const argos::config::Config &config) :
+        _tc(config.engine.totalTime, config.time),
         _tree(std::make_unique<Tree>(config)),
         _komi(6.5),
         _config(config) {
     RegisterCommands();
     RegisterParams();
 
-    _tc.setRemainingTime(config::engine::totalTime);
+    _tc.setRemainingTime(config.engine.totalTime);
     _dbg.open(config.logFilePath.string(), ios_base::out | ios_base::app);
 }
 
@@ -39,7 +40,7 @@ void Engine::Cclear_board(Gtp::Io &io) {
 
     _tree = std::make_unique<Tree>(_config);
     _tree->setKomi(_komi);
-    _tc.setRemainingTime(config::engine::totalTime);
+    _tc.setRemainingTime(_config.engine.totalTime);
 }
 
 void Engine::Cgenmove(Gtp::Io &io) {
@@ -62,7 +63,7 @@ void Engine::Cgenmove(Gtp::Io &io) {
         const auto &rootNode = _tree->rootNode();
         const auto &winrate = rootNode->winrate(rootNode->position()->actPlayer());
 
-        if ((winrate) < config::engine::resignThreshold) {
+        if ((winrate) < _config.engine.resignThreshold) {
             printTree(_tree->rootNode().get(), _tree->rootBoard().ActPlayer(), _dbg);
             _dbg << "Current value: " << winrate * 100 << "%\n";
             _dbg << "Best move: " << move.ToGtpString() << "\n";
@@ -124,7 +125,7 @@ void Engine::Cshowboard(Gtp::Io &io) {
 void Engine::Ctime_settings(Gtp::Io &io) {
     // TODO: implement different time controls
 
-    _tc = BasicTimeControl(parseGtpTime(io));
+    _tc.setRemainingTime(parseGtpTime(io));
 
     _dbg << "Total time set to " << format_duration(_tc.getRemainingTime()) << std::endl;
 

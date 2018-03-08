@@ -12,6 +12,7 @@
 #include "SpinLock.h"
 #include "Statistics.h"
 #include "ego.hpp"
+#include "Config.h"
 
 class Position;
 class Tree;
@@ -21,11 +22,12 @@ public:
     typedef std::shared_ptr<Node> NodeSPtr;
     typedef std::vector<NodeSPtr> NodeStack;
 
-    Node(std::shared_ptr<Position> position, Vertex const& parentMove)
+    Node(std::shared_ptr<Position> position, Vertex const& parentMove, const argos::config::Tree &config)
         : _position(position),
           _parentMove(parentMove),
           _isEvaluated(false),
-          _isTerminalNode(false) {}
+          _isTerminalNode(false),
+          _config(config) {}
 
     inline bool isExpanded() const { return _children.is_initialized(); }
     bool expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
@@ -59,4 +61,5 @@ private:
     SpinLock _expandLock;
     bool _isEvaluated;
     bool _isTerminalNode;
+    argos::config::Tree _config;
 };
