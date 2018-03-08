@@ -5,7 +5,7 @@ import ast
 
 
 class RatingSystem(MatchSystem):
-    def __init__(self, playerOneArgs, playerTwoArgs, numMatches=1, verbose=True, fileName="ratings", filePath = "./"):
+    def __init__(self, playerOneArgs, playerTwoArgs, numMatches=1, verbose=True, fileName="ratings", filePath = "./rating"):
         super(RatingSystem, self).__init__(playerOneArgs, playerTwoArgs, verbose)
         self.numMatches = numMatches
         self.args = [playerOneArgs, playerTwoArgs]

@@ -4,7 +4,7 @@ import argparse
 class Parser():
     def __init__(self, type):
         parser = argparse.ArgumentParser(
-            prog='runs a number of matches between two systems and rates both\n')
+            prog='runs a number of matches between two systems and rates both\n make sure that the players parameters are comma seperated! ex: --playerOne gnugo,--mode,gtp,--boeardsie,9 ')
 
         parser.add_argument('--numMatches', type=lambda s: int(s) if int(s) > 0 else 1, default=1,
                             help='number of matches to be run (default 1)')
@@ -20,10 +20,10 @@ class Parser():
                                 help='path and launch parameters of second player seperated with commas')
 
             parser.add_argument('--loadFromFile', type=str, default= "ratings",
-                                help='file in local folder to copy ratings from (default ratings.txt), if no file is found default values of [1000, 40] will be used')
+                                help='file in local folder to copy ratings from (default: "ratings"), if no file is found default values of [1000, 40] will be used')
 
-            parser.add_argument('--loadFromPath', type=str, default="./",
-                                help='folder in which the ratings file defined in the --loadFromFile parameter exists (default "./")')
+            parser.add_argument('--loadFromPath', type=str, default="./rating",
+                                help='folder in which the ratings file defined in the --loadFromFile parameter exists (default "./rating")')
 
         self.parser = parser
 
