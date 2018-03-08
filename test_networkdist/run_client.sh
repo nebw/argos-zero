@@ -1,7 +1,6 @@
 #!/bin/bash
 # Paths
-readonly SOURCES=/home/franziska/Documents/Master/sem1/argos-zero-build/src
-readonly LOGPATH=/home/franziska/Documents/Master/sem1/argos-dbg.log
+readonly SOURCES=/root/argos-build/src
 readonly WEIGHTP=.
 wfile="foo"
 
@@ -25,5 +24,5 @@ while true; do
 		wfile=$newwfile
 	fi 
 	# run selfplay with the newest weights
-	$SOURCES/selfplay -p $WEIGHTP/$wfile-0000.params -l $LOGPATH
+	$SOURCES/selfplay -n $WEIGHTP/$wfile --tree-networkRollouts true --tree-trainingMode true
 done
