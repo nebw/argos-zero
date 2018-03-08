@@ -4,7 +4,7 @@ import sys
 import glob
 import os
 import numpy as np
-sys.path.append('/Users/valentinwolf/Documents/Studium/Machine_Learning/SoftwareProjekt')
+sys.path.append('./../src/capnp')
 import CapnpGame_capnp
 import mxnet as mx
 from mxnet import nd, autograd, gluon

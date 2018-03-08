@@ -4,8 +4,8 @@ import capnp
 import sys
 import os.path
 import glob
-sys.path.append('/Users/valentinwolf/Documents/Studium/Machine_Learning/SoftwareProjekt')
 
+sys.path.append('./../src/capnp')
 import CapnpGame_capnp
 
 
@@ -27,10 +27,7 @@ def write_in_dataset(dataset, raw_data_folder, boardsize=9, val_prob=0.05, force
 
     paths = glob.glob(raw_data_folder)
     paths.reverse()
-    print(raw_data_folder)
-    print(paths)
     for raw_data_path in paths:
-        print(raw_data_path)
         raw_data = h5py.File(raw_data_path,'r')
         for file in raw_data['game_record']:
             game_msg = file.tostring()
