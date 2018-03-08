@@ -6,7 +6,7 @@
 #include <chrono>
 #include <utility>
 
-#define DEBUG
+// #define DEBUG
 
 namespace argos {
     namespace config {
