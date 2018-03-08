@@ -4,13 +4,16 @@ from mxnet import nd, autograd, gluon
 import sys
 import h5py
 
-valnet_data = h5py.File('/home/ben/go-swp/valnet-data-mount/data-val-all-combined.h5', 'r')
-polnet_data = h5py.File('/home/ben/go-swp/polnet-data-mount/data-pol-gogod-tygem-combined.h5', 'r')
+valnet_data = h5py.File('/Users/valentinwolf/Documents/Studium/Machine_Learning/SoftwareProjekt/data/val_mount/data-val-all-combined.h5', 'r')
+polnet_data = h5py.File('/Users/valentinwolf/Documents/Studium/Machine_Learning/SoftwareProjekt/data/pol_point/data-pol-gogod-tygem-combined.h5', 'r')
+
+vX = valnet_data['X']
+vY = valnet_data['Y']
 
 pX = polnet_data['X']
 pY = polnet_data['Y']
 
-ctx = mx.gpu()
+ctx = mx.cpu() #mx.gpu()
 batch_size = 128
 
 piter = mx.io.NDArrayIter(pX, pY, batch_size=batch_size, last_batch_handle='roll_over')
@@ -78,7 +81,7 @@ net = CombinedNet(64, 4)
 net.collect_params().initialize(mx.init.MSRAPrelu(), ctx=ctx)
 net.hybridize()
 
-policy_loss = gluon.loss.SoftmaxCrossEntropyLoss()
+policy_loss = gluon.loss.SoftmaxCrossEntropyLoss() #sparse_label=False
 policy_loss.hybridize()
 
 value_loss = gluon.loss.SigmoidBCELoss()
@@ -137,4 +140,3 @@ for i, (pbatch, vbatch) in enumerate(zip(wrap_iter(piter), wrap_iter(viter))):
         break
 
 net.export('/home/ben/tmp/combined_small.json')
-

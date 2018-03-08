@@ -21,6 +21,7 @@
 #include <netinet/tcp.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <zconf.h>
 #include <cstdio>
 #include <cstring>
 
@@ -44,7 +45,6 @@ Collector::Collector(const char* server, int port) {
     // initialize capnp message if data should be collected
     std::vector<std::array<double, BOARDSIZE * BOARDSIZE + 1>> _probabilities;
     std::vector<NetworkFeatures::Planes> _states;
-    std::vector<double> _winrates;
 }
 
 void Collector::collectMove(const Tree& tree) {
@@ -91,9 +91,6 @@ void Collector::collectMove(const Tree& tree) {
 
     // states from the board
     _states.push_back(tree.rootBoard().getFeatures().getPlanes());
-
-    _winrates.push_back(tree.rootNode()->winrate(tree.rootBoard().ActPlayer()));
-
 }
 
 void Collector::collectWinner(const Player& winner) { _winner = winner; }
@@ -129,7 +126,7 @@ int Collector::connectToServer(const char* server, int port) {
     return sock;
 }
 
-void Collector::sendData(const Tree& tree, bool noResignMode) {
+void Collector::sendData(const Tree& tree) {
 
     // get the Socket fd for server at port
     int sockfd;
@@ -150,7 +147,6 @@ void Collector::sendData(const Tree& tree, bool noResignMode) {
     for (a = 0; a < num_moves; a++) {
         StateProb::Builder stateprob = stateprobs[a];
         stateprob.setIdx(a);
-        stateprob.setWinrate(_winrates[a]);
 
         // fill probs
         ::capnp::List<float>::Builder probs = stateprob.initProbs(num_fields);
@@ -183,8 +179,6 @@ void Collector::sendData(const Tree& tree, bool noResignMode) {
     game.setNetwork1(netID);
     game.setNetwork2(netID);
 
-    game.setNoresignmode(noResignMode);
-
     assert(_winner.IsValid());
     int result = _winner.ToScore();  // ToScore (Black()) == 1, ToScore (White()) == -1
     int binarized_result = (result + 1) / 2;
@@ -192,26 +186,26 @@ void Collector::sendData(const Tree& tree, bool noResignMode) {
     game.setResult(res);
 
     // for testing purpose write capnp files to disk, not to network
-    FILE* capnp_file;
-    std::string path = "/home/franziska/";
-    std::string filename = boost::lexical_cast<std::string>(id);
-    std::cout << filename << std::endl;
-    capnp_file = fopen((path + filename).c_str(), "w");
-    if (capnp_file != NULL) {
-        writeMessageToFd(fileno(capnp_file), message);
-        fclose(capnp_file);
-    }
-
-
-
-    std::cout << sizeof(message) << std::endl;
-//    // if valid file descriptor exists
-//    if(sockfd != -1){
-//        writeMessageToFd(sockfd, message);
+//    FILE* capnp_file;
+//    std::string path = "/home/franziska/";
+//    std::string filename = boost::lexical_cast<std::string>(id);
+//    std::cout << filename << std::endl;
+//    capnp_file = fopen((path + filename).c_str(), "w");
+//    if (capnp_file != NULL) {
+//        writePackedMessageToFd(fileno(capnp_file), message);
+//        fclose(capnp_file);
 //    }
 
 
 
-//     // close socket
-//     close(sockfd);
+    std::cout << sizeof(message) << std::endl;
+    // if valid file descriptor exists
+    if(sockfd != -1){
+        writeMessageToFd(sockfd, message);
+    }
+
+
+
+     // close socket
+     close(sockfd);
 }

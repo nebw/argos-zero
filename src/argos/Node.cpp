@@ -46,20 +46,23 @@ bool Node::expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
             size_t posIdx;
             if (vertex == Vertex::Pass()) {
                 posIdx = config::boardSize * config::boardSize;
+                child->setPrior(0.0000001f);
             } else {
                 posIdx = vertex.GetRow() * config::boardSize + vertex.GetColumn();
+                child->setPrior(result.candidates[posIdx].prior);
             }
-            child->setPrior(result.candidates[posIdx].prior);
 
             children.push_back(child);
         }
 
-        if (legalMoves.empty()) { _isTerminalNode = true; }
+        if (legalMoves.empty()) {
+            _isTerminalNode = true;
+            _statistics.playout_score = static_cast<float>(board.TrompTaylorWinner().ToScore());
+        }
     } else {
         _isTerminalNode = true;
+        _statistics.playout_score = static_cast<float>(board.TrompTaylorWinner().ToScore());
     }
-
-    _statistics.playout_score = {static_cast<float>(board.PlayoutWinner().ToScore())};
 
     _children = children;
     return true;
@@ -67,9 +70,11 @@ bool Node::expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
 
 float Node::getPrior() { return statistics().prior; }
 
-void Node::setPrior(float prior) { _statistics.prior = prior; }
+void Node::setPrior(float prior) {
+    _statistics.prior = prior;
+}
 
-float Node::getUCTValue(Node& parent) const {
+float Node::getUCTValue(Node& parent, std::mt19937& engine) const {
     const float winRate = winrate(parent.position()->actPlayer());
     const float parentVisits = static_cast<float>(parent.statistics().num_evaluations.load());
     const float nodeVisits = static_cast<float>(_statistics.num_evaluations.load());
@@ -80,7 +85,19 @@ float Node::getUCTValue(Node& parent) const {
     return winRate + _config.priorC * prior * (sqrt(parentVisits) / (1 + nodeVisits));
 }
 
-const std::shared_ptr<Node>& Node::getBestUCTChild() {
+float Node::getBetaValue(Node& parent, std::mt19937& engine) const {
+    const float numPriorEvals = 20;
+    const float prior = _statistics.prior.load();
+    const float winRate = winrate(parent.position()->actPlayer());
+    const float nodeVisits = static_cast<float>(_statistics.num_evaluations.load());
+
+    auto beta = beta_distribution<float>(winRate * nodeVisits + numPriorEvals * prior,
+                                          (1.f - winRate) * nodeVisits);
+
+    return beta(engine);
+}
+
+const std::shared_ptr<Node>& Node::getBestUCTChild(std::mt19937& engine) {
     assert(isExpanded());
     assert(!(*_children).empty());
 
@@ -88,7 +105,8 @@ const std::shared_ptr<Node>& Node::getBestUCTChild() {
     size_t bestIdx = 0;
     for (size_t i = 0; i < (*_children).size(); ++i) {
         const auto& child = (*_children)[i];
-        const auto score = child->getUCTValue(*this);
+        // const auto score = child->getUCTValue(*this);
+        const auto score = child->getBetaValue(*this, engine);
         if (score > bestScore) {
             bestScore = score;
             bestIdx = i;

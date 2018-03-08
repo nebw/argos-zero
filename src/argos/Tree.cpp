@@ -128,6 +128,7 @@ void Tree::visitNode(Node* node) {
 
 void Tree::playout(std::atomic<bool>* keepRunning) {
     moodycamel::ProducerToken token(_evaluationQueue);
+    std::mt19937 randomEngine(std::time(0));
 
     do {
         NodeTrace trace;
@@ -139,7 +140,7 @@ void Tree::playout(std::atomic<bool>* keepRunning) {
         trace.Push(node);
 
         while (node->isExpanded() && node->isEvaluated() && !(node->children())->empty()) {
-            node = node->getBestUCTChild().get();
+            node = node->getBestUCTChild(randomEngine).get();
             visitNode(node);
             playoutBoard.PlayLegal(playoutBoard.ActPlayer(), node->parentMove());
             trace.Push(node);
@@ -193,7 +194,8 @@ Player Tree::rollout(Board playoutBoard, ConcurrentNodeQueue& queue,
                 size_t posIdx;
                 if (v == Vertex::Pass()) {
                     posIdx = config::boardSize * config::boardSize;
-                    probabilites.push_back(result.candidates[posIdx].prior);
+                    //probabilites.push_back(result.candidates[posIdx].prior);
+                    probabilites.push_back(0.00000001f);
                 } else {
                     posIdx = v.GetRow() * config::boardSize + v.GetColumn();
                     probabilites.push_back(result.candidates[posIdx].prior);
@@ -208,7 +210,7 @@ Player Tree::rollout(Board playoutBoard, ConcurrentNodeQueue& queue,
         playoutBoard.PlayLegal(pl, v);
     }
 
-    return playoutBoard.PlayoutWinner();
+    return playoutBoard.TrompTaylorWinner();
 }
 
 Vertex Tree::bestMove() {
@@ -287,9 +289,11 @@ void Tree::addDirichletNoise(const float amount, const float distribution) {
     }
 
     for (size_t i = 0; i != child_cnt; i++) {
-        // Add dirichlet distribution to each prior probability
-        float prior = children[i]->getPrior();
-        children[i]->setPrior(((1 - amount) * prior) + (amount * dirichlet_vector[i]));
+        if (children[i]->parentMove() != Vertex::Pass()) {
+            // Add dirichlet distribution to each prior probability
+            float prior = children[i]->getPrior();
+            children[i]->setPrior(((1 - amount) * prior) + (amount * dirichlet_vector[i]));
+        }
     }
 }
 
