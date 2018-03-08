@@ -8,7 +8,7 @@ public:
     Collector(const char* server, int port);
     void collectMove(const Tree& tree);
     void collectWinner(const Player& winner);
-    void sendData(const Tree& tree);
+    void sendData(const Tree& tree, bool noResignMode);
 
 private:
     // all variables from Franzis code here
@@ -17,6 +17,7 @@ private:
     int _port;
     std::vector<std::array<double, BOARDSIZE * BOARDSIZE + 1>> _probabilities;
     std::vector<NetworkFeatures::Planes> _states;
+    std::vector<double> _winrates;
     Player _winner;
 };
 

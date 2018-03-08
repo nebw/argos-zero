@@ -68,7 +68,7 @@ int main(int argc, const char** argv) {
 
     // convert what we collected to capnp messages
     // only possible here and not before because we do not know the number of moves in advance
-    if (collect_data) { collector.get().sendData(tree); }
+    if (collect_data) { collector.get().sendData(tree, noResignMode); }
 
 }
 
