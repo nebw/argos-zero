@@ -19,8 +19,11 @@ class Parser():
             parser.add_argument('--playerTwo', type=lambda s: s.split(','), required=True,
                                 help='path and launch parameters of second player seperated with commas')
 
-            parser.add_argument('--loadFrom', type=str, default= "ratings.txt",
-                                help='file in local folder to copy ratings from (default ratings.txt), if no file is found default values of [1500, 40] will be used')
+            parser.add_argument('--loadFromFile', type=str, default= "ratings",
+                                help='file in local folder to copy ratings from (default ratings.txt), if no file is found default values of [1000, 40] will be used')
+
+            parser.add_argument('--loadFromPath', type=str, default="./",
+                                help='folder in which the ratings file defined in the --loadFromFile parameter exists (default "./")')
 
         self.parser = parser
 
