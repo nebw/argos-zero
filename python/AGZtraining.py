@@ -208,6 +208,6 @@ def train(export_path):
 
     uuid = str(uuid.uuid4())
 
-    net.export(export_path/uuid)
+    net.export(export_path + uuid)
 
     return uuid
