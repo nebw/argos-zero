@@ -20,6 +20,8 @@ int main(int argc, const char** argv) {
     // if network variable set: collect information
     bool collect_data = config::tree::trainingMode;
 
+    const char* server = "127.0.0.1";
+    int port = 1345;
     boost::optional<Collector> collector;
 
     if (collect_data) { collector = Collector(config::server, config::port); }
@@ -66,7 +68,7 @@ int main(int argc, const char** argv) {
 
     // convert what we collected to capnp messages
     // only possible here and not before because we do not know the number of moves in advance
-    if (collect_data) { collector.get().sendData(tree); }
+    if (collect_data) { collector.get().sendData(tree, noResignMode); }
 
 }
 

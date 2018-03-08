@@ -28,7 +28,7 @@ include_directories(SYSTEM "${MXNET_PATH}/cpp-package/include/")
 include_directories(${PROJECT_SOURCE_DIR}/src/ego/goboard)
 include_directories(${PROJECT_SOURCE_DIR}/src/ego/utils)
 include_directories(${PROJECT_SOURCE_DIR}/src/ego/gtp)
-include_directories(${CAPNP_INCLUDE_DIRS})
+#set(CAPNP_INCLUDE_DIRS "/usr/local/include")
 
 link_directories("${MXNET_PATH}/lib")
 
