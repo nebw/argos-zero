@@ -297,7 +297,7 @@ namespace config {
     }  // namespace time
 
     namespace engine {
-        static const auto totalTime = std::chrono::milliseconds(1000 * 60 * 10);
+        // static const auto totalTime = std::chrono::milliseconds(1000 * 60 * 10);
         // static const float resignThreshold = 0.1f;
     }  // namespace engine
 }  // namespace config

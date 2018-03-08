@@ -14,7 +14,7 @@ Engine::Engine(const argos::config::Config &config) :
     RegisterCommands();
     RegisterParams();
 
-    _tc.setRemainingTime(config::engine::totalTime);
+    _tc.setRemainingTime(config.engine.totalTime);
     _dbg.open(config.logFilePath.string(), ios_base::out | ios_base::app);
 }
 
@@ -40,7 +40,7 @@ void Engine::Cclear_board(Gtp::Io &io) {
 
     _tree = std::make_unique<Tree>(_config);
     _tree->setKomi(_komi);
-    _tc.setRemainingTime(config::engine::totalTime);
+    _tc.setRemainingTime(_config.engine.totalTime);
 }
 
 void Engine::Cgenmove(Gtp::Io &io) {
@@ -126,7 +126,7 @@ void Engine::Ctime_settings(Gtp::Io &io) {
     // TODO: implement different time controls
 
     _tc.setRemainingTime(parseGtpTime(io));
-    
+
     _dbg << "Total time set to " << format_duration(_tc.getRemainingTime()) << std::endl;
 
     io.CheckEmpty();
