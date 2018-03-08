@@ -24,7 +24,7 @@ def write_in_dataset(dataset, raw_data_folder, boardsize=9, val_prob=0.05,
     val_x = dataset['val_x']
     val_y = dataset['val_y']
 
-    paths = glob.glob(raw_data_folder)
+    paths = glob.glob(raw_data_folder)[:-1]
     paths.reverse()
 
     latest_p_read = dataset.attrs["latest_p_read"]
