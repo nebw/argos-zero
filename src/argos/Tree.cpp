@@ -14,12 +14,12 @@
 
 Tree::Tree(const argos::config::Config &config)
     : _evaluationQueue(
-          ConcurrentNodeQueue(config::tree::batchSize * 4, 1 + 2 * config::tree::numThreads, 0)),
+          ConcurrentNodeQueue(config::tree::batchSize * 4, 1 + 2 * _config.tree.numThreads, 0)),
       _token(_evaluationQueue),
       _evaluationThreadKeepRunning(true),
       _gen(_rd()),
       _config(config) {
-    for (size_t i = 0; i < config::tree::numEvaluationThreads; ++i) {
+    for (size_t i = 0; i < config.tree.numEvaluationThreads; ++i) {
         _evaluationThreads.emplace_back(evaluationQueueConsumer, &_evaluationQueue,
                                         &_evaluationThreadKeepRunning, _config);
     }
@@ -29,7 +29,7 @@ Tree::Tree(const argos::config::Config &config)
 
     purgeTranspositionTable();
 
-    for (size_t i = 0; i < config::tree::numThreads; ++i) {
+    for (size_t i = 0; i < _config.tree.numThreads; ++i) {
         EvaluationJob job(_rootBoard.getFeatures().getPlanes());
         auto future = job.result.get_future();
         _evaluationQueue.enqueue(_token, std::move(job));
@@ -40,7 +40,7 @@ Tree::Tree(const argos::config::Config &config)
 Tree::~Tree() {
     _evaluationThreadKeepRunning = {false};
 
-    for (size_t i = 0; i < config::tree::numEvaluationThreads; ++i) {
+    for (size_t i = 0; i < _config.tree.numEvaluationThreads; ++i) {
         _evaluationThreads[i].join();
     }
 }
@@ -70,7 +70,7 @@ void Tree::evaluate(const std::chrono::milliseconds duration) {
     std::atomic<bool> keepRunning = {true};
 
     std::vector<std::future<void>> threads;
-    for (size_t i = 0; i < config::tree::numThreads; ++i) {
+    for (size_t i = 0; i < _config.tree.numThreads; ++i) {
         auto f = std::async(std::launch::async, &Tree::playout, this, &keepRunning);
         threads.push_back(std::move(f));
     }
@@ -97,7 +97,7 @@ void Tree::evaluate(const size_t evaluations) {
     std::atomic<bool> keepRunning = {true};
 
     std::vector<std::future<void>> threads;
-    for (size_t i = 0; i < config::tree::numThreads; ++i) {
+    for (size_t i = 0; i < _config.tree.numThreads; ++i) {
         auto f = std::async(std::launch::async, &Tree::playout, this, &keepRunning);
         threads.push_back(std::move(f));
     }
@@ -106,7 +106,7 @@ void Tree::evaluate(const size_t evaluations) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
         if (static_cast<int>(_rootNode->statistics().num_evaluations.load()) -
-                static_cast<int>(config::tree::numThreads * config::tree::virtualPlayouts) >=
+                static_cast<int>(_config.tree.numThreads * _config.tree.virtualPlayouts) >=
             static_cast<int>(evaluations)) {
             break;
         }
@@ -122,7 +122,7 @@ void Tree::evaluate(const size_t evaluations) {
 void Tree::setKomi(float komi) { _rootBoard.SetKomi(komi); }
 
 void Tree::visitNode(Node* node) {
-    node->statistics().num_evaluations += config::tree::virtualPlayouts + 1;
+    node->statistics().num_evaluations += _config.tree.virtualPlayouts + 1;
     node->position()->statistics().num_evaluations += 1;
 }
 
@@ -152,7 +152,7 @@ void Tree::playout(std::atomic<bool>* keepRunning) {
         }
 
         // expand node
-        if (node->statistics().num_evaluations.load() >= config::tree::expandAt) {
+        if (node->statistics().num_evaluations.load() >= _config.tree.expandAt) {
             const bool isExpandingThread =
                 node->expand(*this, playoutBoard, _evaluationQueue, token);
             if (isExpandingThread) {
@@ -164,7 +164,7 @@ void Tree::playout(std::atomic<bool>* keepRunning) {
             } else {
                 while (!trace.IsEmpty()) {
                     Node* node = trace.PopTop();
-                    node->statistics().num_evaluations -= config::tree::virtualPlayouts;
+                    node->statistics().num_evaluations -= _config.tree.virtualPlayouts;
                     node->position()->statistics().num_evaluations -= 1;
                 }
             }
@@ -213,7 +213,7 @@ Player Tree::rollout(Board playoutBoard, ConcurrentNodeQueue& queue,
 
 Vertex Tree::bestMove() {
     assert(_rootNode->isExpanded());
-    if ((_rootBoard.MoveCount() < config::tree::randomizeFirstNMoves) &&
+    if ((_rootBoard.MoveCount() < _config.tree.randomizeFirstNMoves) &&
         configuration().tree.trainingMode) {
         std::vector<float> probabilites;
         probabilites.reserve(_rootNode->children().get().size());
@@ -297,13 +297,13 @@ void Tree::updateStatistics(NodeTrace& trace, float score) const {
     while (!trace.IsEmpty()) {
         Node* node = trace.PopTop();
         node->addEvaluation(score);
-        node->statistics().num_evaluations -= (config::tree::virtualPlayouts);
+        node->statistics().num_evaluations -= (_config.tree.virtualPlayouts);
     }
 }
 
 void Tree::setRootNode(const Vertex& vertex) {
     _lastRootNodes.push(_rootNode);
-    while (_lastRootNodes.size() > config::tree::numLastRootNodes) {
+    while (_lastRootNodes.size() > _config.tree.numLastRootNodes) {
         _lastRootNodes.pop();
     }
 

@@ -22,7 +22,7 @@ int main(int argc, const char** argv) {
 
     boost::optional<Collector> collector;
 
-    if (collect_data) { collector = Collector(config::server, config::port); }
+    if (collect_data) { collector = Collector(config.server.c_str(), config.port); }
 
     Tree tree(config);
     tree.setKomi(5.5);
