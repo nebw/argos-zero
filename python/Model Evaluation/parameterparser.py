@@ -24,6 +24,12 @@ class Parser():
 
             parser.add_argument('--loadFromPath', type=str, default="./rating",
                                 help='folder in which the ratings file defined in the --loadFromFile parameter exists (default "./rating")')
+<<<<<<< HEAD
+
+        if type == "EstimateElo":
+          parser.add_argument('--newPlayer', type=lambda s: s.split(','), required=True,help='path and launch parameters of the to be evaluated engine seperated with commas')
+=======
+>>>>>>> 70bc59669a3a3b825bf208839e4cdaf06b84bb22
 
         self.parser = parser
 
