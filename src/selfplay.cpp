@@ -20,8 +20,6 @@ int main(int argc, const char** argv) {
     // if network variable set: collect information
     bool collect_data = config.tree.trainingMode;
 
-    const char* server = "127.0.0.1";
-    int port = 1345;
     boost::optional<Collector> collector;
 
     if (collect_data) { collector = Collector(config.server.c_str(), config.port); }
@@ -30,7 +28,7 @@ int main(int argc, const char** argv) {
     tree.setKomi(5.5);
     std::cout << tree.rootBoard().ToAsciiArt() << std::endl;
 
-    float resignationThreshold = 0.025f;
+    float resignationThreshold = 0.01f;
 
     bool noResignMode = false;
     if (collect_data) {
@@ -41,7 +39,7 @@ int main(int argc, const char** argv) {
 
     Player winner = Player::Invalid();
     while ((!tree.rootBoard().BothPlayerPass())) {
-        tree.evaluate(500);
+        tree.evaluate(250);
         const auto winrate = tree.rootNode()->winrate(tree.rootBoard().ActPlayer());
 
         if ((winrate < resignationThreshold) && !(noResignMode)) {
@@ -69,6 +67,5 @@ int main(int argc, const char** argv) {
     // convert what we collected to capnp messages
     // only possible here and not before because we do not know the number of moves in advance
     if (collect_data) { collector.get().sendData(tree, noResignMode); }
-
 }
 

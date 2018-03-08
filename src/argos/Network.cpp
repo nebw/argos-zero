@@ -65,8 +65,7 @@ std::array<Network::Result, config::tree::batchSize> Network::apply(
                 candidates.emplace_back(policyOutput[posIdx], Vertex::OfCoords(row, col));
             }
         }
-        //candidates.emplace_back(policyOutput[width * height], Vertex::Pass());
-        candidates.emplace_back(0.0000001f, Vertex::Pass());
+        candidates.emplace_back(policyOutput[width * height], Vertex::Pass());
         results[i] = Network::Result(std::move(candidates), valueOutput[i] * 2 - 1);
     }
     return results;
