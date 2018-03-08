@@ -42,7 +42,6 @@ namespace argos
                     ("deviceType,d", po::value<std::string>(), "set device type (CPU, GPU, CPU_PINNED)")
                     ("server,s", po::value<std::string>(), "set server ip, default is: 127.0.0.1")
                     ("port,p", po::value<int>(), "set port")
-                    ("tree-batchSize", po::value<size_t>(), "set batchSize")
                     ("tree-numEvaluationThreads", po::value<size_t>(), "set numEvaluationThreads")
                     ("tree-numThreads", po::value<size_t>(), "set numThreads")
                     ("tree-randomizeFirstNMoves", po::value<size_t>(), "set randomizeFirstNMoves")
@@ -131,7 +130,6 @@ namespace argos
                         }
 
                         auto treeParser = configParser.get_child("tree");
-                        treeBuilder.batchSize(treeParser.get<size_t>("batch_size"));
                         treeBuilder.numEvaluationThreads(treeParser.get<size_t>("num_evaluation_threads"));
                         treeBuilder.numThreads(treeParser.get<size_t>("num_threads"));
                         treeBuilder.randomizeFirstNMoves(treeParser.get<size_t>("randomize_first_n_moves"));
@@ -196,7 +194,6 @@ namespace argos
             if (vm.count("server")) configBuilder.server(vm["server"].as<std::string>());
             if (vm.count("port")) configBuilder.port(vm["port"].as<int>());
             /* deviceType defined above */
-            if (vm.count("tree-batchSize")) treeBuilder.batchSize(vm["tree-batchSize"].as<size_t>());
             if (vm.count("tree-numEvaluationThreads")) treeBuilder.numThreads(vm["tree-numEvaluationThreads"].as<size_t>());
             /* tree-numThreads defined above */
             if (vm.count("tree-randomizeFirstNMoves")) treeBuilder.randomizeFirstNMoves(vm["tree-randomizeFirstNMoves"].as<size_t>());
@@ -223,10 +220,8 @@ namespace argos
             cout << "config.networkPath: " << config.networkPath << endl;
             cout << "config.logFilePath: " << config.logFilePath << endl;
             cout << "config.deviceType: " << config.deviceType << endl;
-            cout << "config.boardSize: " << config.boardSize << endl;
             cout << "config.server: " << config.server << endl;
             cout << "config.port: " << config.port << endl;
-            cout << "config.tree.batchSize: " << config.tree.batchSize << endl;
             cout << "config.tree.numEvaluationThreads: " << config.tree.numEvaluationThreads << endl;
             cout << "config.tree.numThreads: " << config.tree.numThreads << endl;
             cout << "config.tree.randomizeFirstNMoves: " << config.tree.randomizeFirstNMoves << endl;
