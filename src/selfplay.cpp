@@ -20,8 +20,6 @@ int main(int argc, const char** argv) {
     // if network variable set: collect information
     bool collect_data = config::tree::trainingMode;
 
-    const char* server = "127.0.0.1";
-    int port = 1345;
     boost::optional<Collector> collector;
 
     if (collect_data) { collector = Collector(config::server, config::port); }
@@ -41,7 +39,7 @@ int main(int argc, const char** argv) {
 
     Player winner = Player::Invalid();
     while ((!tree.rootBoard().BothPlayerPass())) {
-        tree.evaluate(100);
+        tree.evaluate(1600);
         const auto winrate = tree.rootNode()->winrate(tree.rootBoard().ActPlayer());
 
         if ((winrate < resignationThreshold) && !(noResignMode)) {

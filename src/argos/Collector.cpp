@@ -193,26 +193,26 @@ void Collector::sendData(const Tree& tree, bool noResignMode) {
     game.setResult(res);
 
     // for testing purpose write capnp files to disk, not to network
-    FILE* capnp_file;
-    std::string path = "/home/franziska/";
-    std::string filename = boost::lexical_cast<std::string>(id);
-    std::cout << filename << std::endl;
-    capnp_file = fopen((path + filename).c_str(), "w");
-    if (capnp_file != NULL) {
-        writeMessageToFd(fileno(capnp_file), message);
-        fclose(capnp_file);
-    }
-
-
-
-    std::cout << sizeof(message) << std::endl;
-//    // if valid file descriptor exists
-//    if(sockfd != -1){
-//        writeMessageToFd(sockfd, message);
+//    FILE* capnp_file;
+//    std::string path = "/home/franziska/selfgames/";
+//    std::string filename = boost::lexical_cast<std::string>(id);
+//    std::cout << filename << std::endl;
+//    capnp_file = fopen((path + filename).c_str(), "w");
+//    if (capnp_file != NULL) {
+//        writeMessageToFd(fileno(capnp_file), message);
+//        fclose(capnp_file);
 //    }
 
 
 
-//     // close socket
-//     close(sockfd);
+    std::cout << sizeof(message) << std::endl;
+    // if valid file descriptor exists
+    if(sockfd != -1){
+        writeMessageToFd(sockfd, message);
+    }
+
+
+
+     // close socket
+     close(sockfd);
 }
