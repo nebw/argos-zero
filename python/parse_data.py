@@ -9,11 +9,11 @@ sys.path.append('./../src/capnp')
 import CapnpGame_capnp
 
 
-def write_in_dataset(dataset, raw_data_folder, boardsize=9, val_prob=0.05,
+def write_in_dataset(dataset, raw_data_folder, boardsize=9, val_prob=20,
     force_full_write=True):
     """
     TODO: make code nice and readable
-    val_prob: probability of a specific game is chosen for the validation set
+    val_prob: every val_probth game will be chosen for validation
     force_full_write: True will make sure that everything will be overwritten
     once by duplicating some datapoints
     """
@@ -49,19 +49,19 @@ def write_in_dataset(dataset, raw_data_folder, boardsize=9, val_prob=0.05,
                 #    raw_data.close()
                 #    return
 
-                if np.random.sample(1)[0] > val_prob and total_written[0] < train_x.shape[0]:
-                    dest_x, dest_y, j = train_x, train_y, 0
-                elif total_written[1] < val_x.shape[0]:
-                    dest_x, dest_y, j = val_x, val_y, 1
-                else:
-                    # no free space in dataset
+                if total_written[0] >= train_x.shape[0] and total_written[1] >= val_x.shape[0]:
                     raw_data.close()
                     return
+
+                if i % val_prob != 0: #: #np.random.sample(1)[0] > val_prob
+                    dest_x, dest_y, j = train_x, train_y, 0
+                else:
+                    dest_x, dest_y, j = val_x, val_y, 1
 
                 for i in range(len(g.stateprobs)):
                     # copy all states (if there is space) from the game
                     if total_written[j] > dest_x.shape[0]-1:
-                        print("total_written exeeded dest.shape")
+                        #print("total_written exeeded dest.shape")
                         break
                     offset = total_written[j]
                     #offset = dest_x.attrs["next_i_to_overwrite"]
@@ -79,8 +79,8 @@ def write_in_dataset(dataset, raw_data_folder, boardsize=9, val_prob=0.05,
                     total_written[j] += 1
 
 
-                # save to disk after every iteration(?)
-                dataset.flush()
+            # save to disk after every game(?)
+            dataset.flush()
             raw_data.close()
 
         if not force_full_write:
@@ -88,13 +88,13 @@ def write_in_dataset(dataset, raw_data_folder, boardsize=9, val_prob=0.05,
 
     return
 
-def update_dataset(raw_data_folder, dataset_path, boardsize=9, val_prob=0.05,
+def update_dataset(raw_data_folder, dataset_path, boardsize=9, val_prob=20,
                     num_states=25000):
     """
     raw_data_folder: path to raw_data with .h5 file with cpnp messages
     dataset_path: path to dataset
     boardsize: _
-    val_prob: probability of a specific game is chosen for the validation set
+    val_prob: every val_probth game will be chosen for validation
     num_states: if dataset file has to be created, states the new dataset file can
     hold"""
     if os.path.isfile(dataset_path):
@@ -102,6 +102,7 @@ def update_dataset(raw_data_folder, dataset_path, boardsize=9, val_prob=0.05,
         write_in_dataset(dataset, raw_data_folder)
     else:
         print("dataset not found at specified path, creating new dataset")
+        val_prob = (1/val_prob)
         # create file for dataset
         dataset = h5py.File(dataset_path, 'w', libver='latest')
 
