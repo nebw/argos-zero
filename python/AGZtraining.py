@@ -13,13 +13,15 @@ import parse_data
 
 #data = h5py.File('/home/julianstastny/Documents/Softwareprojekt/argos-zero/python/train_val.h5','r')
 def train(export_path, raw_data_path, dataset_path):
-
-    parse_data.update_dataset(raw_data_path, dataset_path)
+    boardsize = 9
+    parse_data.update_dataset(raw_data_folder, dataset_path, boardsize=boardsize,
+                    val_prob=10, num_states=125000)
 
     data = h5py.File(dataset_path)
     print(list(data.keys()))
     ctx = mx.gpu()
     batch_size = 128
+    uuid = str(uuid.uuid4())
 
     def update_data():
         data.close()
@@ -89,9 +91,9 @@ def train(export_path, raw_data_path, dataset_path):
                 self.policy.add(gluon.nn.Conv2D(2, 3, padding=1))
                 self.policy.add(gluon.nn.LeakyReLU(alpha=0.3))
                 self.policy.add(gluon.nn.Flatten())
-                self.policy.add(gluon.nn.Dense((9 * 9 + 1) * 2))
+                self.policy.add(gluon.nn.Dense((boardsize * boardsize + 1) * 2))
                 self.policy.add(gluon.nn.LeakyReLU(alpha=0.3))
-                self.policy.add(gluon.nn.Dense(9 * 9 + 1))
+                self.policy.add(gluon.nn.Dense(boardsize * boardsize + 1))
 
         def hybrid_forward(self, F, x):
             x = self.convs(x)
@@ -127,8 +129,8 @@ def train(export_path, raw_data_path, dataset_path):
 
     def pred_val_set(x,y):
         # Predict Validation set and append losses
-        py = y[:, :(9*9+1)]
-        vy = y[:, (9*9+1)]
+        py = y[:, :(boardsize*boardsize+1)]
+        vy = y[:, (boardsize*boardsize+1)]
 
         _,_,pp,vp = net(x)
         vloss = value_loss(vp, vy)
@@ -145,8 +147,13 @@ def train(export_path, raw_data_path, dataset_path):
                 yield it.next()
             except StopIteration:
                 pred_val_set(val_set_x,val_set_y)
+
+                # if new net has smaller val loss -> save
+                if val_closses[-1]<val_closses[-2]:
+                    net.export(export_path + uuid)
                 print()
                 it.reset()
+                return
 
     def early_stopping(last = 3):
         if len(val_closses) >= 3:
@@ -156,7 +163,7 @@ def train(export_path, raw_data_path, dataset_path):
     def random_augmentation(x,y):
         for i in range(x.shape[0]):
             seed = np.random.randint(low=0, high=2, size=3, dtype=int)
-            y_probs = y[i,:-2].copy().reshape((9, 9))
+            y_probs = y[i,:-2].copy().reshape((boardsize, boardsize))
             if seed[0]:
                 x[i] = nd.transpose(x[i], (0, 2, 1))
                 y_probs = nd.transpose(y_probs)
@@ -166,7 +173,7 @@ def train(export_path, raw_data_path, dataset_path):
             if seed[2]:
                 x[i] = nd.flip(x[i], 2)
                 y_probs = nd.flip(y_probs, 1)
-            y[i,:-2] = y_probs.reshape((9 * 9,))
+            y[i,:-2] = y_probs.reshape((boardsize * boardsize,))
         return x,y
 
     sigmoid = gluon.nn.Activation('sigmoid')
@@ -177,8 +184,8 @@ def train(export_path, raw_data_path, dataset_path):
         x = batch.data[0].as_in_context(ctx)
         y = batch.label[0].as_in_context(ctx)
         x,y = random_augmentation(x,y)
-        py = y[:, :(9*9+1)]
-        vy = y[:, (9*9+1)]
+        py = y[:, :(boardsize*boardsize+1)]
+        vy = y[:, (boardsize*boardsize+1)]
 
         with autograd.record():
             _, _, pp, vp = net(x)
@@ -200,11 +207,7 @@ def train(export_path, raw_data_path, dataset_path):
             i, rmean(closses), rmean(vlosses), rmean(vaccs), rmean(plosses), rmean(paccs),val_closses[-1]))
 
         if early_stopping() or i == 1000000:
-            print("Training stopped")
             break
 
-    uuid = str(uuid.uuid4())
-
-    net.export(export_path + uuid)
-
+    print("Training stopped")
     return uuid

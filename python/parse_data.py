@@ -9,7 +9,7 @@ sys.path.append('./../src/capnp')
 import CapnpGame_capnp
 
 
-def write_in_dataset(dataset, raw_data_folder, boardsize=9, val_prob=20,
+def write_in_dataset(dataset, raw_data_folder, boardsize=9, val_prob=10,
     force_full_write=True):
     """
     TODO: make code nice and readable
@@ -72,7 +72,7 @@ def write_in_dataset(dataset, raw_data_folder, boardsize=9, val_prob=20,
 
                     y = np.concatenate((probs.flatten(), winner), axis=0)
 
-                    dest_y[offset] = y.reshape((1,83))
+                    dest_y[offset] = y.reshape((1,boardsize*boardsize+2))
 
                     #dest_x.attrs.modify("next_i_to_overwrite",(offset+1)%dest_x.shape[0])
 
@@ -99,7 +99,8 @@ def update_dataset(raw_data_folder, dataset_path, boardsize=9, val_prob=10,
     hold"""
     if os.path.isfile(dataset_path):
         dataset = h5py.File(dataset_path, 'r+', libver='latest')
-        write_in_dataset(dataset, raw_data_folder, force_full_write=True)
+        write_in_dataset(dataset, raw_data_folder, val_prob=val_prob,
+            boardsize=boardsize, force_full_write=True)
     else:
         print("dataset not found at specified path, creating new dataset")
         val_prob = (1/val_prob)
@@ -110,11 +111,11 @@ def update_dataset(raw_data_folder, dataset_path, boardsize=9, val_prob=10,
         train_x = dataset.create_dataset("train_x", shape=(
             int(num_states*(1-val_prob)),12,boardsize,boardsize), dtype='int8')
         train_y = dataset.create_dataset("train_y", shape=(
-            int(num_states*(1-val_prob)),83))
+            int(num_states*(1-val_prob)),boardsize*boardsize+2))
         val_x = dataset.create_dataset("val_x", shape=(
             int(num_states*val_prob),12,boardsize,boardsize), dtype='int8')
         val_y = dataset.create_dataset("val_y", shape=(
-            int(num_states*val_prob),83))
+            int(num_states*val_prob),boardsize*boardsize+2))
 
         # # save where to (over-)write next in dataset
         # train_x.attrs.create("next_i_to_overwrite",0)
@@ -127,6 +128,7 @@ def update_dataset(raw_data_folder, dataset_path, boardsize=9, val_prob=10,
 
         dataset.flush()
         print("created dataset")
-        write_in_dataset(dataset, raw_data_folder, force_full_write=True)
+        write_in_dataset(dataset, raw_data_folder, val_prob=val_prob,
+            boardsize=boardsize, force_full_write=True)
     dataset.close()
     print("Dataset updated")
