@@ -13,6 +13,8 @@ hd5_folder_path = "./testhd5"
 
 server_path = '/var/www/html/argos/'
 
+path_to_gtp = './argos_model/gtp'
+
 file_used_for_last_training = "game_record-0000.h5"
 threshold = 25000 #games that we need to trigger training
 
@@ -57,7 +59,12 @@ while True:
         old_network = old_network_with_threshold[0]
         uuid_old_network.close()
 
-        if new_is_better(old_network, new_network):
+        # the inputs for function new_is_better are two lists containing 
+        # path to gtp, uuid of network and the engine total time
+        old_network_params = [path_to_gtp, old_network, '5']
+        new_network_params = [path_to_gtp, new_network, '5']
+        
+        if new_is_better(old_network_params, new_network_params):
             # change the uuid in the best-weights-file
             best_weights = open(server_path + 'best-weights', 'w')
             best_weights.write(new_network + ';' + resign_threshold)
