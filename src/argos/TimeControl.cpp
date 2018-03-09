@@ -4,8 +4,8 @@
 
 ms BasicTimeControl::getTimeForMove(const Board &board) {
     const int div =
-        config::time::C + std::max(config::time::maxPly - static_cast<int>(board.MoveCount()), 0);
-    return (_remainingTime / div) - config::time::delay;
+        _config.C + std::max(_config.maxPly - static_cast<int>(board.MoveCount()), 0);
+    return (_remainingTime / div) - _config.delay;
 }
 
 void TimeControl::setRemainingTime(ms remainingTime) { _remainingTime = remainingTime; }

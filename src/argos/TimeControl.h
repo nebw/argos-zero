@@ -5,17 +5,18 @@
 #include "ego.hpp"
 
 namespace {
-typedef std::chrono::milliseconds ms;
+    typedef std::chrono::milliseconds ms;
 }
 
 class TimeControl {
 public:
-    TimeControl(ms totalTime) : _remainingTime(totalTime) {}
+    TimeControl(ms totalTime, const argos::config::Time &config) : _remainingTime(totalTime), _config(config) {}
 
     void setRemainingTime(ms remainingTime);
+
     ms getRemainingTime() const;
 
-    template <typename F>
+    template<typename F>
     void timedAction(F action) {
         using namespace std::chrono;
         high_resolution_clock::time_point t1 = high_resolution_clock::now();
@@ -24,19 +25,20 @@ public:
         _remainingTime -= duration_cast<ms>(t2 - t1);
     }
 
-    virtual ms getTimeForMove(Board const& board) = 0;
+    virtual ms getTimeForMove(Board const &board) = 0;
+
     virtual ~TimeControl() = default;
 
 protected:
     ms _remainingTime;
+    argos::config::Time _config;
 };
 
 class BasicTimeControl : public TimeControl {
 public:
-    BasicTimeControl(ms totalTime) : TimeControl(totalTime) {}
+    BasicTimeControl(ms totalTime, const argos::config::Time &config) : TimeControl(totalTime, config) {}
 
-    BasicTimeControl() : TimeControl(config::engine::totalTime) {}
+    virtual ms getTimeForMove(Board const &board) override;
 
-    virtual ms getTimeForMove(Board const& board) override;
     virtual ~BasicTimeControl() override = default;
 };

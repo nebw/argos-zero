@@ -6,7 +6,7 @@ void evaluationQueueConsumer(ConcurrentNodeQueue* evaluationQueue,
                              const argos::config::Config &configuration) {
     moodycamel::ConsumerToken token(*evaluationQueue);
 
-    Network net(configuration.networkPath.string());
+    Network net(configuration.networkPath.string(), configuration);
 
     while (keepRunning->load()) {
         std::array<EvaluationJob, config::tree::batchSize> items;

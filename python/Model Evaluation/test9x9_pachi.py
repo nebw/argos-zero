@@ -6,8 +6,7 @@ from ratingsystem import RatingSystem
 numMatches = 1
 print "running " + str(numMatches)+ " matches"
 print "will use the default ratings available in ./rating/ratings# file"
-playerOneParams = ["./argos_model/gtp", "-p",
-                   "./argos_model/agz_small_9x9", "-l", "./argos_model/agz_small_9x9.log"]
+playerOneParams = ["./argos_model/gtp", "-p","./argos_model/agz_small_9x9"]
 playerTwoParams = ["./pachi", "--no-dcnn", "-e", "uct", "-D"]
-test = RatingSystem(playerOneParams, playerTwoParams, numMatches=numMatches, filePath ="./rating")
+test = RatingSystem(playerOneParams, playerTwoParams, numMatches=numMatches)
 print test.run()

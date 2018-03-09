@@ -21,7 +21,6 @@
 #include <netinet/tcp.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <zconf.h>
 #include <cstdio>
 #include <cstring>
 
@@ -193,15 +192,17 @@ void Collector::sendData(const Tree& tree, bool noResignMode) {
     game.setResult(res);
 
     // for testing purpose write capnp files to disk, not to network
-//    FILE* capnp_file;
-//    std::string path = "/home/franziska/selfgames/";
-//    std::string filename = boost::lexical_cast<std::string>(id);
-//    std::cout << filename << std::endl;
-//    capnp_file = fopen((path + filename).c_str(), "w");
-//    if (capnp_file != NULL) {
-//        writeMessageToFd(fileno(capnp_file), message);
-//        fclose(capnp_file);
-//    }
+/*
+    FILE* capnp_file;
+    std::string path = "/home/franziska/";
+    std::string filename = boost::lexical_cast<std::string>(id);
+    std::cout << filename << std::endl;
+    capnp_file = fopen((path + filename).c_str(), "w");
+    if (capnp_file != NULL) {
+        writeMessageToFd(fileno(capnp_file), message);
+        fclose(capnp_file);
+    }
+*/
 
 
 
@@ -211,8 +212,6 @@ void Collector::sendData(const Tree& tree, bool noResignMode) {
         writeMessageToFd(sockfd, message);
     }
 
-
-
-     // close socket
+    //close socket
      close(sockfd);
 }
