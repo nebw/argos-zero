@@ -35,6 +35,10 @@ How to build:
   * Run CMake: `cmake -DCMAKE_BUILD_TYPE=Release -DMXNET_PATH=/your/local/mxnet/path /your/local/argos/zero/path`
   * `make -j NUM_CPUS` (replace NUM_CPUS by the number of CPUs of you computer)
 
+
+Finally, you can try the selfplay (see Command Line section for details) mode by running: `argos-zero-build/src/selfplay`. You can play against the program using any Go GUI that supports the GTP protocol using the `argos-zero-build/src/gtp` binary. A modern Go GUI is [Sabaki](http://sabaki.yichuanshen.de/).
+
+
 ## Command Line
 
 ```
@@ -68,6 +72,3 @@ optional options:
   --engine-totalTime arg           set totalTime in milliseconds
   --engine-resignThreshold arg     set resignThreshold
 ```
-
-
-Finally, you can try the selfplay mode by running: `argos-zero-build/src/selfplay`. You can play against the program using any Go GUI that supports the GTP protocol using the `argos-zero-build/src/gtp` binary. A modern Go GUI is [Sabaki](http://sabaki.yichuanshen.de/).
