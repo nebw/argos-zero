@@ -35,4 +35,39 @@ How to build:
   * Run CMake: `cmake -DCMAKE_BUILD_TYPE=Release -DMXNET_PATH=/your/local/mxnet/path /your/local/argos/zero/path`
   * `make -j NUM_CPUS` (replace NUM_CPUS by the number of CPUs of you computer)
 
+## Command Line
+
+```
+usage: selfplay networkPath [optional options]
+
+required options:
+  -n [ --networkPath ] arg         path to trained model
+
+optional options:
+  -h [ --help ]                    print this message and exit
+  -c [ --config ] arg              path to config file
+  -l [ --logfilePath ] arg         path where log file should be stored
+                                   by default logs are stored in 
+                                   `<timestamp>.log` file in the same directory
+                                   as network
+  -d [ --deviceType ] arg          set device type (CPU, GPU, CPU_PINNED)
+  -s [ --server ] arg              set server ip, default is: 127.0.0.1
+  -p [ --port ] arg                set port
+  --tree-numEvaluationThreads arg  set numEvaluationThreads
+  --tree-numThreads arg            set numThreads
+  --tree-randomizeFirstNMoves arg  set randomizeFirstNMoves
+  --tree-numLastRootNodes arg      set numLastRootNodes
+  --tree-virtualPlayouts arg       set virtualPlayouts
+  --tree-expandAt arg              set expandAt
+  --tree-priorC arg                set priorC
+  --tree-networkRollouts arg       enable|disable network rollouts
+  --tree-trainingMode arg          enable|disable training mode
+  --time-c arg                     set time c
+  --time-maxPly arg                set maxPly
+  --time-delay arg                 set delay
+  --engine-totalTime arg           set totalTime in milliseconds
+  --engine-resignThreshold arg     set resignThreshold
+```
+
+
 Finally, you can try the selfplay mode by running: `argos-zero-build/src/selfplay`. You can play against the program using any Go GUI that supports the GTP protocol using the `argos-zero-build/src/gtp` binary. A modern Go GUI is [Sabaki](http://sabaki.yichuanshen.de/).
