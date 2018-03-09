@@ -12,11 +12,9 @@ import sys
 import parse_data
 
 #data = h5py.File('/home/julianstastny/Documents/Softwareprojekt/argos-zero/python/train_val.h5','r')
-def train(export_path):
-    raw_data_folder = '/Users/valentinwolf/Documents/Studium/Machine_Learning/SoftwareProjekt/raw_data/*'
-    dataset_path = '/Users/valentinwolf/Documents/Studium/Machine_Learning/SoftwareProjekt/train_val.h5'
+def train(export_path, raw_data_path, dataset_path):
 
-    parse_data.update_dataset(raw_data_folder,dataset_path)
+    parse_data.update_dataset(raw_data_path, dataset_path)
 
     data = h5py.File(dataset_path)
     print(list(data.keys()))
@@ -25,7 +23,7 @@ def train(export_path):
 
     def update_data():
         data.close()
-        parse_data.update_dataset(raw_data_folder,dataset_path)
+        parse_data.update_dataset(raw_data_path,dataset_path)
         data = h5py.File(dataset_path)
         inputs_t = data['train_x']
         labels_t = data['train_y']
