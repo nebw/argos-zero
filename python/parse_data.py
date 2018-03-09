@@ -22,7 +22,7 @@ def write_in_dataset(dataset, raw_data_folder, boardsize=9, val_prob=20,
     val_x = dataset['val_x']
     val_y = dataset['val_y']
 
-    paths = glob.glob(raw_data_folder)[:-1]
+    paths = sorted(glob.glob(raw_data_folder))[:-1]
     paths.reverse()
     print("Writing data from ", paths)
 
@@ -38,7 +38,7 @@ def write_in_dataset(dataset, raw_data_folder, boardsize=9, val_prob=20,
     #f.close()
     while True:
         for raw_data_path in paths:
-            #print(raw_data_path)
+            print(raw_data_path)
             raw_data = h5py.File(raw_data_path,'r')
             for i in range(raw_data['game_record'].attrs['count_id']-1,-1,-1):
                 game_msg = raw_data['game_record'][i].tostring()
@@ -88,8 +88,8 @@ def write_in_dataset(dataset, raw_data_folder, boardsize=9, val_prob=20,
 
     return
 
-def update_dataset(raw_data_folder, dataset_path, boardsize=9, val_prob=20,
-                    num_states=25000):
+def update_dataset(raw_data_folder, dataset_path, boardsize=9, val_prob=10,
+                    num_states=125000):
     """
     raw_data_folder: path to raw_data with .h5 file with cpnp messages
     dataset_path: path to dataset
@@ -99,7 +99,7 @@ def update_dataset(raw_data_folder, dataset_path, boardsize=9, val_prob=20,
     hold"""
     if os.path.isfile(dataset_path):
         dataset = h5py.File(dataset_path, 'r+', libver='latest')
-        write_in_dataset(dataset, raw_data_folder)
+        write_in_dataset(dataset, raw_data_folder, force_full_write=True)
     else:
         print("dataset not found at specified path, creating new dataset")
         val_prob = (1/val_prob)

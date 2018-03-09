@@ -11,16 +11,15 @@ from mxnet import nd, autograd, gluon
 import sys
 import parse_data
 
-#data = h5py.File('/home/julianstastny/Documents/Softwareprojekt/argos-zero/python/train_val.h5','r')
 def train(export_path):
-    raw_data_folder = '/Users/valentinwolf/Documents/Studium/Machine_Learning/SoftwareProjekt/raw_data/*'
-    dataset_path = '/Users/valentinwolf/Documents/Studium/Machine_Learning/SoftwareProjekt/train_val.h5'
+    raw_data_folder = '/home/argos/argos-zero/raw_data/*'
+    dataset_path = '/home/argos/argos-zero/train_val.h5'
 
     parse_data.update_dataset(raw_data_folder,dataset_path)
 
     data = h5py.File(dataset_path)
     print(list(data.keys()))
-    ctx = mx.cpu()
+    ctx = mx.gpu()
     batch_size = 128
 
     def update_data():
@@ -38,8 +37,8 @@ def train(export_path):
     labels_v = data['val_y']
 
     diter = mx.io.NDArrayIter(inputs_t, labels_t, batch_size=batch_size, last_batch_handle='roll_over')
-    val_set_x = mx.nd.array(inputs_v).as_in_context(mx.cpu())
-    val_set_y = mx.nd.array(labels_v).as_in_context(mx.cpu())
+    val_set_x = mx.nd.array(inputs_v).as_in_context(ctx)
+    val_set_y = mx.nd.array(labels_v).as_in_context(ctx)
 
     def _conv3x3(channels, stride, in_channels, kernel_size, groups, padding):
         return gluon.nn.Conv2D(channels, kernel_size=kernel_size, strides=stride, padding=padding,
@@ -70,6 +69,7 @@ def train(export_path):
                 self.convs.add(gluon.nn.Conv2D(num_filters, 3, padding=1))
                 self.convs.add(gluon.nn.BatchNorm())
                 self.convs.add(gluon.nn.LeakyReLU(alpha=0.3))
+                self.convs.add(gluon.nn.BatchNorm())
 
                 for _ in range(num_blocks):
                     self.convs.add(BasicBlockV2(num_filters))
@@ -134,11 +134,11 @@ def train(export_path):
         _,_,pp,vp = net(x)
         vloss = value_loss(vp, vy)
         ploss = policy_loss(pp, py)
-        closs = (0.1 * vloss.mean() + ploss.mean())
+        closs = (vloss.mean() + ploss.mean())
 
-        val_closses.append(closs.as_in_context(mx.cpu()).asnumpy()[0])
-        val_vlosses.append(vloss.as_in_context(mx.cpu()).asnumpy()[0])
-        val_plosses.append(ploss.as_in_context(mx.cpu()).asnumpy()[0])
+        val_closses.append(closs.as_in_context(ctx).asnumpy()[0])
+        val_vlosses.append(vloss.as_in_context(ctx).asnumpy()[0])
+        val_plosses.append(ploss.as_in_context(ctx).asnumpy()[0])
 
     def wrap_iter(it):
         while True:
@@ -146,7 +146,7 @@ def train(export_path):
                 yield it.next()
             except StopIteration:
                 pred_val_set(val_set_x,val_set_y)
-                update_data()
+                print()
                 it.reset()
 
     def early_stopping(last = 3):
@@ -186,14 +186,14 @@ def train(export_path):
             vloss = value_loss(vp, vy)
             ploss = policy_loss(pp, py)
 
-            combined_loss = (0.1 * vloss.mean() + ploss.mean())
+            combined_loss = (vloss.mean() + ploss.mean())
             combined_loss.backward()
 
-        closses.append(combined_loss.as_in_context(mx.cpu()).asnumpy()[0])
-        vlosses.append(vloss.as_in_context(mx.cpu()).asnumpy()[0])
-        plosses.append(ploss.as_in_context(mx.cpu()).asnumpy()[0])
-        paccs.append((pp.argmax(axis=-1) == py.argmax(axis=-1)).mean().as_in_context(mx.cpu()).asnumpy()[0] * 100)
-        vaccs.append(((sigmoid(vp) > .5).flatten()[:, 0] == vy).mean().as_in_context(mx.cpu()).asnumpy()[0] * 100)
+        closses.append(combined_loss.as_in_context(ctx).asnumpy()[0])
+        vlosses.append(vloss.as_in_context(ctx).asnumpy()[0])
+        plosses.append(ploss.as_in_context(ctx).asnumpy()[0])
+        paccs.append((pp.argmax(axis=-1) == py.argmax(axis=-1)).mean().as_in_context(ctx).asnumpy()[0] * 100)
+        vaccs.append(((sigmoid(vp) > .5).flatten()[:, 0] == vy).mean().as_in_context(ctx).asnumpy()[0] * 100)
 
         trainer.step(batch_size)
 
@@ -203,10 +203,6 @@ def train(export_path):
         if early_stopping() or i == 1000000:
             print("Training stopped")
             break
-
-    np.mean(paccs[-1000:])
-
-    np.mean(vaccs[-1000:])
 
     uuid = str(uuid.uuid4())
 

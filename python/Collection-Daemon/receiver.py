@@ -30,6 +30,8 @@ class GameLogger:
         self.filename = filename
         self._init_h5()
 
+        self.schema = capnp.load('/home/argos/argos-zero/src/capnp/CapnpGame.capnp')
+
     def _init_socket(self, port):
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.bind(("localhost", PORT))
@@ -56,8 +58,6 @@ class GameLogger:
         gamerecord_dataset[current_id] = msg
         gamerecord_dataset.attrs[self.count_key] += 1
 
-        self.f.flush()
-        
         if self.limited_game_num <= gamerecord_dataset.attrs[self.count_key]:
             self.file_i += 1
             self.f.close()
@@ -71,6 +71,11 @@ class GameLogger:
                 client, address = self.server.accept()
                 msg = recvall(client, 4096 * 100)
                 print('Message from {}'.format(address))
+                try:
+                    self.schema.Game.from_bytes(msg)
+                except Exception as err:
+                    print(err)
+                    continue
                 self._write_h5(msg)
                 
         finally:
