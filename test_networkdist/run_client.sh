@@ -18,11 +18,15 @@ while true; do
 	if [ "$newwfile" != "$wfile" ]
 	then
 		# download
-		wget http://tonic.imp.fu-berlin.de/argos/$newwfile-0000.params -P $WEIGHTP
-		wget http://tonic.imp.fu-berlin.de/argos/$newwfile-symbol.json -P $WEIGHTP
+		if [ ! -f "$WEIGHTP/$newwfile-0000.params" ]; then
+			wget http://tonic.imp.fu-berlin.de/argos/$newwfile-0000.params -P $WEIGHTP
+		fi
+		if [ ! -f "$WEIGHTP/$newwfile-symbol.json" ]; then
+			wget http://tonic.imp.fu-berlin.de/argos/$newwfile-symbol.json -P $WEIGHTP
+		fi
 		# set new filename
 		wfile=$newwfile
 	fi 
 	# run selfplay with the newest weights
-	$SOURCES/selfplay -n $WEIGHTP/$wfile --tree-networkRollouts true --tree-trainingMode true
+	$SOURCES/selfplay -n $WEIGHTP/$wfile --tree-networkRollouts true --tree-trainingMode true --tree-randomizeFirstNMoves 10
 done

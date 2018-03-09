@@ -19,7 +19,7 @@ def recvall(sock, n):
 
 
 class GameLogger:
-    def __init__(self, port, filename, limited_game_num=1000):
+    def __init__(self, port, filename, limited_game_num=100):
         self.count_key = "count_id"
         self.dataset_key = "game_record"
         self.limited_game_num = limited_game_num
@@ -30,6 +30,8 @@ class GameLogger:
         self.filename = filename
         self._init_h5()
 
+        self.schema = capnp.load('/home/argos/argos-zero/src/capnp/CapnpGame.capnp')
+
     def _init_socket(self, port):
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.bind(("localhost", PORT))
@@ -37,14 +39,14 @@ class GameLogger:
         self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         
     def _init_h5(self):
-        file = "%s-%.4d.h5" % (self.filename, self.file_i)
+        file = "%s-%.6d.h5" % (self.filename, self.file_i)
         self.f = h5py.File(file, "a")
                 
         if self.dataset_key not in self.f.keys():
-             # find the datatype of the np.void(msg) for creating dataset in the next step
-            dt = np.dtype("V195880")
+            # find the datatype of the np.void(msg) for creating dataset in the next step
+            dt = np.dtype("V1000000")
             # create dataset according to the datasetkey and set limit for num of games/ num of records
-            gamerecord_dataset = self.f.create_dataset(self.dataset_key, (self.limited_game_num,) ,dtype=dt)
+            gamerecord_dataset = self.f.create_dataset(self.dataset_key, (self.limited_game_num,), dtype=dt)
             # initialize the attribute count_id
             gamerecord_dataset.attrs[self.count_key] = 0
         
@@ -56,8 +58,6 @@ class GameLogger:
         gamerecord_dataset[current_id] = msg
         gamerecord_dataset.attrs[self.count_key] += 1
 
-        self.f.flush()
-        
         if self.limited_game_num <= gamerecord_dataset.attrs[self.count_key]:
             self.file_i += 1
             self.f.close()
@@ -71,6 +71,11 @@ class GameLogger:
                 client, address = self.server.accept()
                 msg = recvall(client, 4096 * 100)
                 print('Message from {}'.format(address))
+                try:
+                    self.schema.Game.from_bytes(msg)
+                except Exception as err:
+                    print(err)
+                    continue
                 self._write_h5(msg)
                 
         finally:
