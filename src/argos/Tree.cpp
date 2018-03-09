@@ -126,7 +126,8 @@ void Tree::visitNode(Node* node) {
     node->position()->statistics().num_evaluations += 1;
 }
 
-void Tree::playout(std::atomic<bool>* keepRunning) {
+void Tree::playout(std::atomic<bool>* keepRunning)
+{
     moodycamel::ProducerToken token(_evaluationQueue);
     std::mt19937 randomEngine(std::time(0));
 
@@ -136,12 +137,10 @@ void Tree::playout(std::atomic<bool>* keepRunning) {
         playoutBoard.Load(_rootBoard);
 
         Node* node = _rootNode.get();
-        visitNode(node);
         trace.Push(node);
 
         while (node->isExpanded() && node->isEvaluated() && !(node->children())->empty()) {
             node = node->getBestUCTChild(randomEngine).get();
-            visitNode(node);
             playoutBoard.PlayLegal(playoutBoard.ActPlayer(), node->parentMove());
             trace.Push(node);
         }
@@ -153,25 +152,13 @@ void Tree::playout(std::atomic<bool>* keepRunning) {
         }
 
         // expand node
-        if (node->statistics().num_evaluations.load() >= _config.tree.expandAt) {
-            const bool isExpandingThread =
-                node->expand(*this, playoutBoard, _evaluationQueue, token);
-            if (isExpandingThread) {
-                if (node->isTerminal()) {
-                    updateStatistics(trace, node->statistics().playout_score.load());
-                } else {
-                    updateStatistics(trace, node->position()->statistics().value.load());
-                }
+        const bool isExpandingThread = node->expand(*this, playoutBoard, _evaluationQueue, token);
+        if (isExpandingThread) {
+            if (node->isTerminal()) {
+                updateStatistics(trace, node->statistics().playout_score.load());
             } else {
-                while (!trace.IsEmpty()) {
-                    Node* node = trace.PopTop();
-                    node->statistics().num_evaluations -= _config.tree.virtualPlayouts;
-                    node->position()->statistics().num_evaluations -= 1;
-                }
+                updateStatistics(trace, node->position()->statistics().value.load());
             }
-        } else {
-            assert(false);
-            updateStatistics(trace, node->position()->statistics().value.load());
         }
     } while (keepRunning->load());
 }
@@ -194,8 +181,7 @@ Player Tree::rollout(Board playoutBoard, ConcurrentNodeQueue& queue,
                 size_t posIdx;
                 if (v == Vertex::Pass()) {
                     posIdx = config::boardSize * config::boardSize;
-                    //probabilites.push_back(result.candidates[posIdx].prior);
-                    probabilites.push_back(0.00000001f);
+                    probabilites.push_back(0.f);
                 } else {
                     posIdx = v.GetRow() * config::boardSize + v.GetColumn();
                     probabilites.push_back(result.candidates[posIdx].prior);
@@ -257,7 +243,6 @@ void Tree::playMove(const Vertex& vertex) {
 
 void Tree::beginEvaluation() {
     if (!_rootNode->isExpanded()) {
-        visitNode(_rootNode.get());
         _rootNode->expand(*this, _rootBoard, _evaluationQueue, _token);
         NodeTrace traceCpy;
         traceCpy.Push(_rootNode.get());
@@ -297,9 +282,10 @@ void Tree::addDirichletNoise(const float amount, const float distribution) {
     }
 }
 
-void Tree::updateStatistics(NodeTrace& trace, float score) const {
+void Tree::updateStatistics(NodeTrace& trace, float score) {
     while (!trace.IsEmpty()) {
         Node* node = trace.PopTop();
+        visitNode(node);
         node->addEvaluation(score);
         node->statistics().num_evaluations -= (_config.tree.virtualPlayouts);
     }

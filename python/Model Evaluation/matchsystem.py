@@ -18,19 +18,22 @@ class MatchSystem(object):
         res = self.runMatch(self.second, self.first)
         wins[(res + 1) % 2] += 1
 
-    return wins
+    return {
+      str(self.first): wins[0],
+      str(self.second): wins[1]
+    }
 
   def runMatch(self, playerOne, playerTwo):
     if self.verbose:
       print "match started"
 
     blackP = Player(playerOne, "black")
-    # blackP.getOutput()
+    
     if self.verbose:
       print "black player started: " + str(playerOne)
 
     whiteP = Player(playerTwo, "white")
-    # whiteP.getOutput()
+    
 
     if self.verbose:
       print "white player started: " + str(playerTwo)

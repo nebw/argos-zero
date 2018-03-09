@@ -8,7 +8,6 @@ print "running " + str(numMatches) + " matches"
 print "will use the default ratings available in ./rating/ratings#"
 print "if this test fails you maybe have not installed GnuGo yet? apt-get install gnugo"
 playerOneParams = ["gnugo", "--mode", "gtp", "--boardsize", "9"]
-playerTwoParams = ["./argos_model/gtp", "-p",
-                   "./argos_model/agz_small_9x9", "-l", "./argos_model/agz_small_9x9.log"]
-test = RatingSystem(playerOneParams, playerTwoParams, numMatches=numMatches, filePath ="./rating")
+playerTwoParams = ["./argos_model/gtp", "-p","./argos_model/agz_small_9x9"]
+test = RatingSystem(playerOneParams, playerTwoParams, numMatches=numMatches)
 print test.run()

@@ -5,7 +5,7 @@ import ast
 
 
 class RatingSystem(MatchSystem):
-    def __init__(self, playerOneArgs, playerTwoArgs, numMatches=1, verbose=True, fileName="ratings", filePath = "./"):
+    def __init__(self, playerOneArgs, playerTwoArgs, numMatches=1, verbose=True, fileName="ratings", filePath = "./rating"):
         super(RatingSystem, self).__init__(playerOneArgs, playerTwoArgs, verbose)
         self.numMatches = numMatches
         self.args = [playerOneArgs, playerTwoArgs]
@@ -19,7 +19,8 @@ class RatingSystem(MatchSystem):
 
     def run(self):
         endResults = self.runMatches(self.numMatches)
-        ratings = self.ratingManager.updateRatings(self.args, endResults)
+        wins = [endResults[str(self.args[0])], endResults[str(self.args[1])]]
+        ratings = self.ratingManager.updateRatings(self.args, wins)
         if self.verbose:
             print "\n -------------\ndone!"
             print "total wins: " + str(endResults)

@@ -1,7 +1,6 @@
 #!/bin/bash
 # Paths
-readonly SOURCES=/home/franziska/Documents/Master/sem1/argos-zero-build/src
-readonly LOGPATH=/home/franziska/Documents/Master/sem1/argos-dbg.log
+readonly SOURCES=/root/argos-build/src
 readonly WEIGHTP=.
 wfile="foo"
 
@@ -19,11 +18,15 @@ while true; do
 	if [ "$newwfile" != "$wfile" ]
 	then
 		# download
-		wget http://tonic.imp.fu-berlin.de/argos/$newwfile-0000.params -P $WEIGHTP
-		wget http://tonic.imp.fu-berlin.de/argos/$newwfile-symbol.json -P $WEIGHTP
+		if [ ! -f "$WEIGHTP/$newwfile-0000.params" ]; then
+			wget http://tonic.imp.fu-berlin.de/argos/$newwfile-0000.params -P $WEIGHTP
+		fi
+		if [ ! -f "$WEIGHTP/$newwfile-symbol.json" ]; then
+			wget http://tonic.imp.fu-berlin.de/argos/$newwfile-symbol.json -P $WEIGHTP
+		fi
 		# set new filename
 		wfile=$newwfile
 	fi 
 	# run selfplay with the newest weights
-	$SOURCES/selfplay -p $WEIGHTP/$wfile-0000.params -l $LOGPATH
+	$SOURCES/selfplay -n $WEIGHTP/$wfile --tree-networkRollouts true --tree-trainingMode true --tree-randomizeFirstNMoves 10 --engine-resignThreshold thres
 done
