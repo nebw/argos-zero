@@ -4,8 +4,10 @@ import sys
 import uuid
 from datetime import datetime
 import AGZtraining
-sys.path.append('./Model Evaluation')
+sys.path.append('./Model_Evaluation')
 from matchsystem import MatchSystem
+sys.path.append('./Dynamic_Thresholding')
+from dynamic_thresholding import get_games_from_hdf5, compute_threshold
 
 
 # initialisation
@@ -18,6 +20,8 @@ path_to_gtp = '/home/argos/build/argos/src/gtp'
 file_used_for_last_training = "game_record-0000.h5"
 threshold = 25000 #games that we need to trigger training
 
+path_to_schema = "../src/capnp/CapnpGame.capnp"
+schema = capnp.load(path_to_schema).Game
 
 def new_is_better(old_network, new_network, numMatches=400):
     match = MatchSystem(playerOne = old_network, playerTwo = new_network)
@@ -67,6 +71,10 @@ while True:
         new_network_params = [path_to_gtp, new_network, '5']
         
         if new_is_better(old_network_params, new_network_params):
+            # compute the resign threshold
+            games = get_games_from_hdf5(training_list, schema)
+            resign_threshold = compute_threshold(games, 0.05)
+            
             # change the uuid in the best-weights-file
             best_weights = open(server_path + 'best-weights', 'w')
             best_weights.write(new_network + ';' + resign_threshold)
