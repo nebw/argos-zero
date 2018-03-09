@@ -36,19 +36,21 @@ file_list.sort()
 
 while True:
     num_of_games = 0
+    training_list = []
     # the last file is still in progress, new games are appended.
     # we therefore use the before-last game
     for file_name in file_list[-2::-1]:
         if file_name == file_used_for_last_training:
             break
-        f = h5py.File(hd5_folder_path+file_name)
+        path = hd5_folder_path + file_name
+        f = h5py.File(path)
         num = f["game_record"].attrs["count_id"]
         num_of_games += num
+        training_list.append(path)
 
     if num_of_games > threshold:
-
         # training returns a uuid
-        new_network = AGZtraining.train(export_path = server_path)
+        new_network = AGZtraining.train(export_path=server_path, training_list=training_list)
 
         file_used_for_last_training = file_list[-2]
 
