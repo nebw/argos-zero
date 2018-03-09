@@ -13,7 +13,7 @@ hd5_folder_path = "./testhd5"
 
 server_path = '/var/www/html/argos/'
 
-path_to_gtp = './argos_model/gtp'
+path_to_gtp = '/home/argos/build/argos/src/gtp'
 
 file_used_for_last_training = "game_record-0000.h5"
 threshold = 25000 #games that we need to trigger training
