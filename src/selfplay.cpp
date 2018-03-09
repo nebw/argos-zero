@@ -28,7 +28,7 @@ int main(int argc, const char** argv) {
     tree.setKomi(5.5);
     std::cout << tree.rootBoard().ToAsciiArt() << std::endl;
 
-    float resignationThreshold = 0.01f;
+    float resignationThreshold = config.engine.resignThreshold;
 
     bool noResignMode = false;
     if (collect_data) {
@@ -39,7 +39,7 @@ int main(int argc, const char** argv) {
 
     Player winner = Player::Invalid();
     while ((!tree.rootBoard().BothPlayerPass())) {
-        tree.evaluate(600);
+        tree.evaluate(1600);
         const auto winrate = tree.rootNode()->winrate(tree.rootBoard().ActPlayer());
 
         if ((winrate < resignationThreshold) && !(noResignMode)) {

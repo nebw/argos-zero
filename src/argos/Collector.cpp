@@ -212,8 +212,6 @@ void Collector::sendData(const Tree& tree, bool noResignMode) {
         writeMessageToFd(sockfd, message);
     }
 
-
-
-//     // close socket
+    //close socket
      close(sockfd);
 }

@@ -18,6 +18,6 @@ struct Game {
     network1 @4 :Text;                      # network that played player one in the selfplay
     network2 @5 :Text;                      # network that played player two in the selfplay
     boardsize @6: UInt8;                    # size of the board, 19 in real go, anything smaller to speed up training
-    noresignmode @7: Bool;                  # has the game been ended through resignation of one of the players
+    noresignmode @7: Bool;                  # is resignation allowed during the game
 
 }
