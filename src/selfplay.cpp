@@ -18,22 +18,20 @@ int main(int argc, const char** argv) {
     auto config = argos::config::parse(argc, argv);
 
     // if network variable set: collect information
-    bool collect_data = config::tree::trainingMode;
+    bool collect_data = config.tree.trainingMode;
 
-    const char* server = "127.0.0.1";
-    int port = 1345;
     boost::optional<Collector> collector;
 
-    if (collect_data) { collector = Collector(config::server, config::port); }
+    if (collect_data) { collector = Collector(config.server.c_str(), config.port); }
 
     Tree tree(config);
     tree.setKomi(5.5);
     std::cout << tree.rootBoard().ToAsciiArt() << std::endl;
 
-    float resignationThreshold = 0.025f;
+    float resignationThreshold = config.engine.resignThreshold;
 
     bool noResignMode = false;
-    if (config::tree::trainingMode) {
+    if (collect_data) {
         std::default_random_engine generator;
         std::uniform_real_distribution<double> distribution(0.0, 1.0);
         if (distribution(generator) < 0.1f) { noResignMode = true; }
@@ -41,7 +39,7 @@ int main(int argc, const char** argv) {
 
     Player winner = Player::Invalid();
     while ((!tree.rootBoard().BothPlayerPass())) {
-        tree.evaluate(100);
+        tree.evaluate(1600);
         const auto winrate = tree.rootNode()->winrate(tree.rootBoard().ActPlayer());
 
         if ((winrate < resignationThreshold) && !(noResignMode)) {
@@ -69,6 +67,5 @@ int main(int argc, const char** argv) {
     // convert what we collected to capnp messages
     // only possible here and not before because we do not know the number of moves in advance
     if (collect_data) { collector.get().sendData(tree, noResignMode); }
-
 }
 

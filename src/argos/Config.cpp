@@ -17,8 +17,8 @@ namespace argos
         namespace pt = boost::property_tree;
 
         std::string usage(const char *programPath,
-                          const po::options_description &required,
-                          const po::options_description &optional);
+                          const po::options_description &optional,
+                          const po::positional_options_description& positional);
 
         bool parseDeviceType(const std::string &deviceType, MXNET_DEVICE_TYPE &parsed);
 
@@ -27,20 +27,21 @@ namespace argos
             po::options_description options;
             po::options_description required("required options");
             po::options_description optional("optional options");
+            po::positional_options_description positional;
             po::variables_map vm;
 
             required.add_options()
-                    ("networkPath,p", po::value<std::string>()->required(), "path to trained model")
-                    ("logfilePath,l", po::value<std::string>()->required(), "path where log file should be stored");
+                    ("networkPath,n", po::value<std::string>()->required(), "path to trained model");
 
             //TODO: add better params description
             optional.add_options()
                     ("help,h", "print this message and exit")
                     ("config,c", po::value<std::string>(), "path to config file")
+                    ("logfilePath,l", po::value<std::string>(), "path where log file should be stored\n"
+                            "by default logs are stored in `<timestamp>.log` file in the same directory as network")
                     ("deviceType,d", po::value<std::string>(), "set device type (CPU, GPU, CPU_PINNED)")
                     ("server,s", po::value<std::string>(), "set server ip, default is: 127.0.0.1")
-                    ("port", po::value<int>(), "set port")
-                    ("tree-batchSize", po::value<size_t>(), "set batchSize")
+                    ("port,p", po::value<int>(), "set port")
                     ("tree-numEvaluationThreads", po::value<size_t>(), "set numEvaluationThreads")
                     ("tree-numThreads", po::value<size_t>(), "set numThreads")
                     ("tree-randomizeFirstNMoves", po::value<size_t>(), "set randomizeFirstNMoves")
@@ -56,6 +57,8 @@ namespace argos
                     ("engine-totalTime", po::value<int>(), "set totalTime in milliseconds")
                     ("engine-resignThreshold", po::value<float>(), "set resignThreshold");
 
+            positional.add("networkPath", 1);
+
             options
                     .add(required)
                     .add(optional);
@@ -63,10 +66,12 @@ namespace argos
             {
                 po::store(po::command_line_parser(argc, argv)
                                   .options(options)
+                                  .positional(positional)
                                   .run(), vm);
 
                 if (vm.count("help")) {
-                    std::cout << usage(argv[0], required, optional) << std::endl << options << std::endl;
+                    std::cout << usage(argv[0], optional, positional)
+                              << std::endl << options << std::endl;
                     exit(EXIT_SUCCESS);
                 }
 
@@ -74,7 +79,8 @@ namespace argos
             }
             catch (po::required_option&)
             {
-                std::cout << usage(argv[0], required, optional) << std::endl << options << std::endl;
+                std::cout << usage(argv[0], optional, positional)
+                          << std::endl << options << std::endl;
                 exit(EXIT_FAILURE);
             }
             catch (po::error& e)
@@ -83,8 +89,13 @@ namespace argos
                 exit(EXIT_FAILURE);
             }
 
-            auto configBuilder = Config::Builder(vm["networkPath"].as<std::string>(),
-                                                 vm["logfilePath"].as<std::string>());
+            auto networkPath = fs::path(vm["networkPath"].as<std::string>());
+            auto currentTimestamp = std::chrono::system_clock::now().time_since_epoch().count();
+            auto defaultLogfileName = fs::path(std::to_string(currentTimestamp) + ".log");
+            auto logfilePath = vm.count("logfilePath") ? fs::path(vm["logfilePath"].as<std::string>())
+                                                       : networkPath.parent_path() / defaultLogfileName;
+
+            auto configBuilder = Config::Builder(networkPath, logfilePath);
             auto treeBuilder = Tree::Builder();
             auto timeBuilder = Time::Builder();
             auto engineBuilder = Engine::Builder();
@@ -104,6 +115,7 @@ namespace argos
                         MXNET_DEVICE_TYPE deviceType;
 
                         auto configParser = tree.get_child("config");
+                        // TODO note: logfilePath will not be parsed from config file
                         configBuilder.server(configParser.get<std::string>("server"));
                         configBuilder.port(configParser.get<int>("port"));
 
@@ -118,7 +130,6 @@ namespace argos
                         }
 
                         auto treeParser = configParser.get_child("tree");
-                        treeBuilder.batchSize(treeParser.get<size_t>("batch_size"));
                         treeBuilder.numEvaluationThreads(treeParser.get<size_t>("num_evaluation_threads"));
                         treeBuilder.numThreads(treeParser.get<size_t>("num_threads"));
                         treeBuilder.randomizeFirstNMoves(treeParser.get<size_t>("randomize_first_n_moves"));
@@ -183,8 +194,6 @@ namespace argos
             if (vm.count("server")) configBuilder.server(vm["server"].as<std::string>());
             if (vm.count("port")) configBuilder.port(vm["port"].as<int>());
             /* deviceType defined above */
-            if (vm.count("boardSize")) configBuilder.boardSize(vm["boardSize"].as<size_t>());
-            if (vm.count("tree-batchSize")) treeBuilder.batchSize(vm["tree-batchSize"].as<size_t>());
             if (vm.count("tree-numEvaluationThreads")) treeBuilder.numThreads(vm["tree-numEvaluationThreads"].as<size_t>());
             /* tree-numThreads defined above */
             if (vm.count("tree-randomizeFirstNMoves")) treeBuilder.randomizeFirstNMoves(vm["tree-randomizeFirstNMoves"].as<size_t>());
@@ -211,10 +220,8 @@ namespace argos
             cout << "config.networkPath: " << config.networkPath << endl;
             cout << "config.logFilePath: " << config.logFilePath << endl;
             cout << "config.deviceType: " << config.deviceType << endl;
-            cout << "config.boardSize: " << config.boardSize << endl;
             cout << "config.server: " << config.server << endl;
             cout << "config.port: " << config.port << endl;
-            cout << "config.tree.batchSize: " << config.tree.batchSize << endl;
             cout << "config.tree.numEvaluationThreads: " << config.tree.numEvaluationThreads << endl;
             cout << "config.tree.numThreads: " << config.tree.numThreads << endl;
             cout << "config.tree.randomizeFirstNMoves: " << config.tree.randomizeFirstNMoves << endl;
@@ -235,16 +242,19 @@ namespace argos
         }
 
         std::string usage(const char *programPath,
-                          const po::options_description &required,
-                          const po::options_description &optional)
+                          const po::options_description &optional,
+                          const po::positional_options_description& positional)
         {
             std::stringstream ss;
             std::string programName = fs::path(programPath).stem().string();
 
             ss << "usage: "
-               << programName
-               << (required.options().empty() ? "" : " [required options]")
-               << (optional.options().empty() ? "" : " [optional options]");
+               << programName;
+
+            for (unsigned i = 0; i < positional.max_total_count(); i++)
+                ss << " " << positional.name_for_position(i);
+
+            ss << (optional.options().empty() ? "" : " [optional options]");
 
             return ss.str();
         }

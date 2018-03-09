@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <config>
     <tree>
-        <batch_size>8</batch_size>
         <num_evaluation_threads>2</num_evaluation_threads>
         <num_threads>4</num_threads>
         <randomize_first_n_moves>10</randomize_first_n_moves>

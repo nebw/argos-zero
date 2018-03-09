@@ -24,7 +24,7 @@ bool Node::expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
         queue.enqueue(token, std::move(job));
         const Network::Result result = future.get();
 
-        if (config::tree::networkRollouts) {
+        if (_config.networkRollouts) {
             const float rolloutValue = tree.rollout(board, queue, token).ToScore();
             _position->statistics().value = rolloutValue;
         } else {
@@ -41,25 +41,28 @@ bool Node::expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
             tempBoard.PlayLegal(actPlayer, vertex);
 
             auto position = tree.maybeAddPosition(tempBoard);
-            auto child = std::make_shared<Node>(position, vertex);
+            auto child = std::make_shared<Node>(position, vertex, _config);
 
             size_t posIdx;
             if (vertex == Vertex::Pass()) {
                 posIdx = config::boardSize * config::boardSize;
+            	child->setPrior(0.f);
             } else {
                 posIdx = vertex.GetRow() * config::boardSize + vertex.GetColumn();
+            	child->setPrior(result.candidates[posIdx].prior);
             }
-            child->setPrior(result.candidates[posIdx].prior);
 
             children.push_back(child);
         }
 
-        if (legalMoves.empty()) { _isTerminalNode = true; }
+        if (legalMoves.empty()) {
+            _isTerminalNode = true;
+            _statistics.playout_score = static_cast<float>(board.TrompTaylorWinner().ToScore());
+        }
     } else {
         _isTerminalNode = true;
+        _statistics.playout_score = static_cast<float>(board.TrompTaylorWinner().ToScore());
     }
-
-    _statistics.playout_score = {static_cast<float>(board.TrompTaylorWinner().ToScore())};
 
     _children = children;
     return true;
@@ -67,7 +70,9 @@ bool Node::expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
 
 float Node::getPrior() { return statistics().prior; }
 
-void Node::setPrior(float prior) { _statistics.prior = prior; }
+void Node::setPrior(float prior) {
+    _statistics.prior = prior;
+}
 
 float Node::getUCTValue(Node& parent, std::mt19937& engine) const {
     const float winRate = winrate(parent.position()->actPlayer());
@@ -77,17 +82,17 @@ float Node::getUCTValue(Node& parent, std::mt19937& engine) const {
     assert(parentVisits > 0);
 
     const float prior = _statistics.prior.load();
-    return winRate + config::tree::priorC * prior * (sqrt(parentVisits) / (1 + nodeVisits));
+    return winRate + _config.priorC * prior * (sqrt(parentVisits) / (1 + nodeVisits));
 }
 
 float Node::getBetaValue(Node& parent, std::mt19937& engine) const {
-    const float numPriorEvals = 10;
+    const float numPriorEvals = 20;
     const float prior = _statistics.prior.load();
     const float winRate = winrate(parent.position()->actPlayer());
     const float nodeVisits = static_cast<float>(_statistics.num_evaluations.load());
 
-    auto beta = beta_distribution<float>(winRate * nodeVisits + numPriorEvals * prior,
-                                          (1.f - winRate) * nodeVisits);
+    auto beta = beta_distribution<float>(winRate * nodeVisits + numPriorEvals * prior + 1,
+                                          (1.f - winRate) * nodeVisits + 1);
 
     return beta(engine);
 }

@@ -21,7 +21,6 @@
 #include <netinet/tcp.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <zconf.h>
 #include <cstdio>
 #include <cstring>
 
@@ -193,6 +192,7 @@ void Collector::sendData(const Tree& tree, bool noResignMode) {
     game.setResult(res);
 
     // for testing purpose write capnp files to disk, not to network
+/*
     FILE* capnp_file;
     std::string path = "/home/franziska/";
     std::string filename = boost::lexical_cast<std::string>(id);
@@ -202,17 +202,16 @@ void Collector::sendData(const Tree& tree, bool noResignMode) {
         writeMessageToFd(fileno(capnp_file), message);
         fclose(capnp_file);
     }
+*/
 
 
 
     std::cout << sizeof(message) << std::endl;
-//    // if valid file descriptor exists
-//    if(sockfd != -1){
-//        writeMessageToFd(sockfd, message);
-//    }
+    // if valid file descriptor exists
+    if(sockfd != -1){
+        writeMessageToFd(sockfd, message);
+    }
 
-
-
-//     // close socket
-//     close(sockfd);
+    //close socket
+     close(sockfd);
 }
