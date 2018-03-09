@@ -13,10 +13,19 @@ import parse_data
 import uuid
 
 #data = h5py.File('/home/julianstastny/Documents/Softwareprojekt/argos-zero/python/train_val.h5','r')
-def train(export_path, raw_data_path, dataset_path):
-    boardsize = 9
-    parse_data.update_dataset(raw_data_path, dataset_path, boardsize=boardsize,
-                    val_prob=10, num_states=125000)
+def train(export_path, training_list, dataset_path, boardsize=9,
+            val_prob=10, num_states=125000):
+    """ export_path: net will be saved there
+    training_list: list of hd5 files with the raw data / cpnp messages, should be
+    descending sorted
+    dataset_path: path to the dataset; if it does not exist if will be created there
+    boardsize: _
+    val_prob: every val_probth game will be chosen for validation, CHANGES ONLY
+    IF DATASET IS NEWLY CREATED
+    num_states: size of dataset CHANGES ONLY IF DATASET IS NEWLY CREATED
+    """
+    parse_data.update_dataset(training_list, dataset_path, boardsize=boardsize,
+                    val_prob=val_prob, num_states=num_states)
 
     data = h5py.File(dataset_path)
     print(list(data.keys()))
@@ -26,7 +35,8 @@ def train(export_path, raw_data_path, dataset_path):
 
     def update_data():
         data.close()
-        parse_data.update_dataset(raw_data_path,dataset_path)
+        parse_data.update_dataset(training_list, dataset_path,
+            boardsize=boardsize, val_prob=val_prob, num_states=num_states)
         data = h5py.File(dataset_path)
         inputs_t = data['train_x']
         labels_t = data['train_y']
