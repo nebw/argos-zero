@@ -12,9 +12,7 @@ import sys
 import parse_data
 import uuid
 
-#data = h5py.File('/home/julianstastny/Documents/Softwareprojekt/argos-zero/python/train_val.h5','r')
-def train(export_path, training_list, dataset_path, boardsize=9,
-            val_prob=10, num_states=125000):
+def train(export_path, training_list, dataset_path, boardsize, val_prob, num_states):
     """ export_path: net will be saved there
     training_list: list of hd5 files with the raw data / cpnp messages, should be
     descending sorted
@@ -29,7 +27,7 @@ def train(export_path, training_list, dataset_path, boardsize=9,
 
     data = h5py.File(dataset_path)
     print(list(data.keys()))
-    ctx = mx.cpu()
+    ctx = mx.gpu()
     batch_size = 128
     uuid_ = str(uuid.uuid4())
 
@@ -123,7 +121,8 @@ def train(export_path, training_list, dataset_path, boardsize=9,
     value_loss = gluon.loss.SigmoidBCELoss()
     value_loss.hybridize()
 
-    trainer = gluon.Trainer(net.collect_params(), 'NAG', {'learning_rate': .1, 'momentum': .9, 'wd': 1e-4})
+    #trainer = gluon.Trainer(net.collect_params(), 'NAG', {'learning_rate': .1, 'momentum': .9, 'wd': 1e-4})
+    trainer = gluon.Trainer(net.collect_params(), 'Adam', {'learning_rate': .001, 'wd': 1e-4})
 
     def rmean(series, win=1000):
         return np.mean(series[-win:])
@@ -146,7 +145,7 @@ def train(export_path, training_list, dataset_path, boardsize=9,
         _,_,pp,vp = net(x)
         vloss = value_loss(vp, vy)
         ploss = policy_loss(pp, py)
-        closs = (vloss.mean() + ploss.mean())
+        closs = (.5 * vloss.mean() + ploss.mean())
 
         val_closses.append(closs.as_in_context(ctx).asnumpy()[0])
         val_vlosses.append(vloss.as_in_context(ctx).asnumpy()[0])
@@ -203,7 +202,7 @@ def train(export_path, training_list, dataset_path, boardsize=9,
             vloss = value_loss(vp, vy)
             ploss = policy_loss(pp, py)
 
-            combined_loss = (vloss.mean() + ploss.mean())
+            combined_loss = (.5 * vloss.mean() + ploss.mean())
             combined_loss.backward()
 
         closses.append(combined_loss.as_in_context(ctx).asnumpy()[0])
@@ -217,8 +216,8 @@ def train(export_path, training_list, dataset_path, boardsize=9,
         sys.stdout.write('\r{}: C:{:.3f}, V:{:.3f} ({:.1f}%), P:{:.3f} ({:.1f}%), ValC {:.3f}'.format(
             i, rmean(closses), rmean(vlosses), rmean(vaccs), rmean(plosses), rmean(paccs),val_closses[-1]))
 
-        if early_stopping() or i == 1000000:
-            print("Overfitting detected")
+        if early_stopping() or i == 100000:
+            print("\nOverfitting detected")
             break
 
     print("Training stopped")

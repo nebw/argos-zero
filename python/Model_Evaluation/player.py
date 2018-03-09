@@ -7,16 +7,17 @@ class Player(object):
       self.enemyColor = "white" if color == "black" else "black"
 
     def runCommand(self, cmd):
-			self.process.stdin.write(cmd + '\n')
+        self.process.stdin.write((cmd + '\n').encode('utf-8'))
 
     def getLineOfOutput(self):
-			return self.process.stdout.readline()
+        return self.process.stdout.readline()
 
     def getOutput(self):
-      output = ""
+      output = b""
       line = self.getLineOfOutput()
+      print(line)
       while not line == "\n":
-        output += line + "\n"
+        output += line + b"\n"
         line = self.getLineOfOutput()
       
       self.checkReturnedValue(output)

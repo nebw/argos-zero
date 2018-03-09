@@ -3,7 +3,7 @@ from player import Player
 import time
 
 class MatchSystem(object):
-  def __init__(self, firstPlayer, secondPlayer, verbose = False):
+  def __init__(self, firstPlayer, secondPlayer, verbose = True):
     self.first = firstPlayer
     self.second = secondPlayer
     self.verbose = verbose
@@ -25,28 +25,28 @@ class MatchSystem(object):
 
   def runMatch(self, playerOne, playerTwo):
     if self.verbose:
-      print "match started"
+      print("match started")
 
     blackP = Player(playerOne, "black")
     
     if self.verbose:
-      print "black player started: " + str(playerOne)
+      print("black player started: " + str(playerOne))
 
     whiteP = Player(playerTwo, "white")
     
 
     if self.verbose:
-      print "white player started: " + str(playerTwo)
+      print("white player started: " + str(playerTwo))
 
     match = Match(blackP, whiteP)
     res = match.run()
     
     if self.verbose:
-      print "match done"
+      print("match done")
       if res == 0:
-        print "black won ! " + str(playerOne)
+        print("black won ! " + str(playerOne))
       else:
-        print "white won ! " + str(playerTwo)
+        print("white won ! " + str(playerTwo))
 
     blackP.terminate()
     whiteP.terminate()

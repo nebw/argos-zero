@@ -97,7 +97,7 @@ def compute_threshold(games, max_fn_rate):
     white = get_winrates_for_games_won_by_player(games, 0)
     dataset = black + white
 
-    thresholds = np.linspace(0, 0.1, num=1000)
+    thresholds = np.linspace(0, 0.25, num=250)
         
     results = np.array([find_fn_count(threshold, dataset) for threshold in thresholds])
     results = results / len(dataset)

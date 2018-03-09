@@ -9,8 +9,7 @@ sys.path.append('./../src/capnp')
 import CapnpGame_capnp
 
 
-def write_in_dataset(dataset, training_list, boardsize=9, val_prob=10,
-    force_full_write=True):
+def write_in_dataset(dataset, training_list, boardsize, val_prob, force_full_write=True):
     """
     TODO: make code nice and readable
     val_prob: every val_probth game will be chosen for validation
@@ -26,8 +25,7 @@ def write_in_dataset(dataset, training_list, boardsize=9, val_prob=10,
     #paths.reverse()
     print("Writing data from ", paths)
 
-    total_written=[0,0]
-
+    total_written=[0, 0]
 
     #latest_id_read = dataset.attrs["latest_id_read"]
     #
@@ -49,6 +47,7 @@ def write_in_dataset(dataset, training_list, boardsize=9, val_prob=10,
                 #    raw_data.close()
                 #    return
 
+                print(train_x.shape, total_written)
                 if total_written[0] >= train_x.shape[0] and total_written[1] >= val_x.shape[0]:
                     raw_data.close()
                     return
@@ -88,8 +87,7 @@ def write_in_dataset(dataset, training_list, boardsize=9, val_prob=10,
 
     return
 
-def update_dataset(raw_data_folder, dataset_path, boardsize=9, val_prob=10,
-                    num_states=125000):
+def update_dataset(raw_data_folder, dataset_path, boardsize, val_prob, num_states):
     """
     raw_data_folder: path to raw_data with .h5 file with cpnp messages
     dataset_path: path to dataset

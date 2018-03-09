@@ -21,12 +21,12 @@ class Referee(Player):
       try:
         self.applyMove(pl, move)
       except ValueError:
-        print "illegal move, other player wins"
+        print("illegal move, other player wins")
         return (currentPlayer + 1) % 2
       currentPlayer = (currentPlayer + 1) % 2
     
     # get result
     self.runCommand("estimate_score")
     score = self.getOutput()
-    print score
+    print(score)
     return 0 if "B" in score else 1
