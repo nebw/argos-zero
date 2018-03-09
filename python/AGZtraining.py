@@ -10,18 +10,19 @@ import mxnet as mx
 from mxnet import nd, autograd, gluon
 import sys
 import parse_data
+import uuid
 
 #data = h5py.File('/home/julianstastny/Documents/Softwareprojekt/argos-zero/python/train_val.h5','r')
 def train(export_path, raw_data_path, dataset_path):
     boardsize = 9
-    parse_data.update_dataset(raw_data_folder, dataset_path, boardsize=boardsize,
+    parse_data.update_dataset(raw_data_path, dataset_path, boardsize=boardsize,
                     val_prob=10, num_states=125000)
 
     data = h5py.File(dataset_path)
     print(list(data.keys()))
-    ctx = mx.gpu()
+    ctx = mx.cpu()
     batch_size = 128
-    uuid = str(uuid.uuid4())
+    uuid_ = str(uuid.uuid4())
 
     def update_data():
         data.close()
@@ -150,10 +151,10 @@ def train(export_path, raw_data_path, dataset_path):
 
                 # if new net has smaller val loss -> save
                 if val_closses[-1]<val_closses[-2]:
-                    net.export(export_path + uuid)
+                    net.export(export_path + uuid_)
                 print()
                 it.reset()
-                return
+
 
     def early_stopping(last = 3):
         if len(val_closses) >= 3:
@@ -207,7 +208,8 @@ def train(export_path, raw_data_path, dataset_path):
             i, rmean(closses), rmean(vlosses), rmean(vaccs), rmean(plosses), rmean(paccs),val_closses[-1]))
 
         if early_stopping() or i == 1000000:
+            print("Overfitting detected")
             break
 
     print("Training stopped")
-    return uuid
+    return uuid_

@@ -21,7 +21,7 @@ def write_in_dataset(dataset, raw_data_folder, boardsize=9, val_prob=10,
     train_y = dataset['train_y']
     val_x = dataset['val_x']
     val_y = dataset['val_y']
-
+    print(sorted(glob.glob(raw_data_folder)))
     paths = sorted(glob.glob(raw_data_folder))[:-1]
     paths.reverse()
     print("Writing data from ", paths)
