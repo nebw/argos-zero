@@ -130,9 +130,6 @@ def train(export_path, training_list, dataset_path, best_network_path, boardsize
     value_loss = gluon.loss.SigmoidBCELoss()
     value_loss.hybridize()
 
-    #trainer = gluon.Trainer(net.collect_params(), 'NAG', {'learning_rate': .1, 'momentum': .9, 'wd': 1e-4})
-    trainer = gluon.Trainer(net.collect_params(), 'Adam', {'learning_rate': .001, 'wd': 1e-4})
-
     def rmean(series, win=1000):
         return np.mean(series[-win:])
 
@@ -146,6 +143,10 @@ def train(export_path, training_list, dataset_path, best_network_path, boardsize
     val_vlosses = []
     val_plosses = []
 
+    best_val_loss = np.finfo(np.float64).max
+    num_loss_worse = 0 
+    early_stopping_eps = 0.001
+
     def pred_val_set(x,y):
         # Predict Validation set and append losses
         py = y[:, :(boardsize*boardsize+1)]
@@ -156,7 +157,14 @@ def train(export_path, training_list, dataset_path, best_network_path, boardsize
         ploss = policy_loss(pp, py)
         closs = (.5 * vloss.mean() + ploss.mean())
 
-        val_closses.append(closs.as_in_context(ctx).asnumpy()[0])
+        closs = closs.as_in_context(ctx).asnumpy()[0]
+        if closs + early_stopping_eps < best_val_loss:
+            best_val_loss = closs
+            num_loss_worse = 0
+        else:
+            num_loss_worse += 1
+
+        val_closses.append(closs)
         val_vlosses.append(vloss.as_in_context(ctx).asnumpy()[0])
         val_plosses.append(ploss.as_in_context(ctx).asnumpy()[0])
 
@@ -166,17 +174,18 @@ def train(export_path, training_list, dataset_path, best_network_path, boardsize
                 yield it.next()
             except StopIteration:
                 pred_val_set(val_set_x,val_set_y)
+                print()
 
                 # if new net has smaller val loss -> save
-                if val_closses[-1]<val_closses[-2]:
+                if num_loss_worse == 0:
+                    print('New best validation loss, saving model')
                     net.export(export_path + uuid_)
-                print()
                 it.reset()
 
 
-    def early_stopping(last = 3):
-        if len(val_closses) >= 3:
-            return val_closses[-3]<val_closses[-2] and val_closses[-2]<val_closses[-1]
+    def early_stopping(last=3):
+        if num_loss_worse == last:
+            return True
         return False
 
     def random_augmentation(x,y):
