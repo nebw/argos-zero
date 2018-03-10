@@ -46,11 +46,10 @@ bool Node::expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
             size_t posIdx;
             if (vertex == Vertex::Pass()) {
                 posIdx = config::boardSize * config::boardSize;
-            	child->setPrior(0.f);
             } else {
                 posIdx = vertex.GetRow() * config::boardSize + vertex.GetColumn();
-            	child->setPrior(result.candidates[posIdx].prior);
             }
+            child->setPrior(result.candidates[posIdx].prior);
 
             children.push_back(child);
         }
@@ -70,9 +69,7 @@ bool Node::expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
 
 float Node::getPrior() { return statistics().prior; }
 
-void Node::setPrior(float prior) {
-    _statistics.prior = prior;
-}
+void Node::setPrior(float prior) { _statistics.prior = prior; }
 
 float Node::getUCTValue(Node& parent, std::mt19937&) const {
     const float winRate = winrate(parent.position()->actPlayer());
@@ -91,8 +88,9 @@ float Node::getBetaValue(Node& parent, std::mt19937& engine) const {
     const float winRate = winrate(parent.position()->actPlayer());
     const float nodeVisits = static_cast<float>(_statistics.num_evaluations.load());
 
-    auto beta = beta_distribution<float>(winRate * nodeVisits + numPriorEvals * prior,
-                                         (1.f - winRate) * nodeVisits + numPriorEvals * (1.f - prior));
+    auto beta =
+        beta_distribution<float>(winRate * nodeVisits + numPriorEvals * prior,
+                                 (1.f - winRate) * nodeVisits + numPriorEvals * (1.f - prior));
 
     return beta(engine);
 }
