@@ -17,32 +17,32 @@
 int main(int argc, const char** argv) {
     auto config = argos::config::parse(argc, argv);
 
-    // if network variable set: collect information
     bool collect_data = config.tree.trainingMode;
-
     boost::optional<Collector> collector;
-
     if (collect_data) { collector = Collector(config.server.c_str(), config.port); }
+
+    bool noResignMode = false;
+    float resignationThreshold = config.engine.resignThreshold;
+    if (collect_data) {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<> dis(0., 1.);
+        if (dis(gen) < 0.1f) {
+            noResignMode = true;
+            resignationThreshold = .01f;
+        }
+    }
 
     Tree tree(config);
     tree.setKomi(5.5);
     std::cout << tree.rootBoard().ToAsciiArt() << std::endl;
-
-    float resignationThreshold = config.engine.resignThreshold;
-
-    bool noResignMode = false;
-    if (collect_data) {
-        std::default_random_engine generator;
-        std::uniform_real_distribution<double> distribution(0.0, 1.0);
-        if (distribution(generator) < 0.1f) { noResignMode = true; }
-    }
 
     Player winner = Player::Invalid();
     while ((!tree.rootBoard().BothPlayerPass())) {
         tree.evaluate(1600);
         const auto winrate = tree.rootNode()->winrate(tree.rootBoard().ActPlayer());
 
-        if ((winrate < resignationThreshold) && !(noResignMode)) {
+        if ((winrate < resignationThreshold)) {
             std::cout << tree.rootBoard().ActPlayer().ToGtpString() << " resigns." << std::endl;
             winner = tree.rootBoard().ActPlayer().Other();
             break;
