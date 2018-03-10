@@ -16,7 +16,7 @@ find_package(CapnProto REQUIRED)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -fPIC -fpermissive")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og -ggdb3 -fno-omit-frame-pointer")# -fsanitize=address")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native -funroll-loops -ggdb -fno-omit-frame-pointer")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -funroll-loops -ggdb -fno-omit-frame-pointer")
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIR})
 include_directories(SYSTEM ${PYTHON_INCLUDE_DIRS})
