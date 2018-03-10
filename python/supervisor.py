@@ -59,11 +59,7 @@ while True:
         training_list.append(path)
 
     if num_of_games > threshold:
-        # training returns a uuid
-        new_network = AGZtraining.train(server_path, training_list, dataset_path,
-                boardsize=9, val_prob=10, num_states=100000)
-
-        file_used_for_last_training = file_list[-2]
+        print('Collected enough games for new training run')
 
         # collect uuid of the current best network
         uuid_old_network = open(server_path + 'best-weights', 'r')
@@ -71,10 +67,17 @@ while True:
         old_network = old_network_with_threshold.split('; ')[0]
         uuid_old_network.close()
 
+        # training returns a uuid
+        new_network = AGZtraining.train(server_path, training_list, dataset_path, best_network_path=server_path+old_network, boardsize=9, val_prob=10, num_states=2500)
+
+        file_used_for_last_training = file_list[-2]
+
+        shared_params = ['--engine-totalTime', '30000', '--tree-networkRollouts', 'false', '--tree-trainingMode', 'false']
+
         # the inputs for function new_is_better are two lists containing 
         # path to gtp, uuid of network and the engine total time
-        old_network_params = path_to_gtp + [server_path + old_network]
-        new_network_params = path_to_gtp + [server_path + new_network]
+        old_network_params = path_to_gtp + [server_path + old_network] + shared_params
+        new_network_params = path_to_gtp + [server_path + new_network] + shared_params
         
         if new_is_better(old_network_params, new_network_params):
             # compute the resign threshold
