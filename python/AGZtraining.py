@@ -111,8 +111,16 @@ def train(export_path, training_list, dataset_path, boardsize, val_prob, num_sta
 
             return F.softmax(p), F.sigmoid(v), p, v
 
-    net = CombinedNet(64, 3)
-    net.collect_params().initialize(mx.init.MSRAPrelu(), ctx=ctx)
+    print('Loading parameters loaded from: ', best_network_path)
+    net = CombinedNet(32, 3, prefix='ArgosNet')
+    try:
+        params = net.collect_params().load(best_network_path + '-0000.params', ctx=ctx)
+        trainer = gluon.Trainer(net.collect_params(), 'NAG', {'learning_rate': .01, 'momentum': .9, 'wd': 1e-4})
+        print('Parameters loaded from: ', best_network_path)
+    except Exception as err:
+        net.collect_params().initialize(mx.init.MSRAPrelu(), ctx=ctx)
+        trainer = gluon.Trainer(net.collect_params(), 'NAG', {'learning_rate': .1, 'momentum': .9, 'wd': 1e-4})
+        print(err)
     net.hybridize()
 
     policy_loss = gluon.loss.SoftmaxCrossEntropyLoss(sparse_label=False)
