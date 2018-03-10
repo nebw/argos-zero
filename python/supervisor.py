@@ -26,12 +26,14 @@ threshold = 100 #games that we need to trigger training
 path_to_schema = "/home/argos/argos-zero/src/capnp/CapnpGame.capnp"
 schema = capnp.load(path_to_schema).Game
 
-def new_is_better(old_network, new_network, numMatches=400):
-    return True # TODO: FIX
-    match = MatchSystem(firstPlayer = old_network, secondPlayer = new_network)
-    match_result = match.runMatches(numMatches)
-    return match_result['playerOne'] <= sum(match_result.items()) * 0.45
-
+def new_is_better(old_network, new_network, numMatches=100):
+    try:
+        match = MatchSystem(firstPlayer = old_network, secondPlayer = new_network)
+        match_result = match.runMatches(numMatches)
+        return match_result['playerOne'] <= sum(match_result.items()) * 0.45
+    except Exception as err:
+        print(err)
+        return False
 
 while True:
     # searches for all hdf5 files in the path
