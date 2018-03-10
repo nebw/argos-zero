@@ -46,7 +46,7 @@ def train(export_path, training_list, dataset_path, boardsize, val_prob, num_sta
     inputs_v = data['val_x']
     labels_v = data['val_y']
 
-    diter = mx.io.NDArrayIter(inputs_t, labels_t, batch_size=batch_size, last_batch_handle='roll_over')
+    diter = mx.io.NDArrayIter(inputs_t, labels_t, batch_size=batch_size, last_batch_handle='roll_over', shuffle=True)
     val_set_x = mx.nd.array(inputs_v).as_in_context(ctx)
     val_set_y = mx.nd.array(labels_v).as_in_context(ctx)
 
