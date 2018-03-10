@@ -3,13 +3,13 @@ from player import Player
 import time
 
 class MatchSystem(object):
-  def __init__(self, firstPlayer, secondPlayer, verbose = True):
+  def __init__(self, firstPlayer, secondPlayer, verbose=False):
     self.first = firstPlayer
     self.second = secondPlayer
     self.verbose = verbose
 
   def runMatches(self, numMatches):
-    wins = [0,0]
+    wins = [0, 0]
     for i in range(numMatches):
       if i % 2 == 0:
         res = self.runMatch(self.first, self.second)
@@ -17,6 +17,7 @@ class MatchSystem(object):
       else:
         res = self.runMatch(self.second, self.first)
         wins[(res + 1) % 2] += 1
+      print('{}/{}: {}'.format(i, numMatches, wins))
 
     return {
       str(self.first): wins[0],

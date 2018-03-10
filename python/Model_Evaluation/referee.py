@@ -26,7 +26,6 @@ class Referee(Player):
       currentPlayer = (currentPlayer + 1) % 2
     
     # get result
-    self.runCommand("estimate_score")
-    score = self.getOutput()
+    score = self.runCommand("estimate_score")
     print(score)
     return 0 if "B" in score else 1
