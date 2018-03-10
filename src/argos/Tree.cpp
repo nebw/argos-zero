@@ -12,7 +12,7 @@
 #include <random>
 #include <thread>
 
-Tree::Tree(const argos::config::Config &config)
+Tree::Tree(const argos::config::Config& config)
     : _evaluationQueue(
           ConcurrentNodeQueue(config::tree::batchSize * 4, 1 + 2 * _config.tree.numThreads, 0)),
       _token(_evaluationQueue),
@@ -126,8 +126,7 @@ void Tree::visitNode(Node* node) {
     node->position()->statistics().num_evaluations += 1;
 }
 
-void Tree::playout(std::atomic<bool>* keepRunning)
-{
+void Tree::playout(std::atomic<bool>* keepRunning) {
     moodycamel::ProducerToken token(_evaluationQueue);
     std::mt19937 randomEngine(std::time(0));
 
@@ -147,6 +146,13 @@ void Tree::playout(std::atomic<bool>* keepRunning)
 
         // if node is terminal
         if (node->isExpanded() && node->isTerminal()) {
+            // we don't need to evaluate terminal nodes, but this introduces a delay that prevents
+            // biasing the tree search towards terminal nodes due to faster sampling
+            EvaluationJob job(playoutBoard.getFeatures().getPlanes());
+            auto future = job.result.get_future();
+            _evaluationQueue.enqueue(token, std::move(job));
+            future.wait();
+
             updateStatistics(trace, node->statistics().playout_score.load());
             continue;
         }
@@ -201,8 +207,7 @@ Player Tree::rollout(Board playoutBoard, ConcurrentNodeQueue& queue,
 
 Vertex Tree::bestMove() {
     assert(_rootNode->isExpanded());
-    if ((_rootBoard.MoveCount() < _config.tree.randomizeFirstNMoves) &&
-        _config.tree.trainingMode) {
+    if ((_rootBoard.MoveCount() < _config.tree.randomizeFirstNMoves) && _config.tree.trainingMode) {
         std::vector<float> probabilites;
         probabilites.reserve(_rootNode->children().get().size());
         for (const std::shared_ptr<Node>& child : _rootNode->children().get()) {
