@@ -39,7 +39,7 @@ int main(int argc, const char** argv) {
 
     Player winner = Player::Invalid();
     while ((!tree.rootBoard().BothPlayerPass())) {
-        tree.evaluate(1600);
+        tree.evaluate(config.engine.selfplayRollouts);
         const auto winrate = tree.rootNode()->winrate(tree.rootBoard().ActPlayer());
 
         if ((winrate < resignationThreshold)) {
@@ -68,4 +68,3 @@ int main(int argc, const char** argv) {
     // only possible here and not before because we do not know the number of moves in advance
     if (collect_data) { collector.get().sendData(tree, noResignMode); }
 }
-

@@ -8,11 +8,11 @@
 #include <vector>
 
 #include "BatchProcessor.h"
+#include "Config.h"
 #include "Network.h"
 #include "SpinLock.h"
 #include "Statistics.h"
 #include "ego.hpp"
-#include "Config.h"
 
 class Position;
 class Tree;
@@ -22,7 +22,8 @@ public:
     typedef std::shared_ptr<Node> NodeSPtr;
     typedef std::vector<NodeSPtr> NodeStack;
 
-    Node(std::shared_ptr<Position> position, Vertex const& parentMove, const argos::config::Tree &config)
+    Node(std::shared_ptr<Position> position, Vertex const& parentMove,
+         const argos::config::Tree& config)
         : _position(position),
           _parentMove(parentMove),
           _isEvaluated(false),
@@ -40,7 +41,7 @@ public:
     inline bool isEvaluated() const { return _isEvaluated; }
     inline bool isTerminal() const { return _isTerminalNode; }
 
-    float getUCTValue(Node& parent, mt19937 &engine) const;
+    float getUCTValue(Node& parent, mt19937&) const;
     float getBetaValue(Node& parent, std::mt19937& engine) const;
 
     NodeSPtr const& getBestUCTChild(std::mt19937& engine);
