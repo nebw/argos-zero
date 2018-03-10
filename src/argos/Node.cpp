@@ -74,7 +74,7 @@ void Node::setPrior(float prior) {
     _statistics.prior = prior;
 }
 
-float Node::getUCTValue(Node& parent, std::mt19937& engine) const {
+float Node::getUCTValue(Node& parent, std::mt19937&) const {
     const float winRate = winrate(parent.position()->actPlayer());
     const float parentVisits = static_cast<float>(parent.statistics().num_evaluations.load());
     const float nodeVisits = static_cast<float>(_statistics.num_evaluations.load());
