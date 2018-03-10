@@ -32,23 +32,22 @@ def new_is_better(old_network, new_network, numMatches=400):
     match_result = match.runMatches(numMatches)
     return match_result['playerOne'] <= sum(match_result.items()) * 0.45
 
-# searches for all hdf5 files in the path
-file_list = []
-for file_name in os.listdir(hd5_folder_path):
-    if file_name.endswith(".h5"):
-        file_list.append(file_name)
-
-# sort file list according to contained number in filename
-file_list.sort()
-
 
 while True:
+    # searches for all hdf5 files in the path
+    file_list = []
+    for file_name in os.listdir(hd5_folder_path):
+        if file_name.endswith(".h5"):
+            file_list.append(file_name)
+
+    # sort file list according to contained number in filename
+    file_list.sort()
+
     num_of_games = 0
     training_list = []
     # the last file is still in progress, new games are appended.
     # we therefore use the before-last game
     for file_name in file_list[-2::-1]:
-        print(file_name)
         if file_name == file_used_for_last_training:
             break
         path = hd5_folder_path + file_name
@@ -56,8 +55,6 @@ while True:
         num = f["game_record"].attrs["count_id"]
         num_of_games += num
         training_list.append(path)
-
-    print(num_of_games, threshold)
 
     if num_of_games > threshold:
         # training returns a uuid
