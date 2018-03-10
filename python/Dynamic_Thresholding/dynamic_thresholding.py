@@ -92,7 +92,7 @@ def find_fn_count(threshold, winrate_lists):
 
 
 def compute_threshold(games, max_fn_rate):
-    #games = get_games_without_res(games)
+    games = get_games_without_res(games)
     black = get_winrates_for_games_won_by_player(games, 1)
     white = get_winrates_for_games_won_by_player(games, 0)
     dataset = black + white
