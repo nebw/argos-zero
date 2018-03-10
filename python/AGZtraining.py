@@ -12,7 +12,8 @@ import sys
 import parse_data
 import uuid
 
-def train(export_path, training_list, dataset_path, boardsize, val_prob, num_states):
+def train(export_path, training_list, dataset_path, best_network_path, boardsize, 
+          val_prob, num_states, max_batches=50000):
     """ export_path: net will be saved there
     training_list: list of hd5 files with the raw data / cpnp messages, should be
     descending sorted
@@ -224,7 +225,7 @@ def train(export_path, training_list, dataset_path, boardsize, val_prob, num_sta
         sys.stdout.write('\r{}: C:{:.3f}, V:{:.3f} ({:.1f}%), P:{:.3f} ({:.1f}%), ValC {:.3f}'.format(
             i, rmean(closses), rmean(vlosses), rmean(vaccs), rmean(plosses), rmean(paccs),val_closses[-1]))
 
-        if early_stopping() or i == 100000:
+        if early_stopping() or i == max_batches:
             print("\nOverfitting detected")
             break
 
