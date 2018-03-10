@@ -69,7 +69,7 @@ class GameLogger:
             
             while True:
                 client, address = self.server.accept()
-                msg = recvall(client, 4096 * 100)
+                msg = recvall(client, 4096 * 1000)
                 print('Message from {}'.format(address))
                 try:
                     self.schema.Game.from_bytes(msg)
