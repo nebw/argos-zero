@@ -25,8 +25,8 @@ namespace config {
 
     class Tree final {
     public:
-        static const constexpr size_t DEFAULT_BATCH_SIZE = 32;
-        static const constexpr size_t DEFAULT_NUM_EVALUATION_THREADS = 2;
+        static const constexpr size_t DEFAULT_BATCH_SIZE = 8;
+        static const constexpr size_t DEFAULT_NUM_EVALUATION_THREADS = 1;
         static const constexpr size_t DEFAULT_NUM_THREADS =
             DEFAULT_BATCH_SIZE * DEFAULT_NUM_EVALUATION_THREADS;
         static const constexpr size_t DEFAULT_RANDOMIZE_FIRST_N_MOVES = 0;
