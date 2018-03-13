@@ -146,6 +146,12 @@ void Tree::playout(std::atomic<bool>* keepRunning) {
 
         // if node is terminal
         if (node->isExpanded() && node->isTerminal()) {
+            std::unique_lock<SpinLock> lock(node->getLock(), std::try_to_lock);
+            if (!lock.owns_lock()) {
+                // if another thread is already here, start new playout
+                continue;
+            }
+
             // we don't need to evaluate terminal nodes, but this introduces a delay that prevents
             // biasing the tree search towards terminal nodes due to faster sampling
             EvaluationJob job(playoutBoard.getFeatures().getPlanes());

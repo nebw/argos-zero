@@ -54,6 +54,8 @@ public:
     float getPrior();
     void setPrior(float prior);
 
+    SpinLock& getLock() { return _expandLock; }
+
 private:
     std::shared_ptr<Position> _position;
     NodeStatistics _statistics;
