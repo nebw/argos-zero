@@ -23,7 +23,7 @@ typedef FastStack<Node*, config::boardSize * config::boardSize * 3> NodeTrace;
 
 class Tree {
 public:
-    Tree(const argos::config::Config &config);
+    Tree(const argos::config::Config& config);
     ~Tree();
 
     std::shared_ptr<Position> maybeAddPosition(const RawBoard& board);
@@ -55,7 +55,7 @@ private:
     std::vector<std::thread> _evaluationThreads;
     std::random_device _rd;
     std::mt19937 _gen;
-    argos::config::Config _config;
+    const argos::config::Config _config;
 
     void beginEvaluation();
     void playout(std::atomic<bool>* keepRunning);

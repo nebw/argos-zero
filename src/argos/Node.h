@@ -66,5 +66,5 @@ private:
     SpinLock _expandLock;
     bool _isEvaluated;
     bool _isTerminalNode;
-    argos::config::Tree _config;
+    const argos::config::Tree& _config;
 };
