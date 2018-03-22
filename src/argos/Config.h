@@ -25,16 +25,16 @@ namespace config {
 
     class Tree final {
     public:
-        static const constexpr size_t DEFAULT_BATCH_SIZE = 16;
-        static const constexpr size_t DEFAULT_NUM_EVALUATION_THREADS = 2;
+        static const constexpr size_t DEFAULT_BATCH_SIZE = 4;
+        static const constexpr size_t DEFAULT_NUM_EVALUATION_THREADS = 1;
         static const constexpr size_t DEFAULT_NUM_THREADS =
             DEFAULT_BATCH_SIZE * DEFAULT_NUM_EVALUATION_THREADS;
         static const constexpr size_t DEFAULT_RANDOMIZE_FIRST_N_MOVES = 0;
         static const constexpr size_t DEFAULT_NUM_LAST_ROOT_NODES = 3;
-        static const constexpr size_t DEFAULT_VIRTUAL_PLAYOUTS = 0;
+        static const constexpr size_t DEFAULT_VIRTUAL_PLAYOUTS = 1;
         static const constexpr size_t DEFAULT_EXPAND_AT = DEFAULT_VIRTUAL_PLAYOUTS + 1;
         static const constexpr float DEFAULT_BETA_PRIOR = 5;
-        static const constexpr float DEFAULT_PRIOR_C = 5;
+        static const constexpr float DEFAULT_PRIOR_C = 1;
         static const constexpr bool DEFAULT_NETWORK_ROLLOUTS = false;
         static const constexpr bool DEFAULT_TRAINING_MODE = false;
 

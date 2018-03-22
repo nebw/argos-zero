@@ -136,11 +136,13 @@ void Tree::playout(std::atomic<bool>* keepRunning) {
         playoutBoard.Load(_rootBoard);
 
         Node* node = _rootNode.get();
+        visitNode(node);
         trace.Push(node);
 
         while (node->isExpanded() && node->isEvaluated() && !(node->children())->empty()) {
             node = node->getBestUCTChild(randomEngine).get();
             playoutBoard.PlayLegal(playoutBoard.ActPlayer(), node->parentMove());
+            visitNode(node);
             trace.Push(node);
         }
 
@@ -149,6 +151,12 @@ void Tree::playout(std::atomic<bool>* keepRunning) {
             std::unique_lock<SpinLock> lock(node->getLock(), std::try_to_lock);
             if (!lock.owns_lock()) {
                 // if another thread is already here, start new playout
+
+                while (!trace.IsEmpty()) {
+                    Node* node = trace.PopTop();
+                    node->statistics().num_evaluations -= (_config.tree.virtualPlayouts);
+                }
+
                 continue;
             }
 
@@ -170,6 +178,11 @@ void Tree::playout(std::atomic<bool>* keepRunning) {
                 updateStatistics(trace, node->statistics().playout_score.load());
             } else {
                 updateStatistics(trace, node->position()->statistics().value.load());
+            }
+        } else {
+            while (!trace.IsEmpty()) {
+                Node* node = trace.PopTop();
+                node->statistics().num_evaluations -= (_config.tree.virtualPlayouts);
             }
         }
     } while (keepRunning->load());
@@ -296,7 +309,7 @@ void Tree::addDirichletNoise(const float amount, const float distribution) {
 void Tree::updateStatistics(NodeTrace& trace, float score) {
     while (!trace.IsEmpty()) {
         Node* node = trace.PopTop();
-        visitNode(node);
+        // visitNode(node);
         node->addEvaluation(score);
         node->statistics().num_evaluations -= (_config.tree.virtualPlayouts);
     }

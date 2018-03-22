@@ -103,8 +103,8 @@ const std::shared_ptr<Node>& Node::getBestUCTChild(std::mt19937& engine) {
     size_t bestIdx = 0;
     for (size_t i = 0; i < (*_children).size(); ++i) {
         const auto& child = (*_children)[i];
-        // const auto score = child->getUCTValue(*this);
-        const auto score = child->getBetaValue(*this, engine);
+        const auto score = child->getUCTValue(*this, engine);
+        // const auto score = child->getBetaValue(*this, engine);
         if (score > bestScore) {
             bestScore = score;
             bestIdx = i;
