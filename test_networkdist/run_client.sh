@@ -28,5 +28,5 @@ while true; do
 		wfile=$newwfile
 	fi 
 	# run selfplay with the newest weights
-	$SOURCES/selfplay -n $WEIGHTP/$wfile --tree-networkRollouts true --tree-trainingMode true --tree-randomizeFirstNMoves 10 --engine-resignThreshold $thres
+	$SOURCES/selfplay -n $WEIGHTP/$wfile --tree-networkRollouts false --tree-trainingMode true --tree-randomizeFirstNMoves 10 --engine-resignThreshold $thres --engine-selfplayRollouts 1600
 done
