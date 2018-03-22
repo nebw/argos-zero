@@ -51,6 +51,7 @@ Tree::~Tree() {
 std::shared_ptr<Position> Tree::maybeAddPosition(const RawBoard& board) {
     const auto hash = board.TranspositionHash();
 
+    /*
     std::shared_ptr<Position> pos;
     if (_transpositionTable.find_fn(
             hash, [&pos](std::weak_ptr<Position> const& entry) { pos = entry.lock(); })) {
@@ -58,10 +59,14 @@ std::shared_ptr<Position> Tree::maybeAddPosition(const RawBoard& board) {
 
         return pos;
     }
+    */
 
     const auto position = std::make_shared<Position>(hash, board);
+
+    /*
     const std::weak_ptr<Position> position_weak = position;
     _transpositionTable.insert(std::move(hash), std::move(position_weak));
+    */
 
     return position;
 }
