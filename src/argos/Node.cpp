@@ -41,9 +41,8 @@ bool Node::expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
             tempBoard.PlayLegal(actPlayer, vertex);
 
             auto position = tree.maybeAddPosition(tempBoard);
-            auto child = std::make_shared<Node>(
-                position, vertex, _config,
-                std::max<float>(0.f, _position->statistics().value - _config.fpuReduction));
+            auto child = std::make_shared<Node>(position, vertex, _config,
+                                                _position->statistics().value.load());
 
             size_t posIdx;
             if (vertex == Vertex::Pass()) {
@@ -171,6 +170,10 @@ float Node::winrate(const Player& player) const {
     value = (value + 1.f) / 2.f;
 
     if (player == Player::White()) { value = 1.f - value; }
+
+    if (p.num_evaluations.load() == 0) {
+        value = std::max<float>(0.f, value - _config.fpuReduction);
+    }
 
     return value;
 }

@@ -25,7 +25,7 @@ namespace config {
 
     class Tree final {
     public:
-        static const constexpr size_t DEFAULT_BATCH_SIZE = 16;
+        static const constexpr size_t DEFAULT_BATCH_SIZE = 8;
         static const constexpr size_t DEFAULT_NUM_EVALUATION_THREADS = 1;
         static const constexpr size_t DEFAULT_NUM_THREADS =
             DEFAULT_BATCH_SIZE * DEFAULT_NUM_EVALUATION_THREADS;
@@ -35,7 +35,7 @@ namespace config {
         static const constexpr size_t DEFAULT_EXPAND_AT = DEFAULT_VIRTUAL_PLAYOUTS + 1;
         static const constexpr float DEFAULT_BETA_PRIOR = 5;
         static const constexpr float DEFAULT_PRIOR_C = .8f;
-        static const constexpr float DEFAULT_FPU_REDUCTION = .2f;
+        static const constexpr float DEFAULT_FPU_REDUCTION = .01f;
         static const constexpr bool DEFAULT_NETWORK_ROLLOUTS = false;
         static const constexpr bool DEFAULT_TRAINING_MODE = false;
 
@@ -44,7 +44,8 @@ namespace config {
                       const size_t &numThreads, const size_t &randomizeFirstNMoves,
                       const size_t &numLastRootNodes, const size_t &virtualPlayouts,
                       const size_t &expandAt, const float &betaPrior, const float &priorC,
-                      const float &fpuReduction, const bool &networkRollouts, const bool &trainingMode)
+                      const float &fpuReduction, const bool &networkRollouts,
+                      const bool &trainingMode)
             : batchSize(batchSize),
               numEvaluationThreads(numEvaluationThreads),
               numThreads(numThreads),
