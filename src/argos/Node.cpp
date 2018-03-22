@@ -41,8 +41,9 @@ bool Node::expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
             tempBoard.PlayLegal(actPlayer, vertex);
 
             auto position = tree.maybeAddPosition(tempBoard);
-            auto child =
-                std::make_shared<Node>(position, vertex, _config, _position->statistics().value);
+            auto child = std::make_shared<Node>(
+                position, vertex, _config,
+                std::max<float>(0.f, _position->statistics().value - _config.fpuReduction));
 
             size_t posIdx;
             if (vertex == Vertex::Pass()) {

@@ -47,6 +47,7 @@ namespace config {
             "tree-expandAt", po::value<size_t>(), "set expandAt")(
             "tree-betaPrior", po::value<float>(), "set betaPrior")(
             "tree-priorC", po::value<float>(), "set priorC")(
+            "tree-fpuReduction", po::value<float>(), "set fpu reduction")(
             "tree-networkRollouts", po::value<bool>(), "enable|disable network rollouts")(
             "tree-trainingMode", po::value<bool>(), "enable|disable training mode")(
             "time-c", po::value<int>(), "set time c")("time-maxPly", po::value<int>(),
@@ -124,6 +125,7 @@ namespace config {
                     treeBuilder.expandAt(treeParser.get<size_t>("expand_at"));
                     treeBuilder.betaPrior(treeParser.get<float>("beta_prior"));
                     treeBuilder.priorC(treeParser.get<float>("prior_c"));
+                    treeBuilder.fpuReduction(treeParser.get<float>("fpuReduction"));
                     treeBuilder.networkRollouts(treeParser.get<bool>("network_rollouts"));
                     treeBuilder.trainingMode(treeParser.get<bool>("training_mode"));
 
@@ -182,6 +184,7 @@ namespace config {
         if (vm.count("tree-expandAt")) treeBuilder.expandAt(vm["tree-expandAt"].as<size_t>());
         if (vm.count("tree-betaPrior")) treeBuilder.betaPrior(vm["tree-betaPrior"].as<float>());
         if (vm.count("tree-priorC")) treeBuilder.priorC(vm["tree-priorC"].as<float>());
+        if (vm.count("tree-fpuReduction")) treeBuilder.fpuReduction(vm["tree-fpuReduction"].as<float>());
         if (vm.count("tree-networkRollouts"))
             treeBuilder.networkRollouts(vm["tree-networkRollouts"].as<bool>());
         if (vm.count("tree-trainingMode"))
@@ -217,6 +220,7 @@ namespace config {
         cout << "config.tree.expandAt: " << config.tree.expandAt << endl;
         cout << "config.tree.betaPrior: " << config.tree.betaPrior << endl;
         cout << "config.tree.priorC: " << config.tree.priorC << endl;
+        cout << "config.tree.fpuReduction: " << config.tree.fpuReduction << endl;
         cout << "config.tree.networkRollouts: " << config.tree.networkRollouts << endl;
         cout << "config.tree.trainingMode: " << config.tree.trainingMode << endl;
         cout << "config.time.C: " << config.time.C << endl;

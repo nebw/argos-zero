@@ -25,16 +25,17 @@ namespace config {
 
     class Tree final {
     public:
-        static const constexpr size_t DEFAULT_BATCH_SIZE = 4;
+        static const constexpr size_t DEFAULT_BATCH_SIZE = 16;
         static const constexpr size_t DEFAULT_NUM_EVALUATION_THREADS = 1;
         static const constexpr size_t DEFAULT_NUM_THREADS =
             DEFAULT_BATCH_SIZE * DEFAULT_NUM_EVALUATION_THREADS;
         static const constexpr size_t DEFAULT_RANDOMIZE_FIRST_N_MOVES = 0;
         static const constexpr size_t DEFAULT_NUM_LAST_ROOT_NODES = 3;
-        static const constexpr size_t DEFAULT_VIRTUAL_PLAYOUTS = 1;
+        static const constexpr size_t DEFAULT_VIRTUAL_PLAYOUTS = 3;
         static const constexpr size_t DEFAULT_EXPAND_AT = DEFAULT_VIRTUAL_PLAYOUTS + 1;
         static const constexpr float DEFAULT_BETA_PRIOR = 5;
-        static const constexpr float DEFAULT_PRIOR_C = 1;
+        static const constexpr float DEFAULT_PRIOR_C = .8f;
+        static const constexpr float DEFAULT_FPU_REDUCTION = .2f;
         static const constexpr bool DEFAULT_NETWORK_ROLLOUTS = false;
         static const constexpr bool DEFAULT_TRAINING_MODE = false;
 
@@ -43,7 +44,7 @@ namespace config {
                       const size_t &numThreads, const size_t &randomizeFirstNMoves,
                       const size_t &numLastRootNodes, const size_t &virtualPlayouts,
                       const size_t &expandAt, const float &betaPrior, const float &priorC,
-                      const bool &networkRollouts, const bool &trainingMode)
+                      const float &fpuReduction, const bool &networkRollouts, const bool &trainingMode)
             : batchSize(batchSize),
               numEvaluationThreads(numEvaluationThreads),
               numThreads(numThreads),
@@ -53,6 +54,7 @@ namespace config {
               expandAt(expandAt),
               betaPrior(betaPrior),
               priorC(priorC),
+              fpuReduction(fpuReduction),
               networkRollouts(networkRollouts),
               trainingMode(trainingMode) {}
 
@@ -67,6 +69,7 @@ namespace config {
         const size_t expandAt;
         const float betaPrior;
         const float priorC;
+        const float fpuReduction;
         const bool networkRollouts;
         const bool trainingMode;
     };
@@ -82,6 +85,7 @@ namespace config {
         size_t _expandAt = DEFAULT_EXPAND_AT;
         float _betaPrior = DEFAULT_BETA_PRIOR;
         float _priorC = DEFAULT_PRIOR_C;
+        float _fpuReduction = DEFAULT_FPU_REDUCTION;
         bool _networkRollouts = DEFAULT_NETWORK_ROLLOUTS;
         bool _trainingMode = DEFAULT_TRAINING_MODE;
 
@@ -122,6 +126,10 @@ namespace config {
             _priorC = val;
             return *this;
         }
+        Builder fpuReduction(const float &val) {
+            _fpuReduction = val;
+            return *this;
+        }
         Builder networkRollouts(const bool &val) {
             _networkRollouts = val;
             return *this;
@@ -133,7 +141,7 @@ namespace config {
         Tree build() {
             return Tree(_batchSize, _numEvaluationThreads, _numThreads, _randomizeFirstNMoves,
                         _numLastRootNodes, _virtualPlayouts, _expandAt, _betaPrior, _priorC,
-                        _networkRollouts, _trainingMode);
+                        _fpuReduction, _networkRollouts, _trainingMode);
         }
     };
 

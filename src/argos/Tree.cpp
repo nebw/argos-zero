@@ -178,7 +178,7 @@ void Tree::playout(std::atomic<bool>* keepRunning) {
         } else {
             while (!trace.IsEmpty()) {
                 Node* node = trace.PopTop();
-                node->statistics().num_evaluations -= (_config.tree.virtualPlayouts);
+                node->statistics().num_evaluations -= (_config.tree.virtualPlayouts + 1);
             }
         }
     } while (keepRunning->load());
