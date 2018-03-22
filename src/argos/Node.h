@@ -23,12 +23,14 @@ public:
     typedef std::vector<NodeSPtr> NodeStack;
 
     Node(std::shared_ptr<Position> position, Vertex const& parentMove,
-         const argos::config::Tree& config)
+         const argos::config::Tree& config, const float initialValue)
         : _position(position),
           _parentMove(parentMove),
           _isEvaluated(false),
           _isTerminalNode(false),
-          _config(config) {}
+          _config(config) {
+        _statistics.initial_value = initialValue;
+    }
 
     inline bool isExpanded() const { return _children.is_initialized(); }
     bool expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,

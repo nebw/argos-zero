@@ -25,16 +25,19 @@ Tree::Tree(const argos::config::Config& config)
     }
 
     const auto position = maybeAddPosition(_rootBoard);
-    _rootNode = std::make_shared<Node>(position, Vertex::Invalid(), config.tree);
 
     purgeTranspositionTable();
 
+    float rootValue = 0.f;
     for (size_t i = 0; i < _config.tree.numThreads; ++i) {
         EvaluationJob job(_rootBoard.getFeatures().getPlanes());
         auto future = job.result.get_future();
         _evaluationQueue.enqueue(_token, std::move(job));
-        future.wait();
+        const Network::Result result = future.get();
+        rootValue = result.value;
     }
+
+    _rootNode = std::make_shared<Node>(position, Vertex::Invalid(), config.tree, rootValue);
 }
 
 Tree::~Tree() {
