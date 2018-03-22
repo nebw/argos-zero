@@ -44,6 +44,7 @@ public:
                    moodycamel::ProducerToken const& token);
 
 private:
+    const argos::config::Config _config;
     TranspositionTable _transpositionTable;
     std::queue<std::shared_ptr<Node>> _lastRootNodes;
     ConcurrentNodeQueue _evaluationQueue;
@@ -55,7 +56,6 @@ private:
     std::vector<std::thread> _evaluationThreads;
     std::random_device _rd;
     std::mt19937 _gen;
-    const argos::config::Config _config;
 
     void beginEvaluation();
     void playout(std::atomic<bool>* keepRunning);

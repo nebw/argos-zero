@@ -13,12 +13,12 @@
 #include <thread>
 
 Tree::Tree(const argos::config::Config& config)
-    : _evaluationQueue(
+    : _config(config),
+      _evaluationQueue(
           ConcurrentNodeQueue(config::tree::batchSize * 4, 1 + 2 * _config.tree.numThreads, 0)),
       _token(_evaluationQueue),
       _evaluationThreadKeepRunning(true),
-      _gen(_rd()),
-      _config(config) {
+      _gen(_rd()) {
     for (size_t i = 0; i < config.tree.numEvaluationThreads; ++i) {
         _evaluationThreads.emplace_back(evaluationQueueConsumer, &_evaluationQueue,
                                         &_evaluationThreadKeepRunning, _config);
