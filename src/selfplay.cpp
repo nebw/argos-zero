@@ -39,7 +39,9 @@ int main(int argc, const char** argv) {
 
     Player winner = Player::Invalid();
     while ((!tree.rootBoard().BothPlayerPass())) {
-        tree.evaluate(config.engine.selfplayRollouts);
+        const auto visits = tree.rootNode()->position()->statistics().num_evaluations.load();
+        tree.evaluate(std::min<size_t>(config.engine.selfplayRollouts * 2,
+                                       visits + config.engine.selfplayRollouts));
         const auto winrate = tree.rootNode()->winrate(tree.rootBoard().ActPlayer());
 
         if ((winrate < resignationThreshold)) {
