@@ -13,7 +13,8 @@
 #include <thread>
 
 Tree::Tree(const argos::config::Config& config)
-    : _config(config),
+    : threadsWaiting({0}),
+      _config(config),
       _evaluationQueue(
           ConcurrentNodeQueue(config::tree::batchSize * 4, 1 + 2 * _config.tree.numThreads, 0)),
       _token(_evaluationQueue),
@@ -21,7 +22,7 @@ Tree::Tree(const argos::config::Config& config)
       _gen(_rd()) {
     for (size_t i = 0; i < config.tree.numEvaluationThreads; ++i) {
         _evaluationThreads.emplace_back(evaluationQueueConsumer, &_evaluationQueue,
-                                        &_evaluationThreadKeepRunning, _config);
+                                        &_evaluationThreadKeepRunning, _config, &threadsWaiting);
     }
 
     const auto position = maybeAddPosition(_rootBoard);

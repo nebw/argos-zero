@@ -9,10 +9,11 @@
 #include <cassert>
 
 bool Node::expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
-                  moodycamel::ProducerToken const& token) {
-    std::unique_lock<SpinLock> lock(_expandLock, std::try_to_lock);
+                  moodycamel::ProducerToken const& token, HashTrace const& hashTrace) {
+    std::unique_lock<std::mutex> lock(_expandLock, std::try_to_lock);
     if (!lock.owns_lock()) {
-        // if another thread is already expanding the node, don't bother waiting
+        RAIITempInc<int> inc(tree.threadsWaiting);
+        std::unique_lock<std::mutex> locker(_expandLock);
         return false;
     }
     if (isExpanded()) return false;

@@ -17,6 +17,8 @@
 class Position;
 class Tree;
 
+typedef std::set<uint64> HashTrace;
+
 class Node {
 public:
     typedef std::shared_ptr<Node> NodeSPtr;
@@ -34,7 +36,7 @@ public:
 
     inline bool isExpanded() const { return _children.is_initialized(); }
     bool expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
-                moodycamel::ProducerToken const& token);
+                moodycamel::ProducerToken const& token, HashTrace const& hashTrace);
 
     inline NodeStatistics& statistics() { return _statistics; }
     inline boost::optional<NodeStack> const& children() const { return _children; }
@@ -56,14 +58,14 @@ public:
     float getPrior();
     void setPrior(float prior);
 
-    SpinLock& getLock() { return _expandLock; }
+    std::mutex& getLock() { return _expandLock; }
 
 private:
     std::shared_ptr<Position> _position;
     NodeStatistics _statistics;
     boost::optional<NodeStack> _children;
     Vertex _parentMove;
-    SpinLock _expandLock;
+    std::mutex _expandLock;
     bool _isEvaluated;
     bool _isTerminalNode;
     const argos::config::Tree& _config;

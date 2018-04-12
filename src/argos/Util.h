@@ -167,3 +167,10 @@ private:
         return x / (x + y_gamma(engine));
     }
 };
+
+template <typename T>
+struct RAIITempInc {
+    RAIITempInc(std::atomic<T>& val) : _val(val) { _val++; }
+    ~RAIITempInc() { _val--; }
+    std::atomic<T>& _val;
+};

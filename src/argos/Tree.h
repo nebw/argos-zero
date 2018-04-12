@@ -44,6 +44,8 @@ public:
     Player rollout(Board playoutBoard, ConcurrentNodeQueue& queue,
                    moodycamel::ProducerToken const& token);
 
+    std::atomic<int> threadsWaiting;
+
 private:
     const argos::config::Config _config;
     TranspositionTable _transpositionTable;
