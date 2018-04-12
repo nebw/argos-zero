@@ -26,7 +26,8 @@ bool Node::expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
         const Network::Result result = future.get();
 
         if (_config.networkRollouts) {
-            const float rolloutValue = tree.rollout(board, queue, token).ToScore();
+            const float rolloutValue =
+                tree.rollout(board, queue, token).TrompTaylorWinner().ToScore();
             _position->statistics().value = rolloutValue;
         } else {
             _position->statistics().value = result.value;
