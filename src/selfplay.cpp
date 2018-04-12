@@ -59,6 +59,7 @@ int main(int argc, const char** argv) {
 
         tree.playMove(move);
         std::cout << tree.rootBoard().ToAsciiArt(move) << std::endl;
+        if (tree.rootBoard().MoveCount() > config::boardSize * config::boardSize * 3) { return; }
     }
 
     if (!(winner.IsValid())) { winner = tree.rootBoard().TrompTaylorWinner(); }
