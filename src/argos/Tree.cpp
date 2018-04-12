@@ -146,40 +146,41 @@ void Tree::playout(std::atomic<bool>* keepRunning) {
         Node* node = _rootNode.get();
         visitNode(node);
         trace.Push(node);
+        HashTrace playoutTrace(_hashTrace);
 
-        while (node->isExpanded() && node->isEvaluated() && !(node->children())->empty()) {
-            node = node->getBestUCTChild(randomEngine).get();
-            playoutBoard.PlayLegal(playoutBoard.ActPlayer(), node->parentMove());
-            visitNode(node);
-            trace.Push(node);
-        }
-
-        // if node is terminal
-        if (node->isExpanded() && node->isTerminal()) {
-            // we don't need to evaluate terminal nodes, but this introduces a delay that prevents
-            // biasing the tree search towards terminal nodes due to faster sampling
-            EvaluationJob job(playoutBoard.getFeatures().getPlanes());
-            auto future = job.result.get_future();
-            _evaluationQueue.enqueue(token, std::move(job));
-            future.wait();
-
-            updateStatistics(trace, node->statistics().playout_score.load());
-            continue;
-        }
-
-        // expand node
-        const bool isExpandingThread = node->expand(*this, playoutBoard, _evaluationQueue, token);
-        if (isExpandingThread) {
-            if (node->isTerminal()) {
-                updateStatistics(trace, node->statistics().playout_score.load());
-            } else {
-                updateStatistics(trace, node->position()->statistics().value.load());
+        while (true) {
+            while (node->isExpanded() && node->isEvaluated() && !(node->children())->empty()) {
+                node = node->getBestUCTChild(randomEngine).get();
+                playoutBoard.PlayLegal(playoutBoard.ActPlayer(), node->parentMove());
+                visitNode(node);
+                trace.Push(node);
+                playoutTrace.insert(playoutBoard.TranspositionHash().Data());
             }
-        } else {
-            while (!trace.IsEmpty()) {
-                Node* node = trace.PopTop();
-                node->statistics().num_evaluations -= (_config.tree.virtualPlayouts + 1);
-                node->position()->statistics().num_evaluations -= 1;
+
+            // if node is terminal
+            if (node->isExpanded() && node->isTerminal()) {
+                // we don't need to evaluate terminal nodes, but this introduces a delay that
+                // prevents biasing the tree search towards terminal nodes due to faster sampling
+                EvaluationJob job(playoutBoard.getFeatures().getPlanes());
+                auto future = job.result.get_future();
+                _evaluationQueue.enqueue(token, std::move(job));
+                future.wait();
+
+                updateStatistics(trace, node->statistics().playout_score.load());
+                break;
+            }
+
+            // expand node
+            const bool isExpandingThread =
+                node->expand(*this, playoutBoard, _evaluationQueue, token, playoutTrace);
+            if (isExpandingThread) {
+                if (node->isTerminal()) {
+                    updateStatistics(trace, node->statistics().playout_score.load());
+                    break;
+                } else {
+                    updateStatistics(trace, node->position()->statistics().value.load());
+                    break;
+                }
             }
         }
     } while (keepRunning->load());
@@ -253,18 +254,21 @@ Vertex Tree::bestMove() {
 void Tree::playMove(const Vertex& vertex) {
     moodycamel::ProducerToken token(_evaluationQueue);
 
-    if (!_rootNode->isExpanded()) { _rootNode->expand(*this, _rootBoard, _evaluationQueue, token); }
+    if (!_rootNode->isExpanded()) {
+        _rootNode->expand(*this, _rootBoard, _evaluationQueue, token, _hashTrace);
+    }
     assert(_rootBoard.IsLegal(_rootBoard.ActPlayer(), vertex));
     _rootBoard.PlayLegal(_rootBoard.ActPlayer(), vertex);
 
     setRootNode(vertex);
+    _hashTrace.insert(_rootBoard.TranspositionHash().Data());
 
     purgeTranspositionTable();
 }
 
 void Tree::beginEvaluation() {
     if (!_rootNode->isExpanded()) {
-        _rootNode->expand(*this, _rootBoard, _evaluationQueue, _token);
+        _rootNode->expand(*this, _rootBoard, _evaluationQueue, _token, _hashTrace);
         NodeTrace traceCpy;
         traceCpy.Push(_rootNode.get());
         updateStatistics(traceCpy, _rootNode->position()->statistics().value.load());

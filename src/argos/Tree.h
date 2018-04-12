@@ -20,6 +20,7 @@
 
 typedef cuckoohash_map<Hash, std::weak_ptr<Position>, Hasher> TranspositionTable;
 typedef FastStack<Node*, config::boardSize * config::boardSize * 3> NodeTrace;
+typedef std::set<uint64> HashTrace;
 
 class Tree {
 public:
@@ -50,6 +51,7 @@ private:
     ConcurrentNodeQueue _evaluationQueue;
     std::shared_ptr<Node> _rootNode;
     Board _rootBoard;
+    HashTrace _hashTrace;
     std::vector<Network> _networks;
     moodycamel::ProducerToken _token;
     std::atomic<bool> _evaluationThreadKeepRunning;

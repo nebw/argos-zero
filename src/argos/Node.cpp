@@ -40,19 +40,22 @@ bool Node::expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
             tempBoard.Load(board);
             tempBoard.PlayLegal(actPlayer, vertex);
 
-            auto position = tree.maybeAddPosition(tempBoard);
-            auto child = std::make_shared<Node>(position, vertex, _config,
-                                                _position->statistics().value.load());
+            // don't add superko moves
+            if (hashTrace.count(tempBoard.TranspositionHash().Data()) == 0) {
+                auto position = tree.maybeAddPosition(tempBoard);
+                auto child = std::make_shared<Node>(position, vertex, _config,
+                                                    _position->statistics().value.load());
 
-            size_t posIdx;
-            if (vertex == Vertex::Pass()) {
-                posIdx = config::boardSize * config::boardSize;
-            } else {
-                posIdx = vertex.GetRow() * config::boardSize + vertex.GetColumn();
+                size_t posIdx;
+                if (vertex == Vertex::Pass()) {
+                    posIdx = config::boardSize * config::boardSize;
+                } else {
+                    posIdx = vertex.GetRow() * config::boardSize + vertex.GetColumn();
+                }
+                child->setPrior(result.candidates[posIdx].prior);
+
+                children.push_back(child);
             }
-            child->setPrior(result.candidates[posIdx].prior);
-
-            children.push_back(child);
         }
 
         if (legalMoves.empty()) {
