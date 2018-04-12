@@ -41,8 +41,9 @@ public:
     Vertex bestMove();
     void playMove(Vertex const& vertex);
 
-    Player rollout(Board playoutBoard, ConcurrentNodeQueue& queue,
-                   moodycamel::ProducerToken const& token);
+    Board rollout(Board playoutBoard, ConcurrentNodeQueue& queue,
+                  moodycamel::ProducerToken const& token);
+    NatMap<Vertex, double> estimateTerritory(const size_t numPlayouts);
 
     std::atomic<int> threadsWaiting;
 

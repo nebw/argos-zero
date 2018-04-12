@@ -187,8 +187,8 @@ void Tree::playout(std::atomic<bool>* keepRunning) {
     } while (keepRunning->load());
 }
 
-Player Tree::rollout(Board playoutBoard, ConcurrentNodeQueue& queue,
-                     moodycamel::ProducerToken const& token) {
+Board Tree::rollout(Board playoutBoard, ConcurrentNodeQueue& queue,
+                    moodycamel::ProducerToken const& token) {
     while (!playoutBoard.BothPlayerPass()) {
         Player pl = playoutBoard.ActPlayer();
 
@@ -220,7 +220,34 @@ Player Tree::rollout(Board playoutBoard, ConcurrentNodeQueue& queue,
         playoutBoard.PlayLegal(pl, v);
     }
 
-    return playoutBoard.TrompTaylorWinner();
+    return playoutBoard;
+}
+
+NatMap<Vertex, double> Tree::estimateTerritory(const size_t numPlayouts) {
+    NatMap<Vertex, double> influence;
+    influence.SetAll(0.0);
+    ForEachNat(Vertex, v) {
+        if (!v.IsOnBoard()) influence[v] = qnan;
+    }
+
+    moodycamel::ProducerToken token(_evaluationQueue);
+
+    for (size_t i = 0; i < numPlayouts; ++i) {
+        Board playoutBoard;
+        playoutBoard.Load(_rootBoard);
+        playoutBoard = rollout(playoutBoard, _evaluationQueue, token);
+        ForEachNat(Vertex, v) {
+            Color c = playoutBoard.ColorAt(v);
+            if (c == Color::OffBoard()) continue;
+            if (c.IsPlayer()) {
+                influence[v] += c.ToPlayer().ToScore() / double(numPlayouts);
+            } else {
+                influence[v] += playoutBoard.EyeScore(v) / double(numPlayouts);
+            }
+        }
+    }
+
+    return influence;
 }
 
 Vertex Tree::bestMove() {
