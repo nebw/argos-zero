@@ -25,6 +25,8 @@ public:
     bool operator==(const Hash& other) const;
     void operator^=(const Hash& other);
 
+    uint64 Data() const { return hash; }
+
     friend class Hasher;
 
 private:
