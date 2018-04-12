@@ -51,9 +51,9 @@ void Collector::collectMove(const Tree& tree) {
     static const size_t num_fields = BOARDSIZE * BOARDSIZE + 1;
 
     std::array<double, num_fields> node_probs;
-    std::int16_t pos, row, col, board_size;     // where in the array to write the probability
+    std::int16_t pos, row, col, board_size;  // where in the array to write the probability
 
-    for (size_t i = 0; i < num_fields; ++i) {   // initialize probabilities with zero
+    for (size_t i = 0; i < num_fields; ++i) {  // initialize probabilities with zero
         node_probs[i] = 0.f;
     }
 
@@ -93,13 +93,11 @@ void Collector::collectMove(const Tree& tree) {
     _states.push_back(tree.rootBoard().getFeatures().getPlanes());
 
     _winrates.push_back(tree.rootNode()->winrate(tree.rootBoard().ActPlayer()));
-
 }
 
 void Collector::collectWinner(const Player& winner) { _winner = winner; }
 
 int Collector::connectToServer(const char* server, int port) {
-
     int sock = 0;
     struct sockaddr_in serv_addr;
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -124,13 +122,12 @@ int Collector::connectToServer(const char* server, int port) {
     }
 
     int flag = 1;
-    setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (char *) &flag, sizeof(int));
+    setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(int));
 
     return sock;
 }
 
 void Collector::sendData(const Tree& tree, bool noResignMode) {
-
     // get the Socket fd for server at port
     int sockfd;
     sockfd = connectToServer(this->_server, this->_port);
@@ -191,27 +188,9 @@ void Collector::sendData(const Tree& tree, bool noResignMode) {
     bool res = binarized_result;
     game.setResult(res);
 
-    // for testing purpose write capnp files to disk, not to network
-/*
-    FILE* capnp_file;
-    std::string path = "/home/franziska/";
-    std::string filename = boost::lexical_cast<std::string>(id);
-    std::cout << filename << std::endl;
-    capnp_file = fopen((path + filename).c_str(), "w");
-    if (capnp_file != NULL) {
-        writeMessageToFd(fileno(capnp_file), message);
-        fclose(capnp_file);
-    }
-*/
-
-
-
-    std::cout << sizeof(message) << std::endl;
     // if valid file descriptor exists
-    if(sockfd != -1){
-        writeMessageToFd(sockfd, message);
-    }
+    if (sockfd != -1) { writeMessageToFd(sockfd, message); }
 
-    //close socket
-     close(sockfd);
+    // close socket
+    close(sockfd);
 }
