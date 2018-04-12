@@ -31,7 +31,7 @@ namespace config {
             DEFAULT_BATCH_SIZE * DEFAULT_NUM_EVALUATION_THREADS;
         static const constexpr size_t DEFAULT_RANDOMIZE_FIRST_N_MOVES = 0;
         static const constexpr size_t DEFAULT_NUM_LAST_ROOT_NODES = 3;
-        static const constexpr size_t DEFAULT_VIRTUAL_PLAYOUTS = 3;
+        static const constexpr size_t DEFAULT_VIRTUAL_PLAYOUTS = 1;
         static const constexpr size_t DEFAULT_EXPAND_AT = DEFAULT_VIRTUAL_PLAYOUTS + 1;
         static const constexpr float DEFAULT_BETA_PRIOR = 5;
         static const constexpr float DEFAULT_PRIOR_C = .8f;
