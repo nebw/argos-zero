@@ -1,32 +1,26 @@
 #include <chrono>
-#include "ego.hpp"
 #include "argos/Config.h"
 #include "argos/Network.h"
+#include "argos/Tree.h"
+#include "ego.hpp"
 
-using namespace std;
-using namespace mxnet::cpp;
+int main(int argc, const char** argv) {
+    static const size_t numSeconds = 10;
 
-int main()
-{
-    /*
-    const size_t num_warmup = 10000;
-    const size_t num_evaluations = 10000;
+    auto config = argos::config::parse(argc, argv);
+    Tree tree(config);
 
-    auto net = Network(config::networkPath.string());
-    Board board;
+    // initialize root node
+    tree.evaluate(0);
 
-    for (size_t i=0; i < num_warmup; ++i)
-    {
-        net.apply(board);
-    }
+    const size_t initialVisits = tree.rootNode()->statistics().num_evaluations.load();
 
     auto start = chrono::steady_clock::now();
-    for (size_t i=0; i < num_evaluations; ++i)
-    {
-        net.apply(board);
-    }
+    tree.evaluate(std::chrono::seconds(numSeconds));
     auto end = chrono::steady_clock::now();
-    auto diff = end - start;
-    std::cout << chrono::duration <double, milli> (diff).count() / num_evaluations << " ms" << std::endl;
-    */
+
+    const size_t visits = tree.rootNode()->statistics().num_evaluations.load() - initialVisits;
+    const float rate = visits / std::chrono::duration<double>(end - start).count();
+
+    std::cout << visits << " visits [" << rate << "v/s]" << std::endl;
 }
