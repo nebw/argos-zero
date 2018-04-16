@@ -14,7 +14,6 @@ bool Node::expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
     if (!lock.owns_lock()) {
         RAIITempInc<int> inc(tree.threadsWaiting);
         std::unique_lock<std::mutex> locker(_expandLock);
-        return false;
     }
     if (isExpanded()) return false;
 
