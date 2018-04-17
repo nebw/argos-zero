@@ -17,6 +17,8 @@ bool Node::expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
     }
     if (isExpanded()) return false;
 
+    size_t superkoMoves = 0;
+
     NodeStack children;
     if (!board.BothPlayerPass()) {
         EvaluationJob job(board.getFeatures().getPlanes());
@@ -56,10 +58,12 @@ bool Node::expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
                 child->setPrior(result.candidates[posIdx].prior);
 
                 children.push_back(child);
+            } else {
+                superkoMoves += 1;
             }
         }
 
-        if (legalMoves.empty()) {
+        if ((legalMoves.size() - superkoMoves) == 0) {
             _isTerminalNode = true;
             _statistics.playout_score = static_cast<float>(board.TrompTaylorWinner().ToScore());
         }
