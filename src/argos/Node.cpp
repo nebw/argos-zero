@@ -44,7 +44,7 @@ bool Node::expand(Tree& tree, Board& board, ConcurrentNodeQueue& queue,
             tempBoard.PlayLegal(actPlayer, vertex);
 
             // don't add superko moves
-            if (hashTrace.count(tempBoard.TranspositionHash().Data()) == 0) {
+            if ((hashTrace.count(tempBoard.TranspositionHash().Data()) == 0) && (!tempBoard.IsEyelike(actPlayer, vertex))) {
                 auto position = tree.maybeAddPosition(tempBoard);
                 auto child = std::make_shared<Node>(position, vertex, _config,
                                                     _position->statistics().value.load());
@@ -87,7 +87,7 @@ float Node::getUCTValue(Node& parent, std::mt19937&) const {
 
     assert(parentVisits > 0);
 
-    const float prior = _statistics.prior.load();
+    const float prior = std::max<float>(0.0001f, _statistics.prior.load());
     return winRate + _config.priorC * prior * (sqrt(parentVisits) / (1 + nodeVisits));
 }
 
@@ -180,7 +180,7 @@ float Node::winrate(const Player& player) const {
     if (player == Player::White()) { value = 1.f - value; }
 
     if (p.num_evaluations.load() == 0) {
-        value = std::max<float>(0.f, value - _config.fpuReduction);
+        value = std::max<float>(0.0001f, value - _config.fpuReduction);
     }
 
     return value;
